@@ -7,7 +7,7 @@ use App\Models\AnnouncementSmsDelivery;
 use App\Models\Household;
 use App\Models\Resident;
 use App\Models\User;
-use App\Services\SemaphoreSmsService;
+use App\Services\PhilSmsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery\MockInterface;
 use Tests\TestCase;
@@ -19,10 +19,11 @@ class AnnouncementSmsSafetyTest extends TestCase
     public function test_pending_sms_without_contact_number_is_failed_without_calling_sms_service(): void
     {
         // Enable the controller's processing path only for this test.
-        // This does not change the .env file.
+        // This does not change the .env file or enable real SMS sending.
         config([
-            'services.semaphore.enabled' => true,
-            'services.semaphore.api_key' => 'test-api-key',
+            'services.philsms.enabled' => true,
+            'services.philsms.api_token' => 'test-api-token',
+            'services.philsms.sender_id' => 'EWebsite',
         ]);
 
         $admin = User::factory()->create([
@@ -73,7 +74,7 @@ class AnnouncementSmsSafetyTest extends TestCase
 
         // The SMS service must never be called for a blank number.
         $this->mock(
-            SemaphoreSmsService::class,
+            PhilSmsService::class,
             function (MockInterface $mock): void {
                 $mock->shouldNotReceive('send');
             }
@@ -100,6 +101,5 @@ class AnnouncementSmsSafetyTest extends TestCase
             'failure_reason' =>
                 'No contact number is recorded for this household head.',
         ]);
-
-           }
+    }
 }

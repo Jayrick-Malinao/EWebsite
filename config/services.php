@@ -9,8 +9,7 @@ return [
     |
     | This file is for storing the credentials for third party services such
     | as Resend, Postmark, AWS, and more. This file provides the de facto
-    | location for this type of information, allowing packages to have
-    | a conventional file to locate the various service credentials.
+    | location for these credentials.
     |
     */
 
@@ -37,18 +36,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Semaphore SMS Gateway
+    | PhilSMS SMS Gateway
     |--------------------------------------------------------------------------
     |
-    | Used to send SMS announcements through the Semaphore API.
-    | Keep your API key in the .env file and never expose it publicly.
+    | Used to send SMS announcements through the PhilSMS API.
+    | Keep the API token in .env and never expose it publicly.
+    | SMS sending is disabled by default for safety.
     |
     */
 
-    'semaphore' => [
-        'api_key' => env('SEMAPHORE_API_KEY'),
-        'sender_name' => env('SEMAPHORE_SENDER_NAME'),
-        'base_url' => 'https://api.semaphore.co/api/v4',
+    'philsms' => [
+        'api_token' => env('PHILSMS_API_TOKEN'),
+        'sender_id' => env('PHILSMS_SENDER_ID'),
+        'enabled' => env('PHILSMS_SMS_ENABLED', false),
+        'base_url' => env(
+            'PHILSMS_BASE_URL',
+            'https://app.philsms.com/api/v3'
+        ),
     ],
 
 ];

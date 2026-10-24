@@ -8,7 +8,7 @@ use App\Models\AnnouncementSmsDelivery;
 use App\Models\Resident;
 use App\Models\User;
 use App\Notifications\AnnouncementPublishedNotification;
-use App\Services\SemaphoreSmsService;
+use App\Services\PhilSmsService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -120,26 +120,34 @@ class AnnouncementController extends Controller
     /**
      * Send pending SMS messages for an announcement.
      *
-     * Real SMS sending is disabled unless SEMAPHORE_SMS_ENABLED=true.
+     * Real SMS sending is disabled unless PHILSMS_SMS_ENABLED=true.
      */
     public function sendPendingSms(
         Request $request,
         Announcement $announcement,
-        SemaphoreSmsService $smsService
+        PhilSmsService $smsService
     ) {
-        if (!config('services.semaphore.enabled', false)) {
+        // Keep actual SMS sending disabled until explicitly enabled.
+        if (! config('services.philsms.enabled', false)) {
             return redirect()
                 ->route('announcements.show', $announcement)
                 ->with(
                     'error',
-                    'SMS sending is disabled. Enable SEMAPHORE_SMS_ENABLED only when you are ready to send real messages.'
+                    'SMS sending is disabled. Enable PHILSMS_SMS_ENABLED only when you are ready to send real messages.'
                 );
         }
 
-        if (empty(config('services.semaphore.api_key'))) {
+        // Verify the required PhilSMS configuration.
+        if (
+            empty(config('services.philsms.api_token'))
+            || empty(config('services.philsms.sender_id'))
+        ) {
             return redirect()
                 ->route('announcements.show', $announcement)
-                ->with('error', 'Semaphore API key is not configured.');
+                ->with(
+                    'error',
+                    'PhilSMS API token or sender ID is not configured.'
+                );
         }
 
         $deliveries = $announcement->smsDeliveries()
@@ -150,7 +158,10 @@ class AnnouncementController extends Controller
         if ($deliveries->isEmpty()) {
             return redirect()
                 ->route('announcements.show', $announcement)
-                ->with('info', 'There are no pending SMS messages for this announcement.');
+                ->with(
+                    'info',
+                    'There are no pending SMS messages for this announcement.'
+                );
         }
 
         $sentCount = 0;
@@ -160,25 +171,29 @@ class AnnouncementController extends Controller
         foreach ($deliveries as $delivery) {
             $number = trim((string) $delivery->contact_number);
 
+            // Do not call PhilSMS when the recipient number is missing.
             if ($number === '') {
                 $delivery->update([
                     'status' => 'Failed',
-                    'failure_reason' => 'No contact number is recorded for this household head.',
+                    'failure_reason' =>
+                        'No contact number is recorded for this household head.',
                     'sent_at' => null,
                 ]);
 
                 $failedCount++;
+
                 continue;
             }
 
             /*
-             * Check the current status again before sending.
-             * This helps avoid sending a record that has already been processed.
+             * Recheck the delivery status before sending.
+             * This is a safeguard against processing an already-updated record.
              */
             $delivery->refresh();
 
             if ($delivery->status !== 'Pending') {
                 $skippedCount++;
+
                 continue;
             }
 
@@ -186,7 +201,7 @@ class AnnouncementController extends Controller
 
             $result = $smsService->send($number, $message);
 
-            if ($result['success']) {
+            if (($result['success'] ?? false) === true) {
                 $delivery->update([
                     'status' => 'Sent',
                     'sent_at' => now(),
@@ -199,7 +214,10 @@ class AnnouncementController extends Controller
                     'status' => 'Failed',
                     'sent_at' => null,
                     'failure_reason' => mb_substr(
-                        (string) ($result['message'] ?? 'Semaphore did not accept the SMS request.'),
+                        (string) (
+                            $result['message']
+                            ?? 'PhilSMS did not accept the SMS request.'
+                        ),
                         0,
                         5000
                     ),
