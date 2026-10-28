@@ -15,6 +15,10 @@ class ImmunizationController extends Controller
      */
     public function index(Request $request): View
     {
+        $request->validate([
+            'search' => ['nullable', 'string', 'max:255'],
+        ]);
+
         $search = $request->string('search')->trim()->toString();
 
         $immunizations = Immunization::query()
@@ -196,4 +200,3 @@ class ImmunizationController extends Controller
         ]);
     }
 }
-

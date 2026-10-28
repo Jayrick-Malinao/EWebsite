@@ -338,6 +338,8 @@
                     <button
                         type="button"
                         id="triggerDeleteModal"
+                        data-confirm-title="Delete this maternal care record?"
+                        data-confirm-item="{{ $maternalCare->resident?->full_name ?? 'Resident record' }}"
                         class="clay-delete-btn inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold"
                     >
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">

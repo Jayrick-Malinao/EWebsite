@@ -15,3 +15,9 @@
     @include('dashboard.official.sidebar')
 
 @endif
+
+@if (in_array($role, ['System Administrator', 'Health Worker', 'Official'], true))
+
+    @include('partials.database-assistant')
+
+@endif

@@ -2168,6 +2168,5 @@
     </script>
 
 </body>
-@include('partials.database-assistant')
 
 </html>

@@ -253,6 +253,18 @@
             color: var(--accent);
         }
 
+        .section-number {
+            background: linear-gradient(145deg, #F9FCFA, #E8F2ED);
+            border: 1px solid rgba(255, 255, 255, .78);
+            color: var(--primary-dark);
+            font-weight: 700;
+            font-size: .95rem;
+            box-shadow:
+                4px 4px 9px rgba(107, 134, 124, .17),
+                -4px -4px 9px rgba(255, 255, 255, .90),
+                inset 1px 1px 0 rgba(255, 255, 255, .78);
+        }
+
         .section-title {
             color: var(--text);
         }
@@ -943,187 +955,25 @@
 
 
                 {{-- =================================================
-                     HOUSEHOLD INFORMATION
+                     SECTION 1: PERSONAL INFORMATION
+                     (Household head)
                 ================================================== --}}
                 <section class="clay-card overflow-hidden rounded-[22px]">
 
                     <div class="clay-card-header px-5 py-5 sm:px-6">
-
                         <div class="flex items-center gap-3">
-
-                            <div class="section-icon green flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
-
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    class="h-5 w-5"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M3 21h18M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16M9 7h1m4 0h1M9 11h1m4 0h1M9 15h1m4 0h1"
-                                    />
-                                </svg>
-
+                            <div class="section-number flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
+                                1
                             </div>
-
-                            <div class="min-w-0">
-
-                                <h2 class="section-title text-base font-bold">
-                                    Household Information
-                                </h2>
-
-                                <p class="section-description text-sm">
-                                    Basic information about the household.
-                                </p>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    <div class="grid gap-5 px-5 py-6 sm:px-6 md:grid-cols-2">
-
-                        {{-- Household Head Name --}}
-                        <div>
-
-                            <label class="clay-label block text-sm font-semibold">
-                                Household Head Name
-                                <span class="required-mark">*</span>
-                            </label>
-
-                            <input
-                                type="text"
-                                name="household_head_name"
-                                value="{{ old('household_head_name') }}"
-                                required
-                                placeholder="Enter household head name"
-                                class="clay-input mt-2"
-                            >
-
-                        </div>
-
-
-                        {{-- Contact --}}
-                        <div>
-
-                            <label class="clay-label block text-sm font-semibold">
-                                Contact Number
-                            </label>
-
-                            <input
-                                type="text"
-                                name="contact_number"
-                                value="{{ old('contact_number') }}"
-                                placeholder="09XXXXXXXXX"
-                                class="clay-input mt-2"
-                            >
-
-                        </div>
-
-
-                        {{-- Address --}}
-                        <div class="md:col-span-2">
-
-                            <label class="clay-label block text-sm font-semibold">
-                                Address
-                                <span class="required-mark">*</span>
-                            </label>
-
-                            <textarea
-                                name="address"
-                                rows="3"
-                                required
-                                placeholder="Enter complete household address"
-                                class="clay-textarea mt-2"
-                            >{{ old('address') }}</textarea>
-
-                        </div>
-
-
-                        {{-- Status --}}
-                        <div>
-
-                            <label class="clay-label block text-sm font-semibold">
-                                Status
-                                <span class="required-mark">*</span>
-                            </label>
-
-                            <select
-                                name="status"
-                                required
-                                class="clay-select mt-2"
-                            >
-
-                                <option
-                                    value="Active"
-                                    @selected(old('status', 'Active') === 'Active')
-                                >
-                                    Active
-                                </option>
-
-                                <option
-                                    value="Inactive"
-                                    @selected(old('status') === 'Inactive')
-                                >
-                                    Inactive
-                                </option>
-
-                            </select>
-
-                        </div>
-
-                    </div>
-
-                </section>
-
-
-                {{-- =================================================
-                     HOUSEHOLD HEAD
-                ================================================== --}}
-                <section class="clay-card overflow-hidden rounded-[22px]">
-
-                    <div class="clay-card-header px-5 py-5 sm:px-6">
-
-                        <div class="flex items-center gap-3">
-
-                            <div class="section-icon blue flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
-
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    class="h-5 w-5"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M15 19.128a9.38 9.38 0 0 0 3.75-1.22M9 19.128a9.38 9.38 0 0 1-3.75-1.22M15 19.128v-.002a6.75 6.75 0 0 0-6 0v.002M12 12.75a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5Z"
-                                    />
-                                </svg>
-
-                            </div>
-
                             <div>
-
                                 <h2 class="section-title text-base font-bold">
-                                    Household Head
+                                    Personal Information
                                 </h2>
-
                                 <p class="section-description text-sm">
-                                    Personal information of the household head.
+                                    Personal details of the household head.
                                 </p>
-
                             </div>
-
                         </div>
-
                     </div>
 
                     <div class="space-y-5 px-5 py-6 sm:px-6">
@@ -1132,60 +982,52 @@
                         <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
 
                             <div>
-
                                 <label class="clay-label block text-sm font-semibold">
                                     First Name
                                     <span class="required-mark">*</span>
                                 </label>
-
                                 <input
                                     type="text"
                                     name="household_head[first_name]"
                                     value="{{ old('household_head.first_name') }}"
                                     required
+                                    style="text-transform: capitalize;"
                                     class="clay-input mt-2"
                                 >
-
                             </div>
 
                             <div>
-
                                 <label class="clay-label block text-sm font-semibold">
                                     Middle Name
                                 </label>
-
                                 <input
                                     type="text"
                                     name="household_head[middle_name]"
                                     value="{{ old('household_head.middle_name') }}"
+                                    style="text-transform: capitalize;"
                                     class="clay-input mt-2"
                                 >
-
                             </div>
 
                             <div>
-
                                 <label class="clay-label block text-sm font-semibold">
                                     Last Name
                                     <span class="required-mark">*</span>
                                 </label>
-
                                 <input
                                     type="text"
                                     name="household_head[last_name]"
                                     value="{{ old('household_head.last_name') }}"
                                     required
+                                    style="text-transform: capitalize;"
                                     class="clay-input mt-2"
                                 >
-
                             </div>
 
                             <div>
-
                                 <label class="clay-label block text-sm font-semibold">
                                     Suffix
                                 </label>
-
                                 <input
                                     type="text"
                                     name="household_head[suffix]"
@@ -1193,23 +1035,18 @@
                                     placeholder="Jr., Sr., III"
                                     class="clay-input mt-2"
                                 >
-
                             </div>
 
                         </div>
 
-
-                        {{-- Personal --}}
+                        {{-- Birth, gender, civil status, PhilHealth --}}
                         <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
 
-                            {{-- Birth Date --}}
                             <div>
-
                                 <label class="clay-label block text-sm font-semibold">
                                     Birth Date
                                     <span class="required-mark">*</span>
                                 </label>
-
                                 <input
                                     type="date"
                                     name="household_head[birth_date]"
@@ -1217,112 +1054,47 @@
                                     required
                                     class="clay-input mt-2"
                                 >
-
                             </div>
 
-
-                            {{-- Gender --}}
                             <div>
-
                                 <label class="clay-label block text-sm font-semibold">
                                     Gender
                                     <span class="required-mark">*</span>
                                 </label>
-
                                 <select
                                     name="household_head[gender]"
                                     required
                                     class="clay-select mt-2"
                                 >
-
-                                    <option value="">
-                                        Select gender
-                                    </option>
-
-                                    <option
-                                        value="Male"
-                                        @selected(old('household_head.gender') === 'Male')
-                                    >
-                                        Male
-                                    </option>
-
-                                    <option
-                                        value="Female"
-                                        @selected(old('household_head.gender') === 'Female')
-                                    >
-                                        Female
-                                    </option>
-
+                                    <option value="">Select gender</option>
+                                    <option value="Male" @selected(old('household_head.gender') === 'Male')>Male</option>
+                                    <option value="Female" @selected(old('household_head.gender') === 'Female')>Female</option>
                                 </select>
-
                             </div>
 
-
-                            {{-- Civil Status --}}
                             <div>
-
                                 <label class="clay-label block text-sm font-semibold">
                                     Civil Status
                                     <span class="required-mark">*</span>
                                 </label>
-
                                 <select
                                     name="household_head[civil_status]"
                                     required
                                     class="clay-select mt-2"
                                 >
-
-                                    <option value="">
-                                        Select status
-                                    </option>
-
-                                    <option
-                                        value="Single"
-                                        @selected(old('household_head.civil_status') === 'Single')
-                                    >
-                                        Single
-                                    </option>
-
-                                    <option
-                                        value="Married"
-                                        @selected(old('household_head.civil_status') === 'Married')
-                                    >
-                                        Married
-                                    </option>
-
-                                    <option
-                                        value="Widowed"
-                                        @selected(old('household_head.civil_status') === 'Widowed')
-                                    >
-                                        Widowed
-                                    </option>
-
-                                    <option
-                                        value="Separated"
-                                        @selected(old('household_head.civil_status') === 'Separated')
-                                    >
-                                        Separated
-                                    </option>
-
-                                    <option
-                                        value="Divorced"
-                                        @selected(old('household_head.civil_status') === 'Divorced')
-                                    >
-                                        Divorced
-                                    </option>
-
+                                    <option value="">Select status</option>
+                                    <option value="Single" @selected(old('household_head.civil_status') === 'Single')>Single</option>
+                                    <option value="Married" @selected(old('household_head.civil_status') === 'Married')>Married</option>
+                                    <option value="Widowed" @selected(old('household_head.civil_status') === 'Widowed')>Widowed</option>
+                                    <option value="Separated" @selected(old('household_head.civil_status') === 'Separated')>Separated</option>
+                                    <option value="Divorced" @selected(old('household_head.civil_status') === 'Divorced')>Divorced</option>
                                 </select>
-
                             </div>
 
-
-                            {{-- PhilHealth --}}
                             <div>
-
                                 <label class="clay-label block text-sm font-semibold">
                                     PhilHealth Number
                                 </label>
-
                                 <input
                                     type="text"
                                     name="household_head[philhealth_number]"
@@ -1330,37 +1102,33 @@
                                     placeholder="PhilHealth number"
                                     class="clay-input mt-2"
                                 >
-
                             </div>
 
                         </div>
 
-
-                        {{-- Contact --}}
+                        {{-- Head's contact and email --}}
                         <div class="grid gap-5 sm:grid-cols-2">
 
                             <div>
-
                                 <label class="clay-label block text-sm font-semibold">
                                     Contact Number
                                 </label>
-
                                 <input
-                                    type="text"
+                                    type="tel"
                                     name="household_head[contact_number]"
-                                    value="{{ old('household_head.contact_number') }}"
-                                    placeholder="09XXXXXXXXX"
+                                    value="{{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay(old('household_head.contact_number')) ?: '+63' }}"
+                                    inputmode="numeric"
+                                    maxlength="24"
+                                    placeholder="+6391 7123 4567"
+                                    title="Only Globe and DITO SIM numbers are supported."
                                     class="clay-input mt-2"
                                 >
-
                             </div>
 
                             <div>
-
                                 <label class="clay-label block text-sm font-semibold">
                                     Email
                                 </label>
-
                                 <input
                                     type="email"
                                     name="household_head[email]"
@@ -1368,7 +1136,6 @@
                                     placeholder="name@example.com"
                                     class="clay-input mt-2"
                                 >
-
                             </div>
 
                         </div>
@@ -1379,45 +1146,145 @@
 
 
                 {{-- =================================================
-                     FAMILY MEMBERS
+                     SECTION 2: HOUSEHOLD DETAILS & ADDRESS
+                ================================================== --}}
+                <section class="clay-card overflow-hidden rounded-[22px]">
+
+                    <div class="clay-card-header px-5 py-5 sm:px-6">
+                        <div class="flex items-center gap-3">
+                            <div class="section-number flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
+                                2
+                            </div>
+                            <div>
+                                <h2 class="section-title text-base font-bold">
+                                    Household Details &amp; Address
+                                </h2>
+                                <p class="section-description text-sm">
+                                    Household contact, status, and where the household is located.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-5 px-5 py-6 sm:px-6">
+
+                        {{-- Household contact and status --}}
+                        <div class="grid gap-5 md:grid-cols-2">
+
+                            <div>
+                                <label class="clay-label block text-sm font-semibold">
+                                    Household Contact Number
+                                </label>
+                                <input
+                                    type="tel"
+                                    name="contact_number"
+                                    value="{{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay(old('contact_number')) ?: '+63' }}"
+                                    inputmode="numeric"
+                                    maxlength="24"
+                                    placeholder="+6391 7123 4567"
+                                    title="Only Globe and DITO SIM numbers are supported."
+                                    class="clay-input mt-2"
+                                >
+                            </div>
+
+                            <div>
+                                <label class="clay-label block text-sm font-semibold">
+                                    Status
+                                    <span class="required-mark">*</span>
+                                </label>
+                                <select
+                                    name="status"
+                                    required
+                                    class="clay-select mt-2"
+                                >
+                                    <option value="Active" @selected(old('status', 'Active') === 'Active')>Active</option>
+                                    <option value="Inactive" @selected(old('status') === 'Inactive')>Inactive</option>
+                                </select>
+                            </div>
+
+                        </div>
+
+                        {{-- Address --}}
+                        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+
+                            <div>
+                                <label
+                                    for="purok"
+                                    class="clay-label block text-sm font-semibold"
+                                >
+                                    Purok
+                                </label>
+                                <select
+                                    id="purok"
+                                    name="purok"
+                                    class="clay-select mt-2"
+                                    required
+                                    aria-describedby="{{ $errors->has('purok') ? 'purok-error' : '' }}"
+                                    aria-invalid="{{ $errors->has('purok') ? 'true' : 'false' }}"
+                                >
+                                    <option value="">Select Purok</option>
+                                    @foreach ($puroks as $purok)
+                                        <option
+                                            value="{{ $purok }}"
+                                            @selected(old('purok', $addressParts['purok']) === $purok)
+                                        >
+                                            {{ $purok }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('purok')
+                                    <p id="purok-error" class="clay-field-error mt-1.5 text-xs font-medium">
+                                        {{ $message }}
+                                    </p>
+                                @enderror
+                            </div>
+
+                            @foreach ($localityParts as $label => $value)
+                                <div>
+                                    <label
+                                        for="household-locality-{{ strtolower($label) }}"
+                                        class="clay-label block text-sm font-semibold"
+                                    >
+                                        {{ $label }}
+                                    </label>
+                                    <input
+                                        id="household-locality-{{ strtolower($label) }}"
+                                        type="text"
+                                        value="{{ $value }}"
+                                        readonly
+                                        class="clay-input mt-2"
+                                        aria-label="{{ $label }}: {{ $value }} (fixed locality)"
+                                    >
+                                </div>
+                            @endforeach
+
+                            <input type="hidden" name="address" value="">
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                {{-- =================================================
+                     SECTION 3: FAMILY MEMBERS
                 ================================================== --}}
                 <section class="clay-card overflow-hidden rounded-[22px]">
 
                     <div class="clay-card-header flex flex-col gap-4 px-5 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
 
                         <div class="flex items-center gap-3">
-
-                            <div class="section-icon orange flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
-
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    class="h-5 w-5"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M18 18.72a9.094 9.094 0 0 1-3.75-1.22M6 18.72a9.094 9.094 0 0 1-3.75-1.22M18 18.72v-.002a6.75 6.75 0 0 0-12 0v.002M15 8.25a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm4.5 2.25a2.25 2.25 0 1 1-4.5 0m-9 0a2.25 2.25 0 1 1-4.5 0"
-                                    />
-                                </svg>
-
+                            <div class="section-number flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
+                                3
                             </div>
-
                             <div>
-
                                 <h2 class="section-title text-base font-bold">
                                     Family Members
                                 </h2>
-
                                 <p class="section-description text-sm">
                                     Add members who belong to this household.
                                 </p>
-
                             </div>
-
                         </div>
 
                         <button
@@ -1425,7 +1292,6 @@
                             id="add-member"
                             class="clay-add-member inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold sm:w-auto"
                         >
-
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 class="h-4 w-4"
@@ -1440,13 +1306,10 @@
                                     d="M12 4.5v15m7.5-7.5h-15"
                                 />
                             </svg>
-
                             Add Family Member
-
                         </button>
 
                     </div>
-
 
                     <div class="space-y-5 px-5 py-6 sm:px-6">
 
@@ -1455,9 +1318,7 @@
                             id="no-members"
                             class="family-empty rounded-2xl px-6 py-10 text-center"
                         >
-
                             <div class="family-empty-icon mx-auto flex h-12 w-12 items-center justify-center rounded-full">
-
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     class="h-6 w-6"
@@ -1472,19 +1333,14 @@
                                         d="M15 19.128a9.38 9.38 0 0 0 3.75-1.22M9 19.128a9.38 9.38 0 0 0-3.75-1.22M15 19.128v-.002a6.75 6.75 0 0 0-6 0v.002M12 12.75a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5Z"
                                     />
                                 </svg>
-
                             </div>
-
                             <h3 class="mt-3 text-sm font-semibold text-[#164238]">
                                 No family members added
                             </h3>
-
                             <p class="mt-1 text-sm text-[#6D817A]">
                                 Click “Add Family Member” to add another member.
                             </p>
-
                         </div>
-
 
                         <div
                             id="members-container"
@@ -1512,7 +1368,6 @@
                         type="submit"
                         class="clay-primary-button inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold"
                     >
-
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             class="h-4 w-4"
@@ -1527,9 +1382,7 @@
                                 d="m5 12 4 4L19 6"
                             />
                         </svg>
-
                         Save Household
-
                     </button>
 
                 </div>
@@ -1677,7 +1530,7 @@
                     <div>
 
                         <label class="clay-label block text-sm font-semibold">
-                            Relationship to Household Head
+                            Relationship
                             <span class="required-mark">*</span>
                         </label>
 
@@ -1829,9 +1682,13 @@
                         </label>
 
                         <input
-                            type="text"
+                            type="tel"
                             data-field="contact_number"
-                            placeholder="09XXXXXXXXX"
+                            value="+63"
+                            inputmode="numeric"
+                            maxlength="24"
+                            placeholder="+6391 7123 4567"
+                            title="Only Globe and DITO SIM numbers are supported."
                             class="clay-input mt-2"
                         >
 
@@ -1853,6 +1710,53 @@
                         placeholder="name@example.com"
                         class="clay-input mt-2"
                     >
+
+                </div>
+
+
+                {{-- Family member address --}}
+                <p class="clay-label text-sm font-semibold">
+                    Address
+                </p>
+                <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+
+                    <div>
+                        <label class="clay-label block text-sm font-semibold">
+                            Purok
+                            <span class="required-mark">*</span>
+                        </label>
+
+                        <select
+                            data-field="purok"
+                            required
+                            class="clay-select mt-2"
+                        >
+                            <option value="">Select Purok</option>
+
+                            @foreach ($puroks as $purok)
+                                <option value="{{ $purok }}">{{ $purok }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    @foreach ($localityParts as $label => $value)
+                        <div>
+                            <label
+                                for="member-locality-{{ strtolower($label) }}"
+                                class="clay-label block text-sm font-semibold"
+                            >
+                                {{ $label }}
+                            </label>
+                            <input
+                                id="member-locality-{{ strtolower($label) }}"
+                                type="text"
+                                value="{{ $value }}"
+                                readonly
+                                class="clay-input mt-2"
+                                aria-label="{{ $label }}: {{ $value }} (fixed locality)"
+                            >
+                        </div>
+                    @endforeach
 
                 </div>
 
@@ -1943,7 +1847,7 @@
                ADD FAMILY MEMBER
             ====================================================== */
 
-            function addMember() {
+            function addMember(memberData = {}, focusFirstName = true) {
 
                 const fragment =
                     template.content.cloneNode(true);
@@ -1960,6 +1864,10 @@
 
                         input.name =
                             `members[${memberIndex}][${field}]`;
+
+                        if (Object.prototype.hasOwnProperty.call(memberData, field)) {
+                            input.value = memberData[field] ?? '';
+                        }
 
                     });
 
@@ -1978,9 +1886,11 @@
                     cards[cards.length - 1];
 
 
-                latestCard
-                    ?.querySelector('[data-field="first_name"]')
-                    ?.focus();
+                if (focusFirstName) {
+                    latestCard
+                        ?.querySelector('[data-field="first_name"]')
+                        ?.focus();
+                }
 
             }
 
@@ -2026,8 +1936,29 @@
                         }
 
 
+                        const oldMembers = @js(old('members', []));
+
+                        if (Array.isArray(oldMembers)) {
+                            oldMembers.forEach((member) => {
+                                addMember(member, false);
+                            });
+                        }
+
                         updateMemberNumbers();
 
+                    }
+                );
+
+                container.addEventListener(
+                    'remove-member-confirmed',
+                    function (event) {
+                        const card = event.detail.button.closest('.member-card');
+
+                        if (card) {
+                            card.remove();
+                        }
+
+                        updateMemberNumbers();
                     }
                 );
 

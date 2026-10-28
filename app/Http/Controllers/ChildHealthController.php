@@ -15,6 +15,10 @@ class ChildHealthController extends Controller
      */
     public function index(Request $request): View
     {
+        $request->validate([
+            'search' => ['nullable', 'string', 'max:255'],
+        ]);
+
         $search = trim((string) $request->input('search'));
 
         $childHealths = ChildHealth::query()
@@ -95,20 +99,17 @@ class ChildHealthController extends Controller
 
             'nutritional_status' => [
                 'nullable',
-                'string',
-                'max:100',
+                'in:Normal,Underweight,Wasted,Severely Wasted,Overweight,Obese',
             ],
 
             'breastfeeding_status' => [
                 'nullable',
-                'string',
-                'max:100',
+                'in:Exclusive Breastfeeding,Mixed Feeding,Formula Feeding,Not Breastfeeding,Not Applicable',
             ],
 
             'vitamin_a_status' => [
                 'nullable',
-                'string',
-                'max:100',
+                'in:Given,Not Given,Not Due',
             ],
 
             'vitamin_a_date' => [
@@ -119,8 +120,7 @@ class ChildHealthController extends Controller
 
             'deworming_status' => [
                 'nullable',
-                'string',
-                'max:100',
+                'in:Given,Not Given,Not Due',
             ],
 
             'deworming_date' => [
@@ -223,20 +223,17 @@ class ChildHealthController extends Controller
 
             'nutritional_status' => [
                 'nullable',
-                'string',
-                'max:100',
+                'in:Normal,Underweight,Wasted,Severely Wasted,Overweight,Obese',
             ],
 
             'breastfeeding_status' => [
                 'nullable',
-                'string',
-                'max:100',
+                'in:Exclusive Breastfeeding,Mixed Feeding,Formula Feeding,Not Breastfeeding,Not Applicable',
             ],
 
             'vitamin_a_status' => [
                 'nullable',
-                'string',
-                'max:100',
+                'in:Given,Not Given,Not Due',
             ],
 
             'vitamin_a_date' => [
@@ -247,8 +244,7 @@ class ChildHealthController extends Controller
 
             'deworming_status' => [
                 'nullable',
-                'string',
-                'max:100',
+                'in:Given,Not Given,Not Due',
             ],
 
             'deworming_date' => [

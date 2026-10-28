@@ -499,7 +499,10 @@
 
                                             <button
                                                 type="button"
-                                                onclick="triggerDeleteModal('{{ route('schedule.destroy', $event) }}', '{{ escape_javascript_string($event->title) }}')"
+                                                data-confirm-delete
+                                                data-delete-action="{{ route('schedule.destroy', $event) }}"
+                                                data-confirm-title="Delete this scheduled event?"
+                                                data-confirm-item="{{ $event->title }}"
                                                 class="clay-action clay-delete"
                                             >
                                                 Delete

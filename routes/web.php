@@ -1,34 +1,32 @@
 
 <?php
 
-use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\AccountController;
-use App\Http\Controllers\ResidentController;
+use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\BackupController;
+use App\Http\Controllers\CertificateController;
+use App\Http\Controllers\ChildHealthController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\HealthVisitController;
+use App\Http\Controllers\DatabaseAssistantController;
+use App\Http\Controllers\EventController;
 use App\Http\Controllers\HealthRecordController;
+use App\Http\Controllers\HealthVisitController;
 use App\Http\Controllers\HouseholdController;
 use App\Http\Controllers\ImmunizationController;
 use App\Http\Controllers\MaternalCareController;
-use App\Http\Controllers\ChildHealthController;
-use App\Http\Controllers\SeniorCitizenController;
 use App\Http\Controllers\MedicalInventoryController;
 use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\EventController;
-use App\Http\Controllers\CertificateController;
-use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\ReportController;
-use App\Http\Controllers\AnalyticsController;
-use App\Http\Controllers\AuditLogController;
-use App\Http\Controllers\BackupController;
+use App\Http\Controllers\ResidentController;
+use App\Http\Controllers\SeniorCitizenController;
 use App\Http\Controllers\SystemSettingController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\DatabaseAssistantController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return redirect()->route('login');
-})->name('home');
+Route::view('/', 'welcome')->name('home');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])
@@ -41,7 +39,6 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [LoginController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
-
 
 /*
 |--------------------------------------------------------------------------
@@ -57,7 +54,6 @@ Route::middleware(['auth', 'role:System Administrator'])
             ->name('dashboard');
     });
 
-
 /*
 |--------------------------------------------------------------------------
 | Official Dashboard
@@ -71,7 +67,6 @@ Route::middleware(['auth', 'role:Official'])
         Route::get('/dashboard', [DashboardController::class, 'official'])
             ->name('dashboard');
     });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -87,7 +82,6 @@ Route::middleware(['auth', 'role:Health Worker'])
             ->name('dashboard');
     });
 
-
 /*
 |--------------------------------------------------------------------------
 | Residents
@@ -101,7 +95,6 @@ Route::middleware('auth')->group(function () {
         });
 });
 
-
 /*
 |--------------------------------------------------------------------------
 | Households
@@ -114,7 +107,6 @@ Route::middleware('auth')->group(function () {
             Route::resource('households', HouseholdController::class);
         });
 });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -132,7 +124,6 @@ Route::middleware('auth')->group(function () {
         });
 });
 
-
 /*
 |--------------------------------------------------------------------------
 | Health Records
@@ -149,7 +140,6 @@ Route::middleware('auth')->group(function () {
         });
 });
 
-
 /*
 |--------------------------------------------------------------------------
 | Immunizations
@@ -162,7 +152,6 @@ Route::middleware('auth')->group(function () {
             Route::resource('immunizations', ImmunizationController::class);
         });
 });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -180,7 +169,6 @@ Route::middleware('auth')->group(function () {
         });
 });
 
-
 /*
 |--------------------------------------------------------------------------
 | Child Health
@@ -197,7 +185,6 @@ Route::middleware('auth')->group(function () {
         });
 });
 
-
 /*
 |--------------------------------------------------------------------------
 | Senior Citizens
@@ -213,7 +200,6 @@ Route::middleware('auth')->group(function () {
                 ]);
         });
 });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -238,7 +224,6 @@ Route::middleware('auth')->group(function () {
             ])->name('certificates.print');
         });
 });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -284,7 +269,6 @@ Route::middleware('auth')->group(function () {
         });
 });
 
-
 /*
 |--------------------------------------------------------------------------
 | Medical Inventory
@@ -322,7 +306,6 @@ Route::middleware(['auth', 'role:System Administrator|Health Worker'])->group(fu
         'destroy',
     ])->name('medical-inventories.destroy');
 });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -362,7 +345,6 @@ Route::middleware('auth')->group(function () {
     ])->name('schedule.destroy');
 });
 
-
 /*
 |--------------------------------------------------------------------------
 | Notifications
@@ -386,7 +368,6 @@ Route::middleware('auth')->group(function () {
     ])->name('notifications.read-all');
 });
 
-
 /*
 |--------------------------------------------------------------------------
 | Reports
@@ -399,7 +380,6 @@ Route::middleware('auth')->group(function () {
         'index',
     ])->name('reports.index');
 });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -414,7 +394,6 @@ Route::middleware('auth')->group(function () {
     ])->name('analytics.index');
 });
 
-
 /*
 |--------------------------------------------------------------------------
 | Audit Logs
@@ -427,7 +406,6 @@ Route::middleware(['auth', 'role:System Administrator'])->group(function () {
         'index',
     ])->name('audit-logs.index');
 });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -457,7 +435,6 @@ Route::middleware(['auth', 'role:System Administrator'])->group(function () {
     ])->name('backups.destroy');
 });
 
-
 /*
 |--------------------------------------------------------------------------
 | System Settings
@@ -485,7 +462,6 @@ Route::middleware(['auth', 'role:System Administrator'])->group(function () {
         'updatePassword',
     ])->name('account.password.update');
 });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -534,7 +510,6 @@ Route::middleware(['auth', 'role:System Administrator'])->group(function () {
         'destroy',
     ])->name('users.destroy');
 });
-
 
 /*
 |--------------------------------------------------------------------------

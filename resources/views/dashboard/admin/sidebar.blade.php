@@ -439,24 +439,11 @@
             <div
                 class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl"
             >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    stroke-width="1.8"
+                <img
+                    src="{{ asset('images/esperanza-health-center-logo.jpg') }}"
+                    alt=""
+                    class="h-11 w-11 rounded-xl object-contain"
                 >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M12 21s-7-4.35-9.5-8.5C.2 8.7 2.8 4 7 4c2.1 0 4 1.2 5 3 1-1.8 2.9-3 5-3 4.2 0 6.8 4.7 4.5 8.5C19 16.65 12 21 12 21z"
-                    />
-                    <path
-                        stroke-linecap="round"
-                        d="M12 8v5M9.5 10.5h5"
-                    />
-                </svg>
             </div>
 
             <div class="min-w-0">

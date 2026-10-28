@@ -859,6 +859,8 @@
                         <button
                             type="button"
                             id="deleteImmunizationButton"
+                            data-confirm-form="#deleteImmunizationForm"
+                            data-confirm-title="Delete this immunization record?"
                             class="clay-action clay-action-delete inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition"
                         >
                             <svg
@@ -922,6 +924,7 @@
                     method="POST"
                     action="{{ route('immunizations.destroy', $immunization) }}"
                     class="hidden"
+                    data-confirm-item="{{ $immunization->vaccine_name }}"
                 >
                     @csrf
                     @method('DELETE')
@@ -977,25 +980,6 @@
                     if (window.innerWidth >= 1024) {
                         overlay.classList.add('hidden');
                         document.body.classList.remove('overflow-hidden');
-                    }
-
-                });
-
-            }
-
-            const deleteButton = document.getElementById('deleteImmunizationButton');
-            const deleteForm = document.getElementById('deleteImmunizationForm');
-
-            if (deleteButton && deleteForm) {
-
-                deleteButton.addEventListener('click', function () {
-
-                    const confirmed = confirm(
-                        'Are you sure you want to delete this immunization record? This action cannot be undone.'
-                    );
-
-                    if (confirmed) {
-                        deleteForm.submit();
                     }
 
                 });

@@ -756,6 +756,9 @@
                             method="POST"
                             action="{{ route('users.destroy', $user) }}"
                             class="w-full sm:w-auto"
+                            data-confirm-title="Delete this account?"
+                            data-confirm-item="{{ $user->name }}"
+                            data-confirm-message="This staff account and its access to the system will be permanently removed."
                         >
                             @csrf
                             @method('DELETE')

@@ -36,22 +36,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | PhilSMS SMS Gateway
+    | UniSMS Gateway
     |--------------------------------------------------------------------------
     |
-    | Used to send SMS announcements through the PhilSMS API.
-    | Keep the API token in .env and never expose it publicly.
-    | SMS sending is disabled by default for safety.
+    | Keep the secret key in .env and never expose it publicly.
+    | SMS sending is disabled by default until the UniSMS account is configured.
     |
     */
 
-    'philsms' => [
-        'api_token' => env('PHILSMS_API_TOKEN'),
-        'sender_id' => env('PHILSMS_SENDER_ID'),
-        'enabled' => env('PHILSMS_SMS_ENABLED', false),
+    'unisms' => [
+        'secret_key' => env('UNISMS_SECRET_KEY'),
+        'sender_id' => env('UNISMS_SENDER_ID'),
+        'enabled' => env('UNISMS_SMS_ENABLED', false),
         'base_url' => env(
-            'PHILSMS_BASE_URL',
-            'https://app.philsms.com/api/v3'
+            'UNISMS_BASE_URL',
+            'https://unismsapi.com/api'
         ),
     ],
 

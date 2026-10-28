@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Resident;
 use App\Models\SeniorCitizen;
+use App\Rules\PhilippineMobileNumber;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -15,6 +16,10 @@ class SeniorCitizenController extends Controller
      */
     public function index(Request $request): View
     {
+        $request->validate([
+            'search' => ['nullable', 'string', 'max:255'],
+        ]);
+
         $search = trim((string) $request->input('search'));
 
         $seniorCitizens = SeniorCitizen::query()
@@ -88,8 +93,7 @@ class SeniorCitizenController extends Controller
 
             'senior_status' => [
                 'required',
-                'string',
-                'max:50',
+                'in:Active,Inactive,Deceased,Transferred',
             ],
 
             'classification' => [
@@ -100,8 +104,7 @@ class SeniorCitizenController extends Controller
 
             'blood_type' => [
                 'nullable',
-                'string',
-                'max:10',
+                'in:A+,A-,B+,B-,AB+,AB-,O+,O-,Unknown',
             ],
 
             'medical_conditions' => [
@@ -121,8 +124,7 @@ class SeniorCitizenController extends Controller
 
             'living_arrangement' => [
                 'nullable',
-                'string',
-                'max:100',
+                'in:Living Alone,With Spouse,With Family,With Caregiver',
             ],
 
             'primary_caregiver' => [
@@ -134,7 +136,8 @@ class SeniorCitizenController extends Controller
             'caregiver_contact' => [
                 'nullable',
                 'string',
-                'max:30',
+                'max:13',
+                new PhilippineMobileNumber,
             ],
 
             'receives_social_pension' => [
@@ -215,7 +218,7 @@ class SeniorCitizenController extends Controller
                 'nullable',
                 'string',
                 'max:100',
-                'unique:senior_citizens,osca_id_number,' .
+                'unique:senior_citizens,osca_id_number,'.
                     $seniorCitizen->id,
             ],
 
@@ -226,8 +229,7 @@ class SeniorCitizenController extends Controller
 
             'senior_status' => [
                 'required',
-                'string',
-                'max:50',
+                'in:Active,Inactive,Deceased,Transferred',
             ],
 
             'classification' => [
@@ -238,8 +240,7 @@ class SeniorCitizenController extends Controller
 
             'blood_type' => [
                 'nullable',
-                'string',
-                'max:10',
+                'in:A+,A-,B+,B-,AB+,AB-,O+,O-,Unknown',
             ],
 
             'medical_conditions' => [
@@ -259,8 +260,7 @@ class SeniorCitizenController extends Controller
 
             'living_arrangement' => [
                 'nullable',
-                'string',
-                'max:100',
+                'in:Living Alone,With Spouse,With Family,With Caregiver',
             ],
 
             'primary_caregiver' => [
@@ -272,7 +272,8 @@ class SeniorCitizenController extends Controller
             'caregiver_contact' => [
                 'nullable',
                 'string',
-                'max:30',
+                'max:13',
+                new PhilippineMobileNumber,
             ],
 
             'receives_social_pension' => [

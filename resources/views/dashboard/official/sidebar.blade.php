@@ -5,23 +5,17 @@
 <aside
     id="officialSidebar"
     data-sidebar
-    class="fixed inset-y-0 left-0 z-50 flex w-72 -translate-x-full flex-col border-r border-slate-200 bg-white transition-transform duration-300 ease-in-out lg:translate-x-0"
+    class="claymorphism-sidebar fixed inset-y-0 left-0 z-50 flex w-72 -translate-x-full flex-col border-r border-slate-200 bg-white transition-transform duration-300 ease-in-out lg:translate-x-0"
 >
     {{-- Brand --}}
     <div class="flex h-20 shrink-0 items-center border-b border-slate-200 px-6">
         <a href="{{ route($dashboardRoute) }}" class="flex items-center gap-3">
             <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-700 text-white shadow-sm">
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
+                <img
+                    src="{{ asset('images/esperanza-health-center-logo.jpg') }}"
+                    alt=""
+                    class="h-10 w-10 rounded-xl object-contain"
                 >
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 21s8-4.5 8-10.5V5.5L12 3 4 5.5v5C4 16.5 12 21 12 21Z"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v6M9 11h6"/>
-                </svg>
             </div>
 
             <div class="min-w-0">

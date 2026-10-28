@@ -6,6 +6,7 @@ use App\Models\Certificate;
 use App\Models\Resident;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class CertificateController extends Controller
 {
@@ -66,8 +67,18 @@ class CertificateController extends Controller
 
             'certificate_type' => [
                 'required',
-                'string',
-                'max:255',
+                Rule::in([
+                    'Certificate of Residency',
+                    'Certificate of Indigency',
+                    'Barangay Clearance',
+                    'Certificate of Good Moral Character',
+                    'Medical Certificate',
+                    'Health Certificate',
+                    'Medical Examination Certificate',
+                    'Fitness to Work Certificate',
+                    'Fitness to Attend School Certificate',
+                    'Vaccination / Immunization Certificate',
+                ]),
             ],
 
             'purpose' => [
@@ -154,8 +165,18 @@ class CertificateController extends Controller
 
             'certificate_type' => [
                 'required',
-                'string',
-                'max:255',
+                Rule::in([
+                    'Certificate of Residency',
+                    'Certificate of Indigency',
+                    'Barangay Clearance',
+                    'Certificate of Good Moral Character',
+                    'Medical Certificate',
+                    'Health Certificate',
+                    'Medical Examination Certificate',
+                    'Fitness to Work Certificate',
+                    'Fitness to Attend School Certificate',
+                    'Vaccination / Immunization Certificate',
+                ]),
             ],
 
             'purpose' => [

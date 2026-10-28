@@ -15,6 +15,10 @@ class MaternalCareController extends Controller
      */
     public function index(Request $request): View
     {
+        $request->validate([
+            'search' => ['nullable', 'string', 'max:255'],
+        ]);
+
         $search = trim((string) $request->input('search'));
 
         $maternalCares = MaternalCare::query()
@@ -90,8 +94,7 @@ class MaternalCareController extends Controller
 
             'pregnancy_status' => [
                 'required',
-                'string',
-                'max:100',
+                'in:Pregnant,Delivered,Miscarriage,Stillbirth,Completed',
             ],
 
             'last_prenatal_visit' => [
@@ -108,8 +111,7 @@ class MaternalCareController extends Controller
 
             'delivery_type' => [
                 'nullable',
-                'string',
-                'max:100',
+                'in:Normal,Cesarean Section,Assisted',
             ],
 
             'place_of_delivery' => [
@@ -120,8 +122,7 @@ class MaternalCareController extends Controller
 
             'birth_outcome' => [
                 'nullable',
-                'string',
-                'max:100',
+                'in:Live Birth,Stillbirth,Miscarriage',
             ],
 
             'pregnancy_risk_factors' => [
@@ -243,8 +244,7 @@ class MaternalCareController extends Controller
 
             'pregnancy_status' => [
                 'required',
-                'string',
-                'max:100',
+                'in:Pregnant,Delivered,Miscarriage,Stillbirth,Completed',
             ],
 
             'last_prenatal_visit' => [
@@ -261,8 +261,7 @@ class MaternalCareController extends Controller
 
             'delivery_type' => [
                 'nullable',
-                'string',
-                'max:100',
+                'in:Normal,Cesarean Section,Assisted',
             ],
 
             'place_of_delivery' => [
@@ -273,8 +272,7 @@ class MaternalCareController extends Controller
 
             'birth_outcome' => [
                 'nullable',
-                'string',
-                'max:100',
+                'in:Live Birth,Stillbirth,Miscarriage',
             ],
 
             'pregnancy_risk_factors' => [

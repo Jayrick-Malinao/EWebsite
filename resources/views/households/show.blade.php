@@ -798,7 +798,7 @@
                                 </p>
 
                                 <p class="clay-field-muted mt-1 text-sm">
-                                    {{ $household->contact_number ?: 'Not provided' }}
+                                    {{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay($household->contact_number) ?: 'Not provided' }}
                                 </p>
 
                             </div>
@@ -925,7 +925,7 @@
                                     </p>
 
                                     <p class="clay-field-muted mt-1 text-sm">
-                                        {{ $householdHead->contact_number ?: 'Not provided' }}
+                                        {{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay($householdHead->contact_number) ?: 'Not provided' }}
                                     </p>
 
                                 </div>

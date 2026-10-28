@@ -107,30 +107,6 @@
             color: var(--text-dark) !important;
         }
 
-        .clay-notification {
-            background: linear-gradient(
-                145deg,
-                #F8FCFA,
-                #EAF2EE
-            ) !important;
-            color: var(--text-muted) !important;
-            border: 1px solid rgba(255, 255, 255, 0.86) !important;
-            box-shadow:
-                4px 4px 9px rgba(107, 134, 124, 0.16),
-                -4px -4px 9px rgba(255, 255, 255, 0.92),
-                inset 1px 1px 0 rgba(255, 255, 255, 0.82);
-        }
-
-        .clay-notification:hover {
-            color: var(--primary-dark) !important;
-            transform: translateY(-1px);
-        }
-
-        .clay-notification-dot {
-            background: var(--primary) !important;
-            box-shadow: 0 0 0 2px #F5FAF7 !important;
-        }
-
         .clay-profile {
             border-color: rgba(210, 225, 218, 0.72) !important;
         }
@@ -586,31 +562,7 @@
 
                 <div class="ml-auto flex items-center gap-2 sm:gap-3">
 
-                    <button
-                        type="button"
-                        class="clay-notification relative flex h-10 w-10 items-center justify-center rounded-xl transition"
-                        aria-label="Notifications"
-                    >
-                        <svg
-                            class="h-5 w-5"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.8"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"
-                            />
-                            <path
-                                stroke-linecap="round"
-                                d="M10 21h4"
-                            />
-                        </svg>
-
-                        <span class="clay-notification-dot absolute right-2 top-2 h-2 w-2 rounded-full ring-2"></span>
-                    </button>
+                    @include('partials.notification-bell')
 
                     <div class="clay-profile hidden items-center gap-3 border-l pl-3 sm:flex">
 
@@ -789,7 +741,7 @@
                         </p>
 
                         <p class="clay-field-value mt-1 text-sm font-semibold">
-                            {{ $healthRecord->resident->contact_number ?: 'Not recorded' }}
+                            {{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay($healthRecord->resident->contact_number) ?: 'Not recorded' }}
                         </p>
                     </div>
 
@@ -987,7 +939,7 @@
                         </p>
 
                         <p class="clay-field-value mt-1 text-sm font-semibold">
-                            {{ $healthRecord->emergency_contact_number ?: 'Not provided' }}
+                            {{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay($healthRecord->emergency_contact_number) ?: 'Not provided' }}
                         </p>
                     </div>
 

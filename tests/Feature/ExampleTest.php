@@ -6,13 +6,12 @@ use Tests\TestCase;
 
 class ExampleTest extends TestCase
 {
-    /**
-     * The homepage redirects guests to the login page.
-     */
-    public function test_the_homepage_redirects_to_the_login_page(): void
+    public function test_the_homepage_renders_the_landing_page_with_a_login_link(): void
     {
         $response = $this->get('/');
 
-        $response->assertRedirect(route('login'));
+        $response->assertOk()
+            ->assertSee('Community health, organized digitally')
+            ->assertSee(route('login'));
     }
 }

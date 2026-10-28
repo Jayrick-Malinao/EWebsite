@@ -8,7 +8,7 @@ use App\Models\AnnouncementSmsDelivery;
 use App\Models\Resident;
 use App\Models\User;
 use App\Notifications\AnnouncementPublishedNotification;
-use App\Services\PhilSmsService;
+use App\Services\UniSmsService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -120,33 +120,33 @@ class AnnouncementController extends Controller
     /**
      * Send pending SMS messages for an announcement.
      *
-     * Real SMS sending is disabled unless PHILSMS_SMS_ENABLED=true.
+     * Real SMS sending is disabled unless UNISMS_SMS_ENABLED=true.
      */
     public function sendPendingSms(
         Request $request,
         Announcement $announcement,
-        PhilSmsService $smsService
+        UniSmsService $smsService
     ) {
         // Keep actual SMS sending disabled until explicitly enabled.
-        if (! config('services.philsms.enabled', false)) {
+        if (! config('services.unisms.enabled', false)) {
             return redirect()
                 ->route('announcements.show', $announcement)
                 ->with(
                     'error',
-                    'SMS sending is disabled. Enable PHILSMS_SMS_ENABLED only when you are ready to send real messages.'
+                    'SMS sending is disabled. Configure UniSMS and enable UNISMS_SMS_ENABLED only when you are ready to send real messages.'
                 );
         }
 
-        // Verify the required PhilSMS configuration.
+        // Verify the required UniSMS configuration.
         if (
-            empty(config('services.philsms.api_token'))
-            || empty(config('services.philsms.sender_id'))
+            empty(config('services.unisms.secret_key'))
+            || empty(config('services.unisms.sender_id'))
         ) {
             return redirect()
                 ->route('announcements.show', $announcement)
                 ->with(
                     'error',
-                    'PhilSMS API token or sender ID is not configured.'
+                    'UniSMS secret key or sender ID is not configured.'
                 );
         }
 
@@ -171,12 +171,11 @@ class AnnouncementController extends Controller
         foreach ($deliveries as $delivery) {
             $number = trim((string) $delivery->contact_number);
 
-            // Do not call PhilSMS when the recipient number is missing.
+            // Do not call UniSMS when the recipient number is missing.
             if ($number === '') {
                 $delivery->update([
                     'status' => 'Failed',
-                    'failure_reason' =>
-                        'No contact number is recorded for this household head.',
+                    'failure_reason' => 'No contact number is recorded for this household head.',
                     'sent_at' => null,
                 ]);
 
@@ -199,7 +198,11 @@ class AnnouncementController extends Controller
 
             $message = $this->buildSmsMessage($announcement);
 
-            $result = $smsService->send($number, $message);
+            $result = $smsService->send(
+                $number,
+                $message,
+                $delivery->id
+            );
 
             if (($result['success'] ?? false) === true) {
                 $delivery->update([
@@ -216,7 +219,7 @@ class AnnouncementController extends Controller
                     'failure_reason' => mb_substr(
                         (string) (
                             $result['message']
-                            ?? 'PhilSMS did not accept the SMS request.'
+                            ?? 'UniSMS did not accept the SMS request.'
                         ),
                         0,
                         5000
@@ -250,7 +253,16 @@ class AnnouncementController extends Controller
             'smsDeliveries.householdHead',
         ]);
 
-        return view('announcements.show', compact('announcement'));
+        // Read the existing UniSMS configuration without enabling SMS.
+        $smsEnabled = (bool) config('services.unisms.enabled', false);
+        $smsConfigured = filled(config('services.unisms.secret_key'))
+            && filled(config('services.unisms.sender_id'));
+
+        return view('announcements.show', compact(
+            'announcement',
+            'smsEnabled',
+            'smsConfigured'
+        ));
     }
 
     public function markAsRead(AnnouncementRecipient $recipient)
@@ -275,8 +287,8 @@ class AnnouncementController extends Controller
         $body = trim((string) $announcement->message);
 
         return "BARANGAY ESPERANZA HEALTH CENTER\n"
-            . "[{$priority}] {$title}\n"
-            . $body;
+            ."[{$priority}] {$title}\n"
+            .$body;
     }
 
     private function validateAnnouncement(Request $request): array
@@ -389,7 +401,7 @@ class AnnouncementController extends Controller
 
     private function calculateAge(Resident $resident): int
     {
-        if (!$resident->birth_date) {
+        if (! $resident->birth_date) {
             return 0;
         }
 
@@ -407,7 +419,7 @@ class AnnouncementController extends Controller
 
             $householdHead = $members->firstWhere('is_household_head', true);
 
-            if (!$householdHead) {
+            if (! $householdHead) {
                 $householdHead = $household->residents?->firstWhere('is_household_head', true);
             }
 
@@ -445,7 +457,7 @@ class AnnouncementController extends Controller
             'updated_at' => now(),
         ])->values()->all();
 
-        if (!empty($rows)) {
+        if (! empty($rows)) {
             AnnouncementRecipient::insert($rows);
         }
     }
@@ -463,7 +475,7 @@ class AnnouncementController extends Controller
                 $householdHead = $household->residents
                     ->firstWhere('is_household_head', true);
 
-                if (!$householdHead) {
+                if (! $householdHead) {
                     return;
                 }
 

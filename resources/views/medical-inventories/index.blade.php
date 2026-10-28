@@ -398,7 +398,7 @@
                                     <td class="px-6 py-4">
                                         <div class="flex items-center gap-2">
                                             <a href="{{ route('medical-inventories.edit', $inventory) }}" class="inline-flex items-center rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 hover:bg-emerald-100">Edit</a>
-                                            <form action="{{ route('medical-inventories.destroy', $inventory) }}" method="POST" onsubmit="return confirm('Delete this item?');">
+                                            <form action="{{ route('medical-inventories.destroy', $inventory) }}" method="POST" data-confirm-title="Delete this inventory item?" data-confirm-item="{{ $inventory->medicine_name }}">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="inline-flex items-center rounded-lg bg-red-50 px-3 py-1.5 text-xs font-bold text-red-700 hover:bg-red-100">Delete</button>

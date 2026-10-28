@@ -866,10 +866,13 @@
                             </label>
 
                             <input
-                                type="text"
+                                type="tel"
                                 name="contact_number"
-                                value="{{ old('contact_number', $household->contact_number) }}"
-                                placeholder="09XXXXXXXXX"
+                                value="{{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay(old('contact_number', $household->contact_number)) ?: '+63' }}"
+                                inputmode="numeric"
+                                maxlength="24"
+                                placeholder="+6391 7123 4567"
+                                title="Only Globe and DITO SIM numbers are supported."
                                 class="clay-input mt-2 px-4 py-2.5 text-sm"
                             >
 
@@ -877,20 +880,67 @@
 
 
                         {{-- Address --}}
-                        <div class="md:col-span-2">
+                        <div class="space-y-5 md:col-span-2">
 
-                            <label class="clay-label block text-sm font-semibold">
-                                Address
-                                <span class="clay-required">*</span>
-                            </label>
+                            <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
 
-                            <textarea
-                                name="address"
-                                rows="3"
-                                required
-                                placeholder="Enter complete household address"
-                                class="clay-textarea mt-2 resize-none px-4 py-2.5 text-sm"
-                            >{{ old('address', $household->address) }}</textarea>
+                                <div>
+                                    <label
+                                        for="purok"
+                                        class="clay-label block text-sm font-semibold"
+                                    >
+                                        Purok
+                                    </label>
+
+                                    <select
+                                        id="purok"
+                                        name="purok"
+                                        class="clay-select mt-2 px-4 py-2.5 text-sm"
+                                        required
+                                        aria-describedby="{{ $errors->has('purok') ? 'purok-error' : '' }}"
+                                        aria-invalid="{{ $errors->has('purok') ? 'true' : 'false' }}"
+                                    >
+                                        <option value="">Select Purok</option>
+
+                                        @foreach ($puroks as $purok)
+                                            <option
+                                                value="{{ $purok }}"
+                                                @selected(old('purok', $addressParts['purok']) === $purok)
+                                            >
+                                                {{ $purok }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+
+                                    @error('purok')
+                                        <p id="purok-error" class="clay-field-error mt-1.5 text-xs font-medium">
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+                                </div>
+
+                                @foreach ($localityParts as $label => $value)
+                                    <div>
+                                        <label
+                                            for="household-locality-{{ strtolower($label) }}"
+                                            class="clay-label block text-sm font-semibold"
+                                        >
+                                            {{ $label }}
+                                        </label>
+
+                                        <input
+                                            id="household-locality-{{ strtolower($label) }}"
+                                            type="text"
+                                            value="{{ $value }}"
+                                            readonly
+                                            class="clay-input mt-2 px-4 py-2.5 text-sm"
+                                            aria-label="{{ $label }}: {{ $value }} (fixed locality)"
+                                        >
+                                    </div>
+                                @endforeach
+
+                                <input type="hidden" name="address" value="">
+                            </div>
 
                         </div>
 
@@ -1196,10 +1246,13 @@
                                 </label>
 
                                 <input
-                                    type="text"
+                                    type="tel"
                                     name="household_head[contact_number]"
-                                    value="{{ old('household_head.contact_number', $head?->contact_number) }}"
-                                    placeholder="09XXXXXXXXX"
+                                    value="{{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay(old('household_head.contact_number', $head?->contact_number)) ?: '+63' }}"
+                                    inputmode="numeric"
+                                    maxlength="24"
+                                    placeholder="+6391 7123 4567"
+                                    title="Only Globe and DITO SIM numbers are supported."
                                     class="clay-input mt-2 px-4 py-2.5 text-sm"
                                 >
 
@@ -1221,6 +1274,7 @@
                                 >
 
                             </div>
+
 
                         </div>
 
@@ -1483,7 +1537,7 @@
                                             <div>
 
                                                 <label class="clay-label block text-sm font-semibold">
-                                                    Relationship to Household Head
+                                                    Relationship
                                                     <span class="clay-required">*</span>
                                                 </label>
 
@@ -1652,10 +1706,13 @@
                                                 </label>
 
                                                 <input
-                                                    type="text"
+                                                    type="tel"
                                                     name="members[{{ $index }}][contact_number]"
-                                                    value="{{ old("members.$index.contact_number", $member->contact_number) }}"
-                                                    placeholder="09XXXXXXXXX"
+                                                    value="{{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay(old("members.$index.contact_number", $member->contact_number)) ?: '+63' }}"
+                                                    inputmode="numeric"
+                                                    maxlength="24"
+                                                    placeholder="+6391 7123 4567"
+                                                    title="Only Globe and DITO SIM numbers are supported."
                                                     class="clay-input mt-2 px-4 py-2.5 text-sm"
                                                 >
 
@@ -1678,6 +1735,72 @@
                                                 placeholder="name@example.com"
                                                 class="clay-input mt-2 px-4 py-2.5 text-sm"
                                             >
+
+                                        </div>
+
+                                        {{-- Family member address --}}
+                                        <p class="clay-label text-sm font-semibold">
+                                            Address
+                                        </p>
+                                        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+
+                                            <div>
+                                                <label
+                                                    for="member-{{ $index }}-purok"
+                                                    class="clay-label block text-sm font-semibold"
+                                                >
+                                                    Purok
+                                                    <span class="clay-required">*</span>
+                                                </label>
+
+                                                <select
+                                                    id="member-{{ $index }}-purok"
+                                                    name="members[{{ $index }}][purok]"
+                                                    required
+                                                    aria-invalid="{{ $errors->has("members.$index.purok") ? 'true' : 'false' }}"
+                                                    @if ($errors->has("members.$index.purok")) aria-describedby="member-{{ $index }}-purok-error" @endif
+                                                    class="clay-select mt-2 px-4 py-2.5 text-sm"
+                                                >
+                                                    <option value="">Select Purok</option>
+
+                                                    @foreach ($puroks as $purok)
+                                                        <option
+                                                            value="{{ $purok }}"
+                                                            @selected(old("members.$index.purok", $memberAddressParts[$index]['purok'] ?? null) === $purok)
+                                                        >
+                                                            {{ $purok }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+
+                                                @error("members.$index.purok")
+                                                    <p
+                                                        id="member-{{ $index }}-purok-error"
+                                                        class="clay-field-error mt-1.5 text-xs font-medium"
+                                                    >
+                                                        {{ $message }}
+                                                    </p>
+                                                @enderror
+                                            </div>
+
+                                            @foreach ($localityParts as $label => $value)
+                                                <div>
+                                                    <label
+                                                        for="member-{{ $index }}-locality-{{ strtolower($label) }}"
+                                                        class="clay-label block text-sm font-semibold"
+                                                    >
+                                                        {{ $label }}
+                                                    </label>
+                                                    <input
+                                                        id="member-{{ $index }}-locality-{{ strtolower($label) }}"
+                                                        type="text"
+                                                        value="{{ $value }}"
+                                                        readonly
+                                                        class="clay-input mt-2 px-4 py-2.5 text-sm"
+                                                        aria-label="{{ $label }}: {{ $value }} (fixed locality)"
+                                                    >
+                                                </div>
+                                            @endforeach
 
                                         </div>
 
@@ -1876,7 +1999,7 @@
                     <div>
 
                         <label class="clay-label block text-sm font-semibold">
-                            Relationship to Household Head
+                            Relationship
                             <span class="clay-required">*</span>
                         </label>
 
@@ -2012,9 +2135,13 @@
                         </label>
 
                         <input
-                            type="text"
+                            type="tel"
                             data-field="contact_number"
-                            placeholder="09XXXXXXXXX"
+                            value="+63"
+                            inputmode="numeric"
+                            maxlength="24"
+                            placeholder="+6391 7123 4567"
+                            title="Only Globe and DITO SIM numbers are supported."
                             class="clay-input mt-2 px-4 py-2.5 text-sm"
                         >
 
@@ -2153,6 +2280,19 @@
 
                     updateMemberNumbers();
 
+                }
+            );
+
+            container.addEventListener(
+                'remove-member-confirmed',
+                function (event) {
+                    const card = event.detail.button.closest('.member-card');
+
+                    if (card) {
+                        card.remove();
+                    }
+
+                    updateMemberNumbers();
                 }
             );
 

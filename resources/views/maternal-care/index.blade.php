@@ -1242,6 +1242,7 @@
                                                     data-form-id="delete-maternal-form-{{ $maternalCare->id }}"
                                                     data-resident-name="{{ $maternalCare->resident->full_name }}"
                                                     data-record-detail="{{ $maternalCare->pregnancy_number ? 'Pregnancy #' . $maternalCare->pregnancy_number . ' · ' : '' }}{{ $maternalCare->pregnancy_status }}"
+                                                    data-confirm-title="Delete this maternal care record?"
                                                     aria-label="Delete maternal record for {{ $maternalCare->resident->full_name }}"
                                                 >
                                                     Delete
@@ -1471,6 +1472,7 @@
                                     data-form-id="delete-maternal-mobile-form-{{ $maternalCare->id }}"
                                     data-resident-name="{{ $maternalCare->resident->full_name }}"
                                     data-record-detail="{{ $maternalCare->pregnancy_number ? 'Pregnancy #' . $maternalCare->pregnancy_number . ' · ' : '' }}{{ $maternalCare->pregnancy_status }}"
+                                    data-confirm-title="Delete this maternal care record?"
                                     aria-label="Delete maternal record for {{ $maternalCare->resident->full_name }}"
                                 >
                                     Delete
@@ -1874,4 +1876,3 @@
 
 </body>
 </html>
-

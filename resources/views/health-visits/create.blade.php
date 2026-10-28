@@ -509,15 +509,7 @@
 
                             </div>
 
-                            <div
-                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#EDF5F0] text-sm font-bold text-[#168B70]"
-                                style="
-                                    box-shadow:
-                                        4px 4px 9px rgba(107,134,124,.18),
-                                        -3px -3px 7px rgba(255,255,255,.94);
-                                "
-                                aria-hidden="true"
-                            >
+                           <div class="clay-profile-avatar flex h-10 w-10 items-center justify-center rounded-xl text-sm font-bold">
                                 {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                             </div>
 

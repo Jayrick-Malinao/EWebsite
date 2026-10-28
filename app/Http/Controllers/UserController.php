@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Rules\PersonName;
 use App\Services\AuditLogService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,6 +17,12 @@ class UserController extends Controller
      */
     public function index(Request $request): View
     {
+        $request->validate([
+            'search' => ['nullable', 'string', 'max:255'],
+            'role' => ['nullable', Rule::in(['Health Worker', 'Official'])],
+            'status' => ['nullable', Rule::in(['active', 'inactive'])],
+        ]);
+
         /*
          * Main staff accounts query.
          *
@@ -130,8 +137,14 @@ class UserController extends Controller
             'email' => strtolower(
                 trim($request->input('email', ''))
             ),
-            'name' => trim(
-                $request->input('name', '')
+            'first_name' => trim(
+                (string) $request->input('first_name', '')
+            ),
+            'middle_name' => trim(
+                (string) $request->input('middle_name', '')
+            ),
+            'last_name' => trim(
+                (string) $request->input('last_name', '')
             ),
         ]);
 
@@ -139,10 +152,25 @@ class UserController extends Controller
          * Validate the new staff account.
          */
         $validated = $request->validate([
-            'name' => [
+            'first_name' => [
                 'required',
                 'string',
                 'max:255',
+                new PersonName,
+            ],
+
+            'middle_name' => [
+                'nullable',
+                'string',
+                'max:255',
+                new PersonName,
+            ],
+
+            'last_name' => [
+                'required',
+                'string',
+                'max:255',
+                new PersonName,
             ],
 
             'email' => [
@@ -169,6 +197,12 @@ class UserController extends Controller
             ],
         ]);
 
+        $fullName = User::makeFullName([
+            'first_name' => $validated['first_name'],
+            'middle_name' => $validated['middle_name'] ?? null,
+            'last_name' => $validated['last_name'],
+        ]);
+
         /*
          * Create the staff account.
          *
@@ -176,7 +210,7 @@ class UserController extends Controller
          * password through its password cast.
          */
         $user = User::create([
-            'name' => $validated['name'],
+            'name' => $fullName,
             'email' => $validated['email'],
             'password' => $validated['password'],
             'role' => $validated['role'],
@@ -189,10 +223,9 @@ class UserController extends Controller
         AuditLogService::created(
             module: 'Users',
             model: $user,
-            description:
-                'Staff account created: '
-                . $user->name
-                . ' (' . $user->role . ').',
+            description: 'Staff account created: '
+                .$user->name
+                .' ('.$user->role.').',
         );
 
         /*
@@ -215,6 +248,7 @@ class UserController extends Controller
 
         return view('users.edit', [
             'user' => $user,
+            'nameParts' => User::splitFullName($user->name),
         ]);
     }
 
@@ -234,16 +268,37 @@ class UserController extends Controller
             'email' => strtolower(
                 trim($request->input('email', ''))
             ),
-            'name' => trim(
-                $request->input('name', '')
+            'first_name' => trim(
+                (string) $request->input('first_name', '')
+            ),
+            'middle_name' => trim(
+                (string) $request->input('middle_name', '')
+            ),
+            'last_name' => trim(
+                (string) $request->input('last_name', '')
             ),
         ]);
 
         $validated = $request->validate([
-            'name' => [
+            'first_name' => [
                 'required',
                 'string',
                 'max:255',
+                new PersonName,
+            ],
+
+            'middle_name' => [
+                'nullable',
+                'string',
+                'max:255',
+                new PersonName,
+            ],
+
+            'last_name' => [
+                'required',
+                'string',
+                'max:255',
+                new PersonName,
             ],
 
             'email' => [
@@ -271,6 +326,12 @@ class UserController extends Controller
             ],
         ]);
 
+        $fullName = User::makeFullName([
+            'first_name' => $validated['first_name'],
+            'middle_name' => $validated['middle_name'] ?? null,
+            'last_name' => $validated['last_name'],
+        ]);
+
         /*
          * Capture the old values for audit logging.
          */
@@ -284,7 +345,7 @@ class UserController extends Controller
         /*
          * Update account information.
          */
-        $user->name = $validated['name'];
+        $user->name = $fullName;
         $user->email = $validated['email'];
         $user->role = $validated['role'];
 
@@ -318,10 +379,9 @@ class UserController extends Controller
                 model: $user,
                 oldValues: $oldValues,
                 newValues: $newValues,
-                description:
-                    'Staff account updated: '
-                    . $user->name
-                    . '.',
+                description: 'Staff account updated: '
+                    .$user->name
+                    .'.',
             );
         }
 
@@ -357,12 +417,11 @@ class UserController extends Controller
             newValues: [
                 'status' => $user->status,
             ],
-            description:
-                'Staff account '
-                . $user->status
-                . ': '
-                . $user->name
-                . '.',
+            description: 'Staff account '
+                .$user->status
+                .': '
+                .$user->name
+                .'.',
         );
 
         $message = $user->status === 'active'
@@ -420,14 +479,13 @@ class UserController extends Controller
         AuditLogService::deleted(
             module: 'Users',
             model: $user,
-            description:
-                'Staff account deleted: '
-                . $user->name
-                . ' ('
-                . $user->role
-                . ', '
-                . $user->email
-                . ').',
+            description: 'Staff account deleted: '
+                .$user->name
+                .' ('
+                .$user->role
+                .', '
+                .$user->email
+                .').',
         );
 
         /*
@@ -440,8 +498,8 @@ class UserController extends Controller
             ->with(
                 'success',
                 'Staff account for '
-                . $userName
-                . ' was permanently deleted.'
+                .$userName
+                .' was permanently deleted.'
             );
     }
 
@@ -464,4 +522,3 @@ class UserController extends Controller
         );
     }
 }
-

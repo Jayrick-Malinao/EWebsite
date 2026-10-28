@@ -52,14 +52,14 @@
         x-data="{ notificationOpen: false }"
         @click.outside="notificationOpen = false"
         @keydown.escape.window="notificationOpen = false"
-        class="relative"
+        class="notification-bell relative"
     >
         <button
             type="button"
             @click="notificationOpen = !notificationOpen"
             :aria-expanded="notificationOpen.toString()"
             aria-label="Notifications"
-            class="relative flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-[#0F4C3A] focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+            class="notification-bell-trigger relative flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-[#0F4C3A] focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
         >
             <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 1-5.714 0M18 8A6 6 0 0 0 6 8c0 7-3 7-3 9h18c0-2-3-2-3-9" />
@@ -67,7 +67,7 @@
             </svg>
 
             @if ($unreadNotificationCount > 0)
-                <span class="absolute -right-1 -top-1 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#E87928] px-1 text-[9px] font-bold leading-none text-white ring-2 ring-white">
+                <span class="notification-bell-count absolute -right-1 -top-1 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#E87928] px-1 text-[9px] font-bold leading-none text-white ring-2 ring-white">
                     {{ $unreadNotificationCount > 99 ? '99+' : $unreadNotificationCount }}
                 </span>
             @endif
@@ -77,7 +77,7 @@
             x-cloak
             x-show="notificationOpen"
             x-transition
-            class="absolute right-0 top-12 z-[100] w-[min(92vw,400px)] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
+            class="notification-bell-panel absolute right-0 top-12 z-[100] w-[min(92vw,400px)] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
             style="display: none;"
         >
             <div class="flex items-center justify-between border-b border-slate-100 bg-[#F5FAF7] px-4 py-4">

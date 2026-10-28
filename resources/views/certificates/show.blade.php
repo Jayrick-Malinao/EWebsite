@@ -386,7 +386,7 @@
 
                     <div class="clay-inset rounded-xl p-3">
                         <p class="text-[10px] font-bold uppercase tracking-wider text-[#6D817A]">Contact Number</p>
-                        <p class="mt-1 text-xs font-bold text-[#234E43]">{{ $certificate->resident->contact_number ?? 'Not provided' }}</p>
+                        <p class="mt-1 text-xs font-bold text-[#234E43]">{{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay($certificate->resident->contact_number) ?? 'Not provided' }}</p>
                     </div>
 
                     <div class="clay-inset rounded-xl p-3 sm:col-span-2">
@@ -427,10 +427,10 @@
 
                 <div class="flex flex-col gap-2 sm:flex-row">
                     @if ($certificate->status === 'Issued')
-                        <form action="{{ route('certificates.destroy', $certificate) }}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this certificate?');">
+                        <form action="{{ route('certificates.destroy', $certificate) }}" method="POST" data-confirm-title="Cancel this certificate?" data-confirm-message="The certificate will be canceled and its status updated." data-confirm-item="{{ $certificate->certificate_number }}">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="clay-secondary inline-flex min-h-[44px] w-full sm:w-auto items-center justify-center gap-2 rounded-xl border-red-200 !text-[#B42323] px-5 py-2.5 text-sm font-bold">
+                            <button type="submit" class="clay-secondary inline-flex min-h-[44px] w-full sm:w-auto items-center justify-center gap-2 rounded-xl border-red-200 !text-[#B42323] px-5 py-2.5 text-sm font-bold" data-confirm-button="Cancel certificate">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                                 </svg>

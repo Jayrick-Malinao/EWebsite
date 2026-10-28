@@ -241,7 +241,7 @@
                         <p class="text-xs text-[#6D817A]">Permanently remove this child health monitoring record.</p>
                     </div>
 
-                    <form method="POST" action="{{ route('child-health.destroy', $childHealth) }}" onsubmit="return confirm('Are you sure you want to delete this record?');">
+                    <form method="POST" action="{{ route('child-health.destroy', $childHealth) }}" data-confirm-title="Delete this child health record?" data-confirm-item="{{ $childHealth->resident?->full_name ?? 'Child health record' }}">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="clay-delete-btn min-h-[44px] px-5 py-2.5 rounded-xl text-xs font-bold">

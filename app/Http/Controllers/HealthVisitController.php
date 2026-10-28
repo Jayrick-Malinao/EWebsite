@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\HealthVisit;
 use App\Models\Resident;
+use App\Rules\PersonName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -15,6 +16,10 @@ class HealthVisitController extends Controller
      */
     public function index(Request $request): View
     {
+        $request->validate([
+            'search' => ['nullable', 'string', 'max:255'],
+        ]);
+
         $search = $request->string('search')->trim()->toString();
 
         $healthVisits = HealthVisit::query()
@@ -69,8 +74,7 @@ class HealthVisitController extends Controller
             ],
             'visit_type' => [
                 'nullable',
-                'string',
-                'max:255',
+                'in:General Consultation,Follow-up,Prenatal,Postnatal,Child Health,Senior Citizen,Immunization,Other',
             ],
             'chief_complaint' => [
                 'nullable',
@@ -96,6 +100,7 @@ class HealthVisitController extends Controller
                 'nullable',
                 'string',
                 'max:255',
+                new PersonName,
             ],
         ]);
 
@@ -154,8 +159,7 @@ class HealthVisitController extends Controller
             ],
             'visit_type' => [
                 'nullable',
-                'string',
-                'max:255',
+                'in:General Consultation,Follow-up,Prenatal,Postnatal,Child Health,Senior Citizen,Immunization,Other',
             ],
             'chief_complaint' => [
                 'nullable',
@@ -181,6 +185,7 @@ class HealthVisitController extends Controller
                 'nullable',
                 'string',
                 'max:255',
+                new PersonName,
             ],
         ]);
 

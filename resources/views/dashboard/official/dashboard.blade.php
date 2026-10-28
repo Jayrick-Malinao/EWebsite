@@ -15,10 +15,10 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="min-h-screen bg-[#F7FAF8] text-slate-800">
+<body class="clay-dashboard min-h-screen bg-[#EEF5F1] text-[#164238]">
 
     {{-- Sidebar --}}
-    @include('dashboard.official.sidebar')
+    @include('dashboard.sidebar')
 
     {{-- Mobile Overlay --}}
     <div
@@ -29,88 +29,72 @@
     {{-- Main Content --}}
     <div class="min-h-screen lg:pl-72">
 
-        {{-- Mobile Header --}}
-        <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur lg:hidden">
-            <div class="flex h-16 items-center justify-between px-4">
-
-                <button
-                    id="sidebarOpen"
-                    type="button"
-                    class="inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100"
-                    aria-label="Open navigation"
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-6 w-6"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        stroke-width="2"
-                    >
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
-                    </svg>
-                </button>
-
-                <div class="text-center">
-                    <p class="text-sm font-bold text-slate-900">
-                        Barangay Esperanza
-                    </p>
-                    <p class="text-[11px] text-slate-500">
-                        Health Center
-                    </p>
-                </div>
-
-                <div class="h-10 w-10"></div>
-            </div>
-        </header>
-
-        <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+        <main class="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-7 lg:py-6">
 
             {{-- Page Header --}}
-            <div class="mb-8 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
-                <div>
-                    <div class="mb-2 flex items-center gap-2">
-                        <span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                <div class="flex min-w-0 items-center gap-3">
+
+                    <button
+                        id="sidebarOpen"
+                        type="button"
+                        class="dashboard-menu-button inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#dce9e2] bg-[#f9fcfa] text-[#0f6f5a] shadow-sm transition hover:border-[#b8d8ca] hover:bg-[#eaf5ef] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#168b70] lg:hidden"
+                        aria-label="Open navigation"
+                    >
+                        <svg
+                            class="h-5 w-5"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            aria-hidden="true"
+                        >
+                            <path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+
+                    <div class="min-w-0">
+                        <p class="text-xs font-medium uppercase tracking-wide text-[#168B70]">
                             Barangay Official
-                        </span>
+                        </p>
 
-                        <span class="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600">
-                            <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                        <h1 class="mt-1 text-xl font-bold tracking-tight text-[#164238] sm:text-2xl">
+                            Welcome back, {{ auth()->user()->name }}
+                        </h1>
+
+                        <p class="mt-1 text-xs text-[#6D817A] sm:text-sm">
+                            Monitor barangay residents, households, schedules, and health center activities.
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="flex items-center gap-2 sm:gap-3">
+
+                    @include('partials.notification-bell')
+
+                    <div class="hidden rounded-xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm sm:block">
+                        <p class="text-[10px] font-medium uppercase tracking-wide text-[#9AA9A4]">
+                            Today
+                        </p>
+                        <p class="mt-0.5 text-sm font-semibold text-[#164238]">
+                            {{ now()->format('M d, Y') }}
+                        </p>
+                    </div>
+
+                    <div class="flex items-center gap-2 rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2.5">
+                        <span class="relative flex h-2.5 w-2.5">
+                            <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-50"></span>
+                            <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+                        </span>
+                        <span class="text-xs font-semibold text-[#0F6F5A]">
                             System Online
                         </span>
                     </div>
 
-                    <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-                        Community Dashboard
-                    </h1>
-
-                    <p class="mt-1 text-sm text-slate-500 sm:text-base">
-                        Monitor barangay residents, households, schedules, and health center activities.
-                    </p>
                 </div>
 
-                <div class="flex items-center gap-3">
-
-                    {{-- Notification Bell --}}
-                    @if (view()->exists('partials.notification-bell'))
-                        @include('partials.notification-bell')
-                    @endif
-
-                    <div class="hidden text-right sm:block">
-                        <p class="text-sm font-semibold text-slate-900">
-                            {{ auth()->user()->name ?? 'Barangay Official' }}
-                        </p>
-
-                        <p class="text-xs text-slate-500">
-                            {{ now()->format('F d, Y') }}
-                        </p>
-                    </div>
-
-                    <div class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-700">
-                        {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
-                    </div>
-                </div>
             </div>
 
             {{-- Summary Cards --}}
@@ -516,6 +500,5 @@
     </script>
 
 </body>
-@include('partials.database-assistant')
 
 </html>

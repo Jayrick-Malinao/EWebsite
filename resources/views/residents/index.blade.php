@@ -1071,7 +1071,7 @@
 
                                             {{-- Contact --}}
                                             <td class="clay-table-value whitespace-nowrap px-5 py-4 text-sm">
-                                                {{ $resident->contact_number ?: '—' }}
+                                                {{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay($resident->contact_number) ?: '—' }}
                                             </td>
 
                                             {{-- Status --}}
@@ -1123,7 +1123,8 @@
                                                         method="POST"
                                                         action="{{ route('residents.destroy', $resident) }}"
                                                         class="inline"
-                                                        onsubmit="return confirm('Are you sure you want to delete {{ $resident->full_name }}? This action cannot be undone.');"
+                                                        data-confirm-title="Delete this resident record?"
+                                                        data-confirm-item="{{ $resident->full_name }}"
                                                     >
                                                         @csrf
                                                         @method('DELETE')
@@ -1206,7 +1207,7 @@
                                             </span>
 
                                             <span class="text-slate-500">
-                                                {{ $resident->contact_number ?: 'Not provided' }}
+                                                {{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay($resident->contact_number) ?: 'Not provided' }}
                                             </span>
                                         </div>
 

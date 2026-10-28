@@ -406,34 +406,79 @@
                         <div class="md:col-span-2">
 
                             <label
-                                for="name"
                                 class="mb-2 block text-sm font-semibold text-[#164238]"
                             >
                                 Full Name
                                 <span class="text-[#DC2626]">*</span>
                             </label>
 
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                <div>
+                                    <label for="first_name" class="mb-2 block text-xs font-semibold uppercase tracking-wide text-[#6D817A]">
+                                        First Name
+                                    </label>
+                                    <input
+                                        id="first_name"
+                                        type="text"
+                                        name="first_name"
+                                        value="{{ old('first_name') }}"
+                                        placeholder="First name"
+                                        required
+                                        autofocus
+                                        autocomplete="given-name"
+                                        style="text-transform: capitalize;"
+                                        class="clay-input w-full rounded-xl px-4 py-3 text-sm text-[#164238] outline-none transition placeholder:text-[#9AA9A4] @error('first_name') border-[#DC2626] @enderror"
+                                    >
+                                    @error('first_name')
+                                        <p class="mt-1.5 text-xs text-[#DC2626]">
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+                                </div>
 
-                            <input
-                                id="name"
-                                type="text"
-                                name="name"
-                                value="{{ old('name') }}"
-                                placeholder="Enter full name"
-                                required
-                                autofocus
-                                autocomplete="name"
-                                class="clay-input w-full rounded-xl px-4 py-3 text-sm text-[#164238] outline-none transition placeholder:text-[#9AA9A4] @error('name') border-[#DC2626] @enderror"
-                            >
+                                <div>
+                                    <label for="middle_name" class="mb-2 block text-xs font-semibold uppercase tracking-wide text-[#6D817A]">
+                                        Middle Name
+                                    </label>
+                                    <input
+                                        id="middle_name"
+                                        type="text"
+                                        name="middle_name"
+                                        value="{{ old('middle_name') }}"
+                                        placeholder="Middle name"
+                                        autocomplete="additional-name"
+                                        style="text-transform: capitalize;"
+                                        class="clay-input w-full rounded-xl px-4 py-3 text-sm text-[#164238] outline-none transition placeholder:text-[#9AA9A4] @error('middle_name') border-[#DC2626] @enderror"
+                                    >
+                                    @error('middle_name')
+                                        <p class="mt-1.5 text-xs text-[#DC2626]">
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+                                </div>
 
-
-                            @error('name')
-
-                                <p class="mt-1.5 text-xs text-[#DC2626]">
-                                    {{ $message }}
-                                </p>
-
-                            @enderror
+                                <div>
+                                    <label for="last_name" class="mb-2 block text-xs font-semibold uppercase tracking-wide text-[#6D817A]">
+                                        Last Name
+                                    </label>
+                                    <input
+                                        id="last_name"
+                                        type="text"
+                                        name="last_name"
+                                        value="{{ old('last_name') }}"
+                                        placeholder="Last name"
+                                        required
+                                        autocomplete="family-name"
+                                        style="text-transform: capitalize;"
+                                        class="clay-input w-full rounded-xl px-4 py-3 text-sm text-[#164238] outline-none transition placeholder:text-[#9AA9A4] @error('last_name') border-[#DC2626] @enderror"
+                                    >
+                                    @error('last_name')
+                                        <p class="mt-1.5 text-xs text-[#DC2626]">
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+                                </div>
+                            </div>
 
                         </div>
 

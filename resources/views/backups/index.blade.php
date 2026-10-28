@@ -571,7 +571,9 @@
                                                 <form
                                                     method="POST"
                                                     action="{{ route('backups.destroy', ['filename' => $backup['filename']]) }}"
-                                                    onsubmit="return confirm('Delete this backup permanently? This action cannot be undone.');"
+                                                    data-confirm-title="Delete this backup?"
+                                                    data-confirm-message="This backup file will be permanently removed and cannot be restored."
+                                                    data-confirm-item="{{ $backup['filename'] }}"
                                                 >
                                                     @csrf
                                                     @method('DELETE')
@@ -651,7 +653,9 @@
                                         method="POST"
                                         action="{{ route('backups.destroy', ['filename' => $backup['filename']]) }}"
                                         class="flex-1"
-                                        onsubmit="return confirm('Delete this backup permanently? This action cannot be undone.');"
+                                        data-confirm-title="Delete this backup?"
+                                        data-confirm-message="This backup file will be permanently removed and cannot be restored."
+                                        data-confirm-item="{{ $backup['filename'] }}"
                                     >
                                         @csrf
                                         @method('DELETE')

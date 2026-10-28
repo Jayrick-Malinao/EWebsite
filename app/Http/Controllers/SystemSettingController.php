@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Rules\PhilippineMobileNumber;
 use App\Services\AuditLogService;
 use App\Services\SystemSettingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class SystemSettingController extends Controller
@@ -62,7 +64,8 @@ class SystemSettingController extends Controller
             'contact_number' => [
                 'nullable',
                 'string',
-                'max:50',
+                'max:13',
+                new PhilippineMobileNumber,
             ],
 
             'email' => [
@@ -79,14 +82,12 @@ class SystemSettingController extends Controller
 
             'locale' => [
                 'required',
-                'string',
-                'max:10',
+                Rule::in(['en', 'fil']),
             ],
 
             'date_format' => [
                 'required',
-                'string',
-                'max:50',
+                Rule::in(['F d, Y', 'M d, Y', 'Y-m-d', 'm/d/Y', 'd/m/Y']),
             ],
 
             'records_per_page' => [
@@ -209,10 +210,9 @@ class SystemSettingController extends Controller
             AuditLogService::log(
                 action: 'updated',
                 module: 'System Settings',
-                description:
-                    'System settings updated: '
-                    . implode(', ', $changes)
-                    . '.',
+                description: 'System settings updated: '
+                    .implode(', ', $changes)
+                    .'.',
             );
         }
 
@@ -224,4 +224,3 @@ class SystemSettingController extends Controller
             );
     }
 }
-

@@ -1389,11 +1389,10 @@
 
                         </div>
 
-                        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-sm font-bold text-emerald-700">
+                        <div class="clay-profile-avatar flex h-10 w-10 items-center justify-center rounded-xl text-sm font-bold">
+                                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                            </div>
 
-                            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-
-                        </div>
 
                     </div>
 

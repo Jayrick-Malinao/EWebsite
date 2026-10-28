@@ -671,30 +671,81 @@
                             {{-- Name --}}
                             <div>
                                 <label
-                                    for="name"
                                     class="mb-2 block text-sm font-semibold text-[#385C52]"
                                 >
                                     Full Name
                                     <span class="text-red-500">*</span>
                                 </label>
 
-                                <input
-                                    type="text"
-                                    id="name"
-                                    name="name"
-                                    value="{{ old('name', $user->name) }}"
-                                    required
-                                    maxlength="255"
-                                    autocomplete="name"
-                                    placeholder="Enter full name"
-                                    class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-[#164238] outline-none transition placeholder:text-slate-400 focus:border-[#168B70] focus:ring-2 focus:ring-[#168B70]/20 @error('name') border-red-400 @enderror"
-                                >
+                                <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                    <div>
+                                        <label for="first_name" class="mb-2 block text-xs font-semibold uppercase tracking-wide text-[#6D817A]">
+                                            First Name
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="first_name"
+                                            name="first_name"
+                                            value="{{ old('first_name', $nameParts['first_name'] ?? '') }}"
+                                            required
+                                            maxlength="255"
+                                            autocomplete="given-name"
+                                            placeholder="First name"
+                                            style="text-transform: capitalize;"
+                                            class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-[#164238] outline-none transition placeholder:text-slate-400 focus:border-[#168B70] focus:ring-2 focus:ring-[#168B70]/20 @error('first_name') border-red-400 @enderror"
+                                        >
+                                        @error('first_name')
+                                            <p class="mt-2 text-sm text-red-600">
+                                                {{ $message }}
+                                            </p>
+                                        @enderror
+                                    </div>
 
-                                @error('name')
-                                    <p class="mt-2 text-sm text-red-600">
-                                        {{ $message }}
-                                    </p>
-                                @enderror
+                                    <div>
+                                        <label for="middle_name" class="mb-2 block text-xs font-semibold uppercase tracking-wide text-[#6D817A]">
+                                            Middle Name
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="middle_name"
+                                            name="middle_name"
+                                            value="{{ old('middle_name', $nameParts['middle_name'] ?? '') }}"
+                                            maxlength="255"
+                                            autocomplete="additional-name"
+                                            placeholder="Middle name"
+                                            style="text-transform: capitalize;"
+                                            class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-[#164238] outline-none transition placeholder:text-slate-400 focus:border-[#168B70] focus:ring-2 focus:ring-[#168B70]/20 @error('middle_name') border-red-400 @enderror"
+                                        >
+                                        @error('middle_name')
+                                            <p class="mt-2 text-sm text-red-600">
+                                                {{ $message }}
+                                            </p>
+                                        @enderror
+                                    </div>
+
+                                    <div>
+                                        <label for="last_name" class="mb-2 block text-xs font-semibold uppercase tracking-wide text-[#6D817A]">
+                                            Last Name
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="last_name"
+                                            name="last_name"
+                                            value="{{ old('last_name', $nameParts['last_name'] ?? '') }}"
+                                            required
+                                            maxlength="255"
+                                            autocomplete="family-name"
+                                            placeholder="Last name"
+                                            style="text-transform: capitalize;"
+                                            class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-[#164238] outline-none transition placeholder:text-slate-400 focus:border-[#168B70] focus:ring-2 focus:ring-[#168B70]/20 @error('last_name') border-red-400 @enderror"
+                                        >
+                                        @error('last_name')
+                                            <p class="mt-2 text-sm text-red-600">
+                                                {{ $message }}
+                                            </p>
+                                        @enderror
+                                    </div>
+                                </div>
                             </div>
 
                             {{-- Email --}}

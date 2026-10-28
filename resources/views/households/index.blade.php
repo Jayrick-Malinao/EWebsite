@@ -804,7 +804,7 @@
     {{-- =========================================================
          ADMIN SIDEBAR
     ========================================================== --}}
-    @include('dashboard.admin.sidebar')
+    @include('dashboard.sidebar')
 
     {{-- =========================================================
          MAIN CONTENT
@@ -877,11 +877,10 @@
 
                         </div>
 
-                        <div
-                            class="flex h-10 w-10 items-center justify-center rounded-xl border border-white/80 bg-gradient-to-br from-[#E6F4EE] to-[#D7EAE1] text-sm font-bold text-[#0F6F5A] shadow-[4px_4px_9px_rgba(107,134,124,0.12),-4px_-4px_9px_rgba(255,255,255,0.88)]"
-                        >
-                            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                        </div>
+                       <div class="clay-profile-avatar flex h-10 w-10 items-center justify-center rounded-xl text-sm font-bold">
+                                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                            </div>
+
 
                     </div>
 
@@ -1244,7 +1243,7 @@
                                     <td class="px-6 py-4">
 
                                         <p class="text-sm font-medium text-[#6D817A]">
-                                            {{ $household->contact_number ?: '—' }}
+                                            {{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay($household->contact_number) ?: '—' }}
                                         </p>
 
                                     </td>
@@ -1311,6 +1310,7 @@
                                                     data-form-id="delete-household-form-{{ $household->id }}"
                                                     data-household-code="{{ $household->household_code }}"
                                                     data-household-head="{{ $household->household_head_name }}"
+                                                    data-confirm-title="Delete this household?"
                                                 >
                                                     Delete
                                                 </button>
@@ -1519,7 +1519,7 @@
                                 </p>
 
                                 <p class="mt-1 text-sm font-medium text-[#6D817A]">
-                                    {{ $household->contact_number ?: '—' }}
+                                    {{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay($household->contact_number) ?: '—' }}
                                 </p>
 
                             </div>
@@ -1559,6 +1559,7 @@
                                     data-form-id="delete-household-mobile-form-{{ $household->id }}"
                                     data-household-code="{{ $household->household_code }}"
                                     data-household-head="{{ $household->household_head_name }}"
+                                    data-confirm-title="Delete this household?"
                                 >
                                     Delete
                                 </button>

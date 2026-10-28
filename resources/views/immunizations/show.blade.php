@@ -552,7 +552,7 @@
                                 @if ($immunization->resident->contact_number)
 
                                     <span>
-                                        {{ $immunization->resident->contact_number }}
+                                        {{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay($immunization->resident->contact_number) }}
                                     </span>
 
                                 @endif

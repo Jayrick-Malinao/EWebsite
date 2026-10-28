@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\HealthRecord;
 use App\Models\Resident;
+use App\Rules\PersonName;
+use App\Rules\PhilippineMobileNumber;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -16,6 +18,10 @@ class HealthRecordController extends Controller
      */
     public function index(Request $request): View
     {
+        $request->validate([
+            'search' => ['nullable', 'string', 'max:255'],
+        ]);
+
         $search = $request->string('search')->trim()->toString();
 
         $healthRecords = HealthRecord::query()
@@ -171,8 +177,7 @@ class HealthRecordController extends Controller
 
             'blood_type' => [
                 'nullable',
-                'string',
-                'max:20',
+                Rule::in(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']),
             ],
 
             'allergies' => [
@@ -215,12 +220,14 @@ class HealthRecordController extends Controller
                 'nullable',
                 'string',
                 'max:255',
+                new PersonName,
             ],
 
             'emergency_contact_number' => [
                 'nullable',
                 'string',
-                'max:30',
+                'max:13',
+                new PhilippineMobileNumber,
             ],
 
             'emergency_contact_relationship' => [

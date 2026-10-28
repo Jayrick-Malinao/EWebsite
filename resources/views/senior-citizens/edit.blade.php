@@ -15,12 +15,6 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
-        /* =========================================================
-           BARANGAY ESPERANZA HEALTH CENTER
-           GOVERNMENT-STYLE CLAYMORPHISM DESIGN SYSTEM
-           SENIOR CITIZEN MANAGEMENT
-        ========================================================= */
-
         :root {
             --primary: #168B70;
             --primary-dark: #0F6F5A;
@@ -56,9 +50,19 @@
             --radius-2xl: 28px;
         }
 
-        *, *::before, *::after { box-sizing: border-box; }
-        html { scroll-behavior: smooth; }
-        body { margin: 0; }
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+        }
 
         .clay-households,
         .clay-households *,
@@ -78,13 +82,17 @@
                 linear-gradient(135deg, #EEF5F1 0%, #F5FAF7 52%, #EDF5F0 100%);
         }
 
-        ::selection { color: #FFFFFF; background: var(--primary-dark); }
+        ::selection {
+            color: #FFFFFF;
+            background: var(--primary-dark);
+        }
 
-        /* ---------- Header ---------- */
         .clay-header {
             background: rgba(245, 250, 247, 0.94);
             border-bottom: 1px solid rgba(255, 255, 255, 0.92);
-            box-shadow: 0 5px 18px rgba(107, 134, 124, 0.08), 0 -1px 0 rgba(255, 255, 255, 0.94) inset;
+            box-shadow:
+                0 5px 18px rgba(107, 134, 124, 0.08),
+                0 -1px 0 rgba(255, 255, 255, 0.94) inset;
             backdrop-filter: blur(14px);
             -webkit-backdrop-filter: blur(14px);
         }
@@ -93,23 +101,43 @@
             background: linear-gradient(145deg, #F9FCFA, #EAF2EE);
             color: var(--primary-dark);
             border: 1px solid var(--border-white);
-            box-shadow: 4px 4px 9px rgba(107, 134, 124, 0.14), -4px -4px 9px rgba(255, 255, 255, 0.92);
+            box-shadow:
+                4px 4px 9px rgba(107, 134, 124, 0.14),
+                -4px -4px 9px rgba(255, 255, 255, 0.92);
             transition: transform 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
         }
-        .clay-mobile-button:hover { transform: translateY(-1px); color: var(--primary); }
+
+        .clay-mobile-button:hover {
+            transform: translateY(-1px);
+            color: var(--primary);
+        }
 
         .clay-avatar {
             background: linear-gradient(145deg, #E6F4EE, #D7EAE1);
             color: var(--primary-dark);
             border: 1px solid rgba(255, 255, 255, 0.84);
-            box-shadow: 4px 4px 9px rgba(107, 134, 124, 0.12), -4px -4px 9px rgba(255, 255, 255, 0.88);
+            box-shadow:
+                4px 4px 9px rgba(107, 134, 124, 0.12),
+                -4px -4px 9px rgba(255, 255, 255, 0.88);
         }
 
-        /* ---------- Heading ---------- */
-        .clay-category { color: var(--primary); letter-spacing: 0.08em; }
-        .clay-title { color: var(--text); }
-        .clay-description { color: var(--text-muted); }
-        .clay-heading-wrap { position: relative; }
+        .clay-category {
+            color: var(--primary);
+            letter-spacing: 0.08em;
+        }
+
+        .clay-title {
+            color: var(--text);
+        }
+
+        .clay-description {
+            color: var(--text-muted);
+        }
+
+        .clay-heading-wrap {
+            position: relative;
+        }
+
         .clay-heading-accent {
             position: absolute;
             left: -16px;
@@ -119,21 +147,27 @@
             min-height: 62px;
             border-radius: 999px;
             background: linear-gradient(180deg, var(--primary-light), var(--primary-dark));
-            box-shadow: 2px 2px 5px rgba(107, 134, 124, 0.16), -1px -1px 3px rgba(255, 255, 255, 0.82);
+            box-shadow:
+                2px 2px 5px rgba(107, 134, 124, 0.16),
+                -1px -1px 3px rgba(255, 255, 255, 0.82);
         }
 
-        /* ---------- Clay Surfaces ---------- */
         .clay-card {
             background: linear-gradient(145deg, #F8FCFA, #EAF2EE);
             border: 1px solid var(--border-white);
-            box-shadow: 8px 8px 18px var(--shadow-dark), -8px -8px 18px var(--shadow-light), inset 1px 1px 0 rgba(255, 255, 255, 0.84);
+            box-shadow:
+                8px 8px 18px var(--shadow-dark),
+                -8px -8px 18px var(--shadow-light),
+                inset 1px 1px 0 rgba(255, 255, 255, 0.84);
             border-radius: 24px;
         }
 
         .clay-inset {
             background: linear-gradient(145deg, #EDF5F0, #F8FCFA);
             border: 1px solid rgba(255, 255, 255, 0.86);
-            box-shadow: inset 3px 3px 7px rgba(107, 134, 124, 0.10), inset -3px -3px 7px rgba(255, 255, 255, 0.82);
+            box-shadow:
+                inset 3px 3px 7px rgba(107, 134, 124, 0.10),
+                inset -3px -3px 7px rgba(255, 255, 255, 0.82);
         }
 
         .clay-icon {
@@ -142,11 +176,17 @@
             justify-content: center;
             flex-shrink: 0;
             border: 1px solid rgba(255, 255, 255, 0.86);
-            box-shadow: 4px 4px 9px rgba(107, 134, 124, 0.12), -4px -4px 9px rgba(255, 255, 255, 0.88), inset 1px 1px 0 rgba(255, 255, 255, 0.42);
+            box-shadow:
+                4px 4px 9px rgba(107, 134, 124, 0.12),
+                -4px -4px 9px rgba(255, 255, 255, 0.88),
+                inset 1px 1px 0 rgba(255, 255, 255, 0.42);
         }
-        .clay-icon-green { background: linear-gradient(145deg, #E7F5EE, #D9ECE4); color: var(--primary-dark); }
 
-        /* ---------- Form Inputs ---------- */
+        .clay-icon-green {
+            background: linear-gradient(145deg, #E7F5EE, #D9ECE4);
+            color: var(--primary-dark);
+        }
+
         .clay-input {
             width: 100%;
             min-height: 46px;
@@ -156,42 +196,60 @@
             border-radius: var(--radius-md) !important;
             padding: 0.75rem 1rem;
             font-size: 0.875rem;
-            box-shadow: inset 3px 3px 7px rgba(107, 134, 124, 0.10), inset -3px -3px 7px rgba(255, 255, 255, 0.82) !important;
+            box-shadow:
+                inset 3px 3px 7px rgba(107, 134, 124, 0.10),
+                inset -3px -3px 7px rgba(255, 255, 255, 0.82) !important;
             transition: border-color 0.18s ease, box-shadow 0.18s ease;
         }
+
         .clay-input:focus {
             outline: none;
             border-color: rgba(22, 139, 112, 0.55) !important;
-            box-shadow: inset 3px 3px 7px rgba(107, 134, 124, 0.08), inset -3px -3px 7px rgba(255, 255, 255, 0.86), 0 0 0 3px rgba(22, 139, 112, 0.12) !important;
+            box-shadow:
+                inset 3px 3px 7px rgba(107, 134, 124, 0.08),
+                inset -3px -3px 7px rgba(255, 255, 255, 0.86),
+                0 0 0 3px rgba(22, 139, 112, 0.12) !important;
         }
 
-        /* ---------- Buttons ---------- */
         .clay-primary {
             background: linear-gradient(145deg, #168B70, #0F6F5A);
             color: #FFFFFF !important;
             border: 1px solid rgba(255, 255, 255, 0.20);
-            box-shadow: 5px 5px 12px rgba(15, 76, 58, 0.22), -4px -4px 10px rgba(255, 255, 255, 0.55);
+            box-shadow:
+                5px 5px 12px rgba(15, 76, 58, 0.22),
+                -4px -4px 10px rgba(255, 255, 255, 0.55);
             transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
         }
-        .clay-primary:hover { transform: translateY(-1px); filter: brightness(1.04); }
+
+        .clay-primary:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.04);
+        }
 
         .clay-secondary {
             background: linear-gradient(145deg, #F9FCFA, #EAF2EE);
             color: var(--primary-dark) !important;
             border: 1px solid var(--border-white);
-            box-shadow: 4px 4px 9px rgba(107, 134, 124, 0.14), -4px -4px 9px rgba(255, 255, 255, 0.94);
+            box-shadow:
+                4px 4px 9px rgba(107, 134, 124, 0.14),
+                -4px -4px 9px rgba(255, 255, 255, 0.94);
             transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
         }
-        .clay-secondary:hover { transform: translateY(-1px); background: linear-gradient(145deg, #FFFFFF, #EEF6F2); }
+
+        .clay-secondary:hover {
+            transform: translateY(-1px);
+            background: linear-gradient(145deg, #FFFFFF, #EEF6F2);
+        }
 
         .clay-danger {
             background: linear-gradient(145deg, #FCF1DF, #FCEFED);
             border: 1px solid rgba(180, 35, 35, 0.14);
             color: var(--danger);
-            box-shadow: 5px 5px 12px rgba(107, 134, 124, 0.11), -5px -5px 12px rgba(255, 255, 255, 0.88);
+            box-shadow:
+                5px 5px 12px rgba(107, 134, 124, 0.11),
+                -5px -5px 12px rgba(255, 255, 255, 0.88);
         }
 
-        /* ---------- Accessibility ---------- */
         .clay-households a:focus-visible,
         .clay-households button:focus-visible,
         .clay-households input:focus-visible,
@@ -202,8 +260,27 @@
         }
 
         @media (max-width: 1023px) {
-            .clay-heading-accent { display: none; }
-            main { padding-left: 0; }
+            .clay-heading-accent {
+                display: none;
+            }
+
+            main {
+                padding-left: 0;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html {
+                scroll-behavior: auto;
+            }
+
+            *,
+            *::before,
+            *::after {
+                transition-duration: 0.01ms !important;
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+            }
         }
     </style>
 </head>
@@ -223,11 +300,10 @@
     {{-- Main Content --}}
     <main class="min-h-screen lg:pl-72">
 
-        {{-- TOP HEADER --}}
+        {{-- Top Header --}}
         <header class="clay-header sticky top-0 z-30">
             <div class="flex h-20 items-center justify-between px-4 sm:px-6 lg:px-8">
 
-                {{-- Left --}}
                 <div class="flex min-w-0 items-center gap-4">
                     <button
                         type="button"
@@ -253,7 +329,6 @@
                     </div>
                 </div>
 
-                {{-- Right --}}
                 <div class="flex shrink-0 items-center gap-3">
                     @include('partials.notification-bell')
 
@@ -277,15 +352,17 @@
             </div>
         </header>
 
-        {{-- PAGE CONTENT --}}
+        {{-- Page Content --}}
         <div class="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
 
-            {{-- PAGE HEADING --}}
+            {{-- Page Heading --}}
             <div class="mb-7 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
                 <div class="clay-heading-wrap min-w-0 lg:ml-4">
                     <span class="clay-heading-accent" aria-hidden="true"></span>
 
-                    <p class="clay-category mb-1 text-xs font-bold uppercase tracking-wider">Senior Citizen Record</p>
+                    <p class="clay-category mb-1 text-xs font-bold uppercase tracking-wider">
+                        Senior Citizen Record
+                    </p>
 
                     <h2 class="clay-title mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
                         Edit {{ $seniorCitizen->resident->full_name }}
@@ -309,7 +386,7 @@
                 </div>
             </div>
 
-            {{-- VALIDATION ERRORS --}}
+            {{-- Validation Errors --}}
             @if ($errors->any())
                 <div class="clay-danger mb-6 rounded-2xl p-4 sm:p-5" role="alert" aria-live="assertive">
                     <div class="flex items-start gap-3">
@@ -320,7 +397,10 @@
                         </div>
 
                         <div>
-                            <h3 class="text-sm font-bold text-[#B42323]">Please correct the following errors</h3>
+                            <h3 class="text-sm font-bold text-[#B42323]">
+                                Please correct the following errors
+                            </h3>
+
                             <ul class="mt-2 list-inside list-disc text-xs leading-5 text-[#B42323]">
                                 @foreach ($errors->all() as $error)
                                     <li>{{ $error }}</li>
@@ -331,22 +411,27 @@
                 </div>
             @endif
 
-            {{-- RESIDENT SUMMARY CARD --}}
+            {{-- Resident Summary Card --}}
             <section class="clay-card mb-6 p-5 sm:p-6">
                 <div class="flex items-center gap-4">
                     <div class="clay-icon clay-icon-green h-12 w-12 rounded-xl text-lg font-bold">
                         {{ strtoupper(substr($seniorCitizen->resident->first_name, 0, 1)) }}
                     </div>
+
                     <div>
-                        <h3 class="text-lg font-bold text-[#164238]">{{ $seniorCitizen->resident->full_name }}</h3>
+                        <h3 class="text-lg font-bold text-[#164238]">
+                            {{ $seniorCitizen->resident->full_name }}
+                        </h3>
+
                         <p class="text-xs font-semibold text-[#6D817A]">
-                            Born {{ $seniorCitizen->resident->birth_date?->format('F d, Y') ?? '—' }} · {{ $seniorCitizen->resident->birth_date?->age ?? '—' }} yrs old
+                            Born {{ $seniorCitizen->resident->birth_date?->format('F d, Y') ?? '—' }}
+                            · {{ $seniorCitizen->resident->birth_date?->age ?? '—' }} yrs old
                         </p>
                     </div>
                 </div>
             </section>
 
-            {{-- FORM --}}
+            {{-- Form --}}
             <form method="POST" action="{{ route('senior-citizens.update', $seniorCitizen) }}" class="space-y-6">
                 @csrf
                 @method('PUT')
@@ -359,6 +444,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" />
                             </svg>
                         </div>
+
                         <div>
                             <h3 class="text-base font-bold text-[#164238]">Registration Details</h3>
                             <p class="text-xs text-[#6D817A]">Update senior citizen registry information.</p>
@@ -366,35 +452,107 @@
                     </div>
 
                     <div class="grid gap-6 sm:grid-cols-2">
+
                         <div>
-                            <label for="registration_date" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">Registration Date</label>
-                            <input type="date" id="registration_date" name="registration_date" value="{{ old('registration_date', $seniorCitizen->registration_date?->format('Y-m-d')) }}" class="clay-input">
+                            <label for="registration_date" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">
+                                Registration Date
+                            </label>
+
+                            <input
+                                type="date"
+                                id="registration_date"
+                                name="registration_date"
+                                value="{{ old('registration_date', $seniorCitizen->registration_date?->format('Y-m-d')) }}"
+                                class="clay-input"
+                            >
+
+                            @error('registration_date')
+                                <p class="mt-2 text-xs font-semibold text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        {{-- FIX: Required senior_status field --}}
+                        <div>
+                            <label for="senior_status" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">
+                                Senior Status <span class="text-red-600">*</span>
+                            </label>
+
+                            <select
+                                id="senior_status"
+                                name="senior_status"
+                                required
+                                class="clay-input cursor-pointer"
+                            >
+                                <option value="">Select senior status</option>
+
+                                @foreach (['Active', 'Inactive', 'Deceased', 'Transferred'] as $status)
+                                    <option
+                                        value="{{ $status }}"
+                                        @selected(old('senior_status', $seniorCitizen->senior_status) === $status)
+                                    >
+                                        {{ $status }}
+                                    </option>
+                                @endforeach
+                            </select>
+
+                            @error('senior_status')
+                                <p class="mt-2 text-xs font-semibold text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <div>
-                            <label for="osca_id" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">OSCA ID</label>
-                            <input type="text" id="osca_id" name="osca_id" value="{{ old('osca_id', $seniorCitizen->osca_id) }}" class="clay-input" placeholder="Enter OSCA ID">
+                            <label for="osca_id" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">
+                                OSCA ID
+                            </label>
+
+                            <input
+                                type="text"
+                                id="osca_id"
+                                name="osca_id"
+                                value="{{ old('osca_id', $seniorCitizen->osca_id) }}"
+                                class="clay-input"
+                                placeholder="Enter OSCA ID"
+                            >
                         </div>
 
                         <div>
-                            <label for="beneficiary_status" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">Beneficiary Status</label>
+                            <label for="beneficiary_status" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">
+                                Beneficiary Status
+                            </label>
+
                             <select id="beneficiary_status" name="beneficiary_status" class="clay-input cursor-pointer">
                                 <option value="">Select status</option>
-                                <option value="Beneficiary" @selected(old('beneficiary_status', $seniorCitizen->beneficiary_status) === 'Beneficiary')>Beneficiary</option>
-                                <option value="Non-Beneficiary" @selected(old('beneficiary_status', $seniorCitizen->beneficiary_status) === 'Non-Beneficiary')>Non-Beneficiary</option>
+                                <option value="Beneficiary" @selected(old('beneficiary_status', $seniorCitizen->beneficiary_status) === 'Beneficiary')>
+                                    Beneficiary
+                                </option>
+                                <option value="Non-Beneficiary" @selected(old('beneficiary_status', $seniorCitizen->beneficiary_status) === 'Non-Beneficiary')>
+                                    Non-Beneficiary
+                                </option>
                             </select>
                         </div>
 
                         <div>
-                            <label for="living_arrangement" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">Living Arrangement</label>
+                            <label for="living_arrangement" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">
+                                Living Arrangement
+                            </label>
+
                             <select id="living_arrangement" name="living_arrangement" class="clay-input cursor-pointer">
                                 <option value="">Select arrangement</option>
-                                <option value="Living Alone" @selected(old('living_arrangement', $seniorCitizen->living_arrangement) === 'Living Alone')>Living Alone</option>
-                                <option value="With Spouse" @selected(old('living_arrangement', $seniorCitizen->living_arrangement) === 'With Spouse')>With Spouse</option>
-                                <option value="With Family" @selected(old('living_arrangement', $seniorCitizen->living_arrangement) === 'With Family')>With Family</option>
-                                <option value="With Caregiver" @selected(old('living_arrangement', $seniorCitizen->living_arrangement) === 'With Caregiver')>With Caregiver</option>
+                                <option value="Living Alone" @selected(old('living_arrangement', $seniorCitizen->living_arrangement) === 'Living Alone')>
+                                    Living Alone
+                                </option>
+                                <option value="With Spouse" @selected(old('living_arrangement', $seniorCitizen->living_arrangement) === 'With Spouse')>
+                                    With Spouse
+                                </option>
+                                <option value="With Family" @selected(old('living_arrangement', $seniorCitizen->living_arrangement) === 'With Family')>
+                                    With Family
+                                </option>
+                                <option value="With Caregiver" @selected(old('living_arrangement', $seniorCitizen->living_arrangement) === 'With Caregiver')>
+                                    With Caregiver
+                                </option>
                             </select>
                         </div>
+
                     </div>
                 </section>
 
@@ -406,6 +564,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                             </svg>
                         </div>
+
                         <div>
                             <h3 class="text-base font-bold text-[#164238]">Pension Information</h3>
                             <p class="text-xs text-[#6D817A]">Update status and source of pension.</p>
@@ -414,22 +573,39 @@
 
                     <div class="grid gap-6 sm:grid-cols-2">
                         <div>
-                            <label for="pension_status" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">Pension Status</label>
+                            <label for="pension_status" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">
+                                Pension Status
+                            </label>
+
                             <select id="pension_status" name="pension_status" class="clay-input cursor-pointer">
                                 <option value="">Select status</option>
-                                <option value="Receiving" @selected(old('pension_status', $seniorCitizen->pension_status) === 'Receiving')>Receiving</option>
-                                <option value="Not Receiving" @selected(old('pension_status', $seniorCitizen->pension_status) === 'Not Receiving')>Not Receiving</option>
+                                <option value="Receiving" @selected(old('pension_status', $seniorCitizen->pension_status) === 'Receiving')>
+                                    Receiving
+                                </option>
+                                <option value="Not Receiving" @selected(old('pension_status', $seniorCitizen->pension_status) === 'Not Receiving')>
+                                    Not Receiving
+                                </option>
                             </select>
                         </div>
 
                         <div>
-                            <label for="pension_type" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">Pension Type</label>
-                            <input type="text" id="pension_type" name="pension_type" value="{{ old('pension_type', $seniorCitizen->pension_type) }}" placeholder="e.g. SSS, GSIS, Social Pension" class="clay-input">
+                            <label for="pension_type" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">
+                                Pension Type
+                            </label>
+
+                            <input
+                                type="text"
+                                id="pension_type"
+                                name="pension_type"
+                                value="{{ old('pension_type', $seniorCitizen->pension_type) }}"
+                                placeholder="e.g. SSS, GSIS, Social Pension"
+                                class="clay-input"
+                            >
                         </div>
                     </div>
                 </section>
 
-                {{-- Health & Assistance --}}
+                {{-- Health and Assistance --}}
                 <section class="clay-card p-5 sm:p-6">
                     <div class="mb-5 flex items-center gap-3 border-b border-white/70 pb-4">
                         <div class="clay-icon h-10 w-10 rounded-xl bg-[#FCF7ED] text-[#E87928]">
@@ -437,6 +613,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-7-4.35-7-10.2A4.8 4.8 0 0 1 9.8 6c1.1 0 2.2.4 3.2 1.3C14 6.4 15.1 6 16.2 6A4.8 4.8 0 0 1 21 10.8C21 16.65 12 21 12 21Z" />
                             </svg>
                         </div>
+
                         <div>
                             <h3 class="text-base font-bold text-[#164238]">Health and Assistance</h3>
                             <p class="text-xs text-[#6D817A]">Medical condition records and assistance needs.</p>
@@ -445,27 +622,61 @@
 
                     <div class="space-y-5">
                         <div>
-                            <label for="disability_status" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">Disability Status</label>
+                            <label for="disability_status" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">
+                                Disability Status
+                            </label>
+
                             <select id="disability_status" name="disability_status" class="clay-input cursor-pointer">
                                 <option value="">Select status</option>
-                                <option value="None" @selected(old('disability_status', $seniorCitizen->disability_status) === 'None')>None</option>
-                                <option value="With Disability" @selected(old('disability_status', $seniorCitizen->disability_status) === 'With Disability')>With Disability</option>
+                                <option value="None" @selected(old('disability_status', $seniorCitizen->disability_status) === 'None')>
+                                    None
+                                </option>
+                                <option value="With Disability" @selected(old('disability_status', $seniorCitizen->disability_status) === 'With Disability')>
+                                    With Disability
+                                </option>
                             </select>
                         </div>
 
                         <div>
-                            <label for="medical_conditions" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">Medical Conditions</label>
-                            <textarea id="medical_conditions" name="medical_conditions" rows="3" class="clay-input" placeholder="Enter medical conditions...">{{ old('medical_conditions', $seniorCitizen->medical_conditions) }}</textarea>
+                            <label for="medical_conditions" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">
+                                Medical Conditions
+                            </label>
+
+                            <textarea
+                                id="medical_conditions"
+                                name="medical_conditions"
+                                rows="3"
+                                class="clay-input"
+                                placeholder="Enter medical conditions..."
+                            >{{ old('medical_conditions', $seniorCitizen->medical_conditions) }}</textarea>
                         </div>
 
                         <div>
-                            <label for="medications" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">Medications</label>
-                            <textarea id="medications" name="medications" rows="3" class="clay-input" placeholder="Enter maintenance medications...">{{ old('medications', $seniorCitizen->medications) }}</textarea>
+                            <label for="medications" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">
+                                Medications
+                            </label>
+
+                            <textarea
+                                id="medications"
+                                name="medications"
+                                rows="3"
+                                class="clay-input"
+                                placeholder="Enter maintenance medications..."
+                            >{{ old('medications', $seniorCitizen->medications) }}</textarea>
                         </div>
 
                         <div>
-                            <label for="remarks" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">Remarks</label>
-                            <textarea id="remarks" name="remarks" rows="3" class="clay-input" placeholder="Additional remarks or notes...">{{ old('remarks', $seniorCitizen->remarks) }}</textarea>
+                            <label for="remarks" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">
+                                Remarks
+                            </label>
+
+                            <textarea
+                                id="remarks"
+                                name="remarks"
+                                rows="3"
+                                class="clay-input"
+                                placeholder="Additional remarks or notes..."
+                            >{{ old('remarks', $seniorCitizen->remarks) }}</textarea>
                         </div>
                     </div>
                 </section>
@@ -478,9 +689,12 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.3 3.6 2.6 17a2 2 0 0 0 1.73 3h15.34a2 2 0 0 0 1.73-3L13.7 3.6a2 2 0 0 0-3.4 0Z" />
                             </svg>
                         </div>
+
                         <div>
                             <p class="text-xs font-bold text-[#164238]">Review changes</p>
-                            <p class="text-[11px] text-[#6D817A]">Make sure updated details are accurate before saving.</p>
+                            <p class="text-[11px] text-[#6D817A]">
+                                Make sure updated details are accurate before saving.
+                            </p>
                         </div>
                     </div>
 
@@ -504,11 +718,10 @@
                     </div>
                 </div>
             </form>
-
         </div>
     </main>
 
-    {{-- SCRIPTS --}}
+    {{-- Mobile Sidebar Script --}}
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const menuButton = document.getElementById('mobileMenuButton');
@@ -538,10 +751,13 @@
                 overlay.addEventListener('click', closeSidebar);
 
                 window.addEventListener('resize', () => {
-                    if (window.innerWidth >= 1024) closeSidebar();
+                    if (window.innerWidth >= 1024) {
+                        closeSidebar();
+                    }
                 });
             }
         });
     </script>
 </body>
+
 </html>

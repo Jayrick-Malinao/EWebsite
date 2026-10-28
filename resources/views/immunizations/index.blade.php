@@ -861,7 +861,8 @@
                                                 <form
                                                     method="POST"
                                                     action="{{ route('immunizations.destroy', $immunization) }}"
-                                                    onsubmit="return confirm('Are you sure you want to delete this immunization record?');">
+                                                    data-confirm-title="Delete this immunization record?"
+                                                    data-confirm-item="{{ $immunization->vaccine_name }}">
 
                                                     @csrf
                                                     @method('DELETE')
@@ -1068,7 +1069,8 @@
                                 <form
                                     method="POST"
                                     action="{{ route('immunizations.destroy', $immunization) }}"
-                                    onsubmit="return confirm('Are you sure you want to delete this immunization record?');">
+                                    data-confirm-title="Delete this immunization record?"
+                                    data-confirm-item="{{ $immunization->vaccine_name }}">
 
                                     @csrf
                                     @method('DELETE')

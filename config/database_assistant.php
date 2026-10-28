@@ -58,6 +58,10 @@ return [
                 'pila kabuok ang residents',
                 'pila ka residente',
                 'total na residente',
+                'ilang residente',
+                'ilan ang rehistradong residente',
+                'ilan ang registered residents',
+                'pila ka kabuok ang residente',
             ],
         ],
 
@@ -98,6 +102,9 @@ return [
                 'ilan ang sambahayan',
                 'bilang ng sambahayan',
                 'pila ka household',
+                'ilang sambahayan',
+                'ilang household',
+                'pila ka sambahayan',
             ],
         ],
 
@@ -140,6 +147,9 @@ return [
                 'mga susunod na schedule',
                 'ano ang schedule',
                 'may schedule ba',
+                'may iskedyul ba',
+                'schedule ba ngayong linggo',
+                'iskedyul ngayong linggo',
                 'iskedyul',
                 'mga event',
             ],
@@ -203,10 +213,11 @@ return [
         ],
     ],
 
-    'fallback' =>
-        'Sorry, I could not understand that question yet. You can ask about residents, households, schedules, medical inventory, announcements, or staff accounts.',
+    'fallback' => 'Sorry, I could not understand that question yet. You can ask about residents, households, schedules, medical inventory, announcements, or staff accounts.',
 
     'max_examples_per_intent' => 30,
 
     'max_message_length' => 300,
+
+    'query_timeout_ms' => 3000,
 ];

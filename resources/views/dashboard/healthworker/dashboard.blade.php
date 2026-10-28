@@ -17,12 +17,12 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
-<body class="min-h-screen bg-[#F7FAF8] text-slate-800">
+<body class="clay-dashboard min-h-screen bg-[#EEF5F1] text-[#164238]">
 
     {{-- =========================================================
          SIDEBAR
     ========================================================== --}}
-    @include('dashboard.healthworker.sidebar')
+    @include('dashboard.sidebar')
 
 
     {{-- =========================================================
@@ -43,99 +43,67 @@
 
 
             {{-- =================================================
-                 MOBILE HEADER
-            ================================================== --}}
-            <div class="mb-5 flex items-center justify-between lg:hidden">
-
-                <button
-                    id="sidebarOpen"
-                    type="button"
-                    class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50"
-                    aria-label="Open navigation"
-                >
-                    <svg
-                        class="h-5 w-5"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="1.8"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            d="M4 6h16M4 12h16M4 18h16"
-                        />
-                    </svg>
-                </button>
-
-                <div class="text-right">
-                    <p class="text-xs font-semibold text-emerald-700">
-                        HEALTH WORKER
-                    </p>
-
-                    <p class="text-sm font-semibold text-slate-900">
-                        {{ auth()->user()->name }}
-                    </p>
-                </div>
-
-            </div>
-
-
-            {{-- =================================================
                  PAGE HEADER
             ================================================== --}}
-            <section class="mb-6">
+            <section class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
-                <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                <div class="flex min-w-0 items-center gap-3">
 
-                    <div>
+                    <button
+                        id="sidebarOpen"
+                        type="button"
+                        class="dashboard-menu-button inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#dce9e2] bg-[#f9fcfa] text-[#0f6f5a] shadow-sm transition hover:border-[#b8d8ca] hover:bg-[#eaf5ef] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#168b70] lg:hidden"
+                        aria-label="Open navigation"
+                    >
+                        <svg
+                            class="h-5 w-5"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            aria-hidden="true"
+                        >
+                            <path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
 
-                        <p class="mb-1 text-sm font-semibold text-[#128C5A]">
+                    <div class="min-w-0">
+                        <p class="text-xs font-medium uppercase tracking-wide text-[#168B70]">
                             Health Worker
                         </p>
 
-                        <h1 class="text-2xl font-bold tracking-tight text-[#0F4C3A] sm:text-3xl">
+                        <h1 class="mt-1 text-xl font-bold tracking-tight text-[#164238] sm:text-2xl">
                             Welcome back, {{ auth()->user()->name }}
                         </h1>
 
-                        <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-                            Manage residents, households, health records, and community
-                            health services from one place.
+                        <p class="mt-1 text-xs text-[#6D817A] sm:text-sm">
+                            Manage residents, households, health records, and community health services.
                         </p>
-
                     </div>
 
+                </div>
 
-                    <div class="flex flex-wrap items-center gap-3">
+                <div class="flex items-center gap-2 sm:gap-3">
 
-                        {{-- Notification Bell --}}
-                        @include('partials.notification-bell')
+                    @include('partials.notification-bell')
 
+                    <div class="hidden rounded-xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm sm:block">
+                        <p class="text-[10px] font-medium uppercase tracking-wide text-[#9AA9A4]">
+                            Today
+                        </p>
+                        <p class="mt-0.5 text-sm font-semibold text-[#164238]">
+                            {{ now()->format('M d, Y') }}
+                        </p>
+                    </div>
 
-                        {{-- Date --}}
-                        <div class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm">
-
-                            <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                                Today
-                            </p>
-
-                            <p class="text-sm font-bold text-slate-800">
-                                {{ now()->format('M d, Y') }}
-                            </p>
-
-                        </div>
-
-
-                        {{-- System Status --}}
-                        <div class="hidden items-center gap-2 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-2.5 sm:flex">
-
-                            <span class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
-
-                            <span class="text-xs font-semibold text-emerald-700">
-                                System Online
-                            </span>
-
-                        </div>
-
+                    <div class="flex items-center gap-2 rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2.5">
+                        <span class="relative flex h-2.5 w-2.5">
+                            <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-50"></span>
+                            <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+                        </span>
+                        <span class="text-xs font-semibold text-[#0F6F5A]">
+                            System Online
+                        </span>
                     </div>
 
                 </div>
@@ -1005,6 +973,5 @@
     </script>
 
 </body>
-@include('partials.database-assistant')
 
 </html>

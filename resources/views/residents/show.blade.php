@@ -628,7 +628,7 @@
                     <div class="space-y-4">
                         <div class="resident-inset rounded-xl p-4">
                             <span class="resident-detail-label">Contact Number</span>
-                            <p class="resident-detail-value">{{ $resident->contact_number ?? '—' }}</p>
+                            <p class="resident-detail-value">{{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay($resident->contact_number) ?? '—' }}</p>
                         </div>
 
                         <div class="resident-inset rounded-xl p-4">
@@ -695,7 +695,7 @@
                         <div class="resident-inset rounded-xl p-4">
                             <span class="resident-detail-label">Household Contact Number</span>
                             <p class="resident-detail-value">
-                                {{ $resident->household?->contact_number ?? '—' }}
+                                {{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay($resident->household?->contact_number) ?? '—' }}
                             </p>
                         </div>
                     </div>

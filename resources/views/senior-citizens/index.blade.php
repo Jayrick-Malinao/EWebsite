@@ -474,6 +474,7 @@
                                                 class="clay-action clay-delete trigger-delete-modal"
                                                 data-action="{{ route('senior-citizens.destroy', $seniorCitizen) }}"
                                                 data-name="{{ $resident?->full_name ?? 'Senior Citizen' }}"
+                                                data-confirm-title="Delete this senior citizen record?"
                                             >
                                                 Delete
                                             </button>
@@ -536,6 +537,7 @@
                                 class="clay-action clay-delete flex-1 text-center trigger-delete-modal"
                                 data-action="{{ route('senior-citizens.destroy', $seniorCitizen) }}"
                                 data-name="{{ $resident?->full_name ?? 'Senior Citizen' }}"
+                                data-confirm-title="Delete this senior citizen record?"
                             >
                                 Delete
                             </button>

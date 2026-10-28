@@ -8,6 +8,7 @@ use App\Notifications\EventManagementNotification;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class EventController extends Controller
@@ -50,7 +51,19 @@ class EventController extends Controller
     {
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
-            'event_type' => ['required', 'string', 'max:100'],
+            'event_type' => [
+                'required',
+                Rule::in([
+                    'Health Program',
+                    'Immunization',
+                    'Maternal & Child Health',
+                    'Health Education',
+                    'Medical Mission',
+                    'Meeting',
+                    'Community Event',
+                    'Other',
+                ]),
+            ],
             'event_date' => ['required', 'date', 'after_or_equal:today'],
             'start_time' => ['nullable', 'date_format:H:i'],
             'end_time' => ['nullable', 'date_format:H:i'],
@@ -59,8 +72,8 @@ class EventController extends Controller
         ]);
 
         if (
-            !empty($validated['start_time']) &&
-            !empty($validated['end_time']) &&
+            ! empty($validated['start_time']) &&
+            ! empty($validated['end_time']) &&
             $validated['end_time'] <= $validated['start_time']
         ) {
             return back()
@@ -111,7 +124,19 @@ class EventController extends Controller
     ): RedirectResponse {
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
-            'event_type' => ['required', 'string', 'max:100'],
+            'event_type' => [
+                'required',
+                Rule::in([
+                    'Health Program',
+                    'Immunization',
+                    'Maternal & Child Health',
+                    'Health Education',
+                    'Medical Mission',
+                    'Meeting',
+                    'Community Event',
+                    'Other',
+                ]),
+            ],
             'event_date' => ['required', 'date', 'after_or_equal:today'],
             'start_time' => ['nullable', 'date_format:H:i'],
             'end_time' => ['nullable', 'date_format:H:i'],
@@ -120,8 +145,8 @@ class EventController extends Controller
         ]);
 
         if (
-            !empty($validated['start_time']) &&
-            !empty($validated['end_time']) &&
+            ! empty($validated['start_time']) &&
+            ! empty($validated['end_time']) &&
             $validated['end_time'] <= $validated['start_time']
         ) {
             return back()

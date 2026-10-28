@@ -479,7 +479,7 @@
                                                 </a>
 
                                                 @if ($certificate->status === 'Issued')
-                                                    <form action="{{ route('certificates.destroy', $certificate) }}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this certificate?');">
+                                                    <form action="{{ route('certificates.destroy', $certificate) }}" method="POST" data-confirm-title="Cancel this certificate?" data-confirm-message="The certificate will be canceled and its status updated." data-confirm-item="{{ $certificate->certificate_number }}">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="clay-action clay-delete">
@@ -558,10 +558,10 @@
                             <a href="{{ route('certificates.edit', $certificate) }}" class="clay-action clay-edit flex-1 text-center">Edit</a>
 
                             @if ($certificate->status === 'Issued')
-                                <form action="{{ route('certificates.destroy', $certificate) }}" method="POST" class="flex-1" onsubmit="return confirm('Cancel this certificate?');">
+                                <form action="{{ route('certificates.destroy', $certificate) }}" method="POST" class="flex-1" data-confirm-title="Cancel this certificate?" data-confirm-message="The certificate will be canceled and its status updated." data-confirm-item="{{ $certificate->certificate_number }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="clay-action clay-delete w-full">Cancel</button>
+                                    <button type="submit" class="clay-action clay-delete w-full" data-confirm-button="Cancel certificate">Cancel</button>
                                 </form>
                             @endif
                         </div>

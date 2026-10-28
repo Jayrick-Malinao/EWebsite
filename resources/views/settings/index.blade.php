@@ -466,12 +466,15 @@
                             <div>
                                 <label for="contact_number" class="clay-label">Contact Number</label>
                                 <input
-                                    type="text"
+                                    type="tel"
                                     id="contact_number"
                                     name="contact_number"
-                                    value="{{ old('contact_number', $settings['contact_number'] ?? '') }}"
-                                    maxlength="50"
-                                    placeholder="e.g. 09XXXXXXXXX"
+                                    value="{{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay(old('contact_number', $settings['contact_number'] ?? '')) ?: '+63' }}"
+                                    inputmode="numeric"
+                                    maxlength="24"
+                                    autocomplete="tel"
+                                    placeholder="+6391 7123 4567"
+                                    title="Only Globe and DITO SIM numbers are supported."
                                     class="clay-input w-full rounded-xl px-4 py-3 text-sm @error('contact_number') clay-input-error @enderror"
                                 >
                                 @error('contact_number')
@@ -799,19 +802,58 @@
                             </div>
 
                             <div>
-                                <label for="account_name" class="clay-label">Full Name <span class="text-[#B42323]">*</span></label>
-                                <input
-                                    type="text"
-                                    id="account_name"
-                                    name="name"
-                                    value="{{ old('name', $user->name) }}"
-                                    maxlength="255"
-                                    required
-                                    class="clay-input w-full rounded-xl px-4 py-3 text-sm @error('name', 'updateProfile') clay-input-error @enderror"
-                                >
-                                @error('name', 'updateProfile')
-                                    <p class="mt-1.5 text-xs font-semibold text-[#B42323]">{{ $message }}</p>
-                                @enderror
+                                <label class="clay-label">Full Name <span class="text-[#B42323]">*</span></label>
+                                <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+                                    <div>
+                                        <label for="account_first_name" class="mb-1 block text-[11px] font-bold uppercase tracking-wide text-[#6D817A]">First Name</label>
+                                        <input
+                                            type="text"
+                                            id="account_first_name"
+                                            name="first_name"
+                                            value="{{ old('first_name', App\Models\User::splitFullName($user->name)['first_name'] ?? '') }}"
+                                            maxlength="255"
+                                            required
+                                            style="text-transform: capitalize;"
+                                            class="clay-input w-full rounded-xl px-4 py-3 text-sm @error('first_name', 'updateProfile') clay-input-error @enderror"
+                                        >
+                                        @error('first_name', 'updateProfile')
+                                            <p class="mt-1.5 text-xs font-semibold text-[#B42323]">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+
+                                    <div>
+                                        <label for="account_middle_name" class="mb-1 block text-[11px] font-bold uppercase tracking-wide text-[#6D817A]">Middle Name</label>
+                                        <input
+                                            type="text"
+                                            id="account_middle_name"
+                                            name="middle_name"
+                                            value="{{ old('middle_name', App\Models\User::splitFullName($user->name)['middle_name'] ?? '') }}"
+                                            maxlength="255"
+                                            style="text-transform: capitalize;"
+                                            class="clay-input w-full rounded-xl px-4 py-3 text-sm @error('middle_name', 'updateProfile') clay-input-error @enderror"
+                                        >
+                                        @error('middle_name', 'updateProfile')
+                                            <p class="mt-1.5 text-xs font-semibold text-[#B42323]">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+
+                                    <div>
+                                        <label for="account_last_name" class="mb-1 block text-[11px] font-bold uppercase tracking-wide text-[#6D817A]">Last Name</label>
+                                        <input
+                                            type="text"
+                                            id="account_last_name"
+                                            name="last_name"
+                                            value="{{ old('last_name', App\Models\User::splitFullName($user->name)['last_name'] ?? '') }}"
+                                            maxlength="255"
+                                            required
+                                            style="text-transform: capitalize;"
+                                            class="clay-input w-full rounded-xl px-4 py-3 text-sm @error('last_name', 'updateProfile') clay-input-error @enderror"
+                                        >
+                                        @error('last_name', 'updateProfile')
+                                            <p class="mt-1.5 text-xs font-semibold text-[#B42323]">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                </div>
                             </div>
 
                             <div>

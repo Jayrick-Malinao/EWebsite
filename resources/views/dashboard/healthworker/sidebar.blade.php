@@ -5,7 +5,7 @@
 <aside
     id="healthworkerSidebar"
     data-sidebar
-    class="fixed inset-y-0 left-0 z-50 flex w-72 -translate-x-full flex-col border-r border-slate-200 bg-white transition-transform duration-300 ease-in-out lg:translate-x-0"
+    class="claymorphism-sidebar fixed inset-y-0 left-0 z-50 flex w-72 -translate-x-full flex-col border-r border-slate-200 bg-white transition-transform duration-300 ease-in-out lg:translate-x-0"
 >
     {{-- =========================================================
          BRAND
@@ -16,24 +16,11 @@
             class="flex min-w-0 items-center gap-3"
         >
             <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-700 shadow-sm">
-                <svg
-                    class="h-6 w-6 text-white"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.8"
+                <img
+                    src="{{ asset('images/esperanza-health-center-logo.jpg') }}"
+                    alt=""
+                    class="h-10 w-10 rounded-xl object-contain"
                 >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M12 21s-7-4.35-9.5-9.1C.7 8.3 3.1 4.5 7 4.5c2.1 0 4 1.15 5 2.9 1-1.75 2.9-2.9 5-2.9 3.9 0 6.3 3.8 4.5 7.4C19 16.65 12 21 12 21Z"
-                    />
-
-                    <path
-                        stroke-linecap="round"
-                        d="M12 8v7M8.5 11.5h7"
-                    />
-                </svg>
             </div>
 
             <div class="min-w-0">

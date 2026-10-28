@@ -422,7 +422,7 @@
 
                     <div class="clay-inset rounded-xl p-4">
                         <p class="text-[11px] font-bold uppercase tracking-wider text-[#6D817A]">Contact Number</p>
-                        <p class="mt-1 text-sm font-bold text-[#164238]">{{ $seniorCitizen->resident->contact_number ?? '—' }}</p>
+                        <p class="mt-1 text-sm font-bold text-[#164238]">{{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay($seniorCitizen->resident->contact_number) ?? '—' }}</p>
                     </div>
 
                     <div class="clay-inset rounded-xl p-4 sm:col-span-2 lg:col-span-3">
@@ -580,6 +580,8 @@
                     <button
                         type="button"
                         id="triggerDeleteModal"
+                        data-confirm-title="Delete this senior citizen record?"
+                        data-confirm-item="{{ $seniorCitizen->resident?->full_name ?? 'Senior citizen record' }}"
                         class="clay-danger inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold"
                     >
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">

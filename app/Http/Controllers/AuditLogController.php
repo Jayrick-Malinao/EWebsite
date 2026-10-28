@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AuditLog;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class AuditLogController extends Controller
@@ -13,6 +14,18 @@ class AuditLogController extends Controller
      */
     public function index(Request $request): View
     {
+        $request->validate([
+            'search' => ['nullable', 'string', 'max:255'],
+            'action' => ['nullable', 'string', 'max:100'],
+            'module' => ['nullable', 'string', 'max:100'],
+            'date_from' => ['nullable', 'date_format:Y-m-d'],
+            'date_to' => [
+                'nullable',
+                'date_format:Y-m-d',
+                Rule::when($request->filled('date_from'), ['after_or_equal:date_from']),
+            ],
+        ]);
+
         $query = AuditLog::query()
             ->with('user')
             ->latest('created_at');
@@ -104,4 +117,3 @@ class AuditLogController extends Controller
         ]);
     }
 }
-

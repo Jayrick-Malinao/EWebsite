@@ -487,6 +487,7 @@
                                                 class="clay-action clay-delete trigger-delete-modal"
                                                 data-action="{{ route('child-health.destroy', $childHealth) }}"
                                                 data-name="{{ $childHealth->resident?->full_name ?? 'Unknown Resident' }}"
+                                                data-confirm-title="Delete this child health record?"
                                             >
                                                 Delete
                                             </button>
@@ -549,6 +550,7 @@
                                 class="clay-action clay-delete flex-1 text-center trigger-delete-modal"
                                 data-action="{{ route('child-health.destroy', $childHealth) }}"
                                 data-name="{{ $childHealth->resident?->full_name ?? 'Unknown Resident' }}"
+                                data-confirm-title="Delete this child health record?"
                             >
                                 Delete
                             </button>

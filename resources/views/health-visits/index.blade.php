@@ -921,7 +921,8 @@
                                                 <form
                                                     method="POST"
                                                     action="{{ route('health-visits.destroy', $healthVisit) }}"
-                                                    onsubmit="return confirm('Are you sure you want to delete this health visit? This action cannot be undone.');"
+                                                    data-confirm-title="Delete this health visit?"
+                                                    data-confirm-item="Health visit #{{ $healthVisit->id }}"
                                                 >
                                                     @csrf
                                                     @method('DELETE')
@@ -1115,7 +1116,8 @@
                                 <form
                                     method="POST"
                                     action="{{ route('health-visits.destroy', $healthVisit) }}"
-                                    onsubmit="return confirm('Are you sure you want to delete this health visit? This action cannot be undone.');"
+                                    data-confirm-title="Delete this health visit?"
+                                    data-confirm-item="Health visit #{{ $healthVisit->id }}"
                                 >
                                     @csrf
                                     @method('DELETE')

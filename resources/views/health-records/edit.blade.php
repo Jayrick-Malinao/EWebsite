@@ -150,33 +150,6 @@
             color: var(--text-dark) !important;
         }
 
-        .clay-health-record-edit .clay-notification {
-            height: 42px;
-            width: 42px;
-            border-radius: 13px;
-            color: var(--text-muted);
-            background: linear-gradient(145deg, #F8FCFA, #EAF2EE);
-            border: 1px solid rgba(255, 255, 255, .9);
-            box-shadow: var(--clay-small-shadow);
-            transition:
-                transform .2s ease,
-                box-shadow .2s ease,
-                color .2s ease;
-        }
-
-        .clay-health-record-edit .clay-notification:hover {
-            color: var(--primary-dark);
-            transform: translateY(-1px);
-            box-shadow:
-                5px 5px 12px rgba(107, 134, 124, .2),
-                -5px -5px 12px rgba(255, 255, 255, .94);
-        }
-
-        .clay-health-record-edit .clay-notification-dot {
-            background: var(--primary) !important;
-            box-shadow: 0 0 0 2px #F5FAF7 !important;
-        }
-
         .clay-health-record-edit .clay-profile {
             border-color: rgba(210, 225, 218, .75) !important;
         }
@@ -597,32 +570,7 @@
                 {{-- Right Actions --}}
                 <div class="ml-auto flex items-center gap-2 sm:gap-3">
 
-                    {{-- Notifications --}}
-                    <button
-                        type="button"
-                        class="clay-notification relative flex items-center justify-center"
-                        aria-label="Notifications"
-                    >
-                        <svg
-                            class="h-5 w-5"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.8"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"
-                            />
-                            <path
-                                stroke-linecap="round"
-                                d="M10 21h4"
-                            />
-                        </svg>
-
-                        <span class="clay-notification-dot absolute right-2 top-2 h-2 w-2 rounded-full"></span>
-                    </button>
+                    @include('partials.notification-bell')
 
                     {{-- Profile --}}
                     <div class="clay-profile hidden items-center gap-3 border-l pl-3 sm:flex">
@@ -1196,11 +1144,14 @@
                                 </label>
 
                                 <input
-                                    type="text"
+                                    type="tel"
                                     id="emergency_contact_number"
                                     name="emergency_contact_number"
-                                    value="{{ old('emergency_contact_number', $healthRecord->emergency_contact_number) }}"
-                                    placeholder="09XXXXXXXXX"
+                                    value="{{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay(old('emergency_contact_number', $healthRecord->emergency_contact_number)) ?: '+63' }}"
+                                    inputmode="numeric"
+                                    maxlength="24"
+                                    placeholder="+6391 7123 4567"
+                                    title="Only Globe and DITO SIM numbers are supported."
                                     class="clay-input px-4 py-2.5 text-sm"
                                 >
 

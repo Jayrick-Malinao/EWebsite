@@ -4,7 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Household;
 use App\Models\Resident;
+use App\Rules\AddressFitsStorage;
+use App\Rules\PersonName;
+use App\Rules\PhilippineMobileNumber;
 use App\Services\AuditLogService;
+use App\Support\BarangayAddress;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -17,6 +21,10 @@ class ResidentController extends Controller
      */
     public function index(Request $request): View
     {
+        $request->validate([
+            'search' => ['nullable', 'string', 'max:255'],
+        ]);
+
         $search = trim((string) $request->input('search'));
 
         $residents = Resident::query()
@@ -46,7 +54,12 @@ class ResidentController extends Controller
             ->orderBy('household_code')
             ->get();
 
-        return view('residents.create', compact('households'));
+        return view('residents.create', [
+            'addressParts' => BarangayAddress::split(null),
+            'households' => $households,
+            'localityParts' => BarangayAddress::localityParts(),
+            'puroks' => BarangayAddress::puroks(),
+        ]);
     }
 
     /**
@@ -108,7 +121,7 @@ class ResidentController extends Controller
         AuditLogService::created(
             module: 'Residents',
             model: $resident,
-            description: 'Resident created: ' . $resident->full_name . '.',
+            description: 'Resident created: '.$resident->full_name.'.',
         );
 
         return redirect()
@@ -137,7 +150,13 @@ class ResidentController extends Controller
             ->orderBy('household_code')
             ->get();
 
-        return view('residents.edit', compact('resident', 'households'));
+        return view('residents.edit', [
+            'addressParts' => BarangayAddress::split($resident->household_address),
+            'households' => $households,
+            'localityParts' => BarangayAddress::localityParts(),
+            'puroks' => BarangayAddress::puroks(),
+            'resident' => $resident,
+        ]);
     }
 
     /**
@@ -163,7 +182,7 @@ class ResidentController extends Controller
              */
             $household = $resident->household;
 
-            if (!$household) {
+            if (! $household) {
                 $household = Household::create([
                     'household_code' => $this->generateHouseholdCode(),
                     'household_head_name' => $this->fullNameFromData($validated),
@@ -242,7 +261,7 @@ class ResidentController extends Controller
             model: $resident,
             oldValues: $oldValues,
             newValues: $newValues,
-            description: 'Resident updated: ' . $resident->full_name . '.',
+            description: 'Resident updated: '.$resident->full_name.'.',
         );
 
         return redirect()
@@ -292,7 +311,7 @@ class ResidentController extends Controller
         if (
             $wasHead &&
             $household &&
-            !$household->residents()->exists()
+            ! $household->residents()->exists()
         ) {
             $household->delete();
         }
@@ -304,7 +323,7 @@ class ResidentController extends Controller
         AuditLogService::deleted(
             module: 'Residents',
             model: $resident,
-            description: 'Resident deleted: ' . $residentName . '.',
+            description: 'Resident deleted: '.$residentName.'.',
             oldValues: $oldValues,
         );
 
@@ -322,9 +341,9 @@ class ResidentController extends Controller
     ): array {
         $isHouseholdHead = $request->boolean('is_household_head');
 
-        return $request->validate([
+        $validated = $request->validate([
             'household_id' => [
-                Rule::requiredIf(!$isHouseholdHead),
+                Rule::requiredIf(! $isHouseholdHead),
                 'nullable',
                 'integer',
                 'exists:households,id',
@@ -336,34 +355,48 @@ class ResidentController extends Controller
             ],
 
             'relationship_to_head' => [
-                Rule::requiredIf(!$isHouseholdHead),
+                Rule::requiredIf(! $isHouseholdHead),
                 'nullable',
-                'string',
-                'max:100',
+                Rule::in([
+                    'Spouse',
+                    'Son',
+                    'Daughter',
+                    'Father',
+                    'Mother',
+                    'Brother',
+                    'Sister',
+                    'Grandfather',
+                    'Grandmother',
+                    'Grandchild',
+                    'Other Relative',
+                    'Non-Relative',
+                ]),
             ],
 
             'first_name' => [
                 'required',
                 'string',
                 'max:100',
+                new PersonName,
             ],
 
             'middle_name' => [
                 'nullable',
                 'string',
                 'max:100',
+                new PersonName,
             ],
 
             'last_name' => [
                 'required',
                 'string',
                 'max:100',
+                new PersonName,
             ],
 
             'suffix' => [
                 'nullable',
-                'string',
-                'max:20',
+                Rule::in(['Jr.', 'Sr.', 'II', 'III', 'IV', 'V']),
             ],
 
             'birth_date' => [
@@ -374,14 +407,14 @@ class ResidentController extends Controller
 
             'gender' => [
                 'required',
-                'string',
-                'max:50',
+                'in:Male,Female',
             ],
 
             'contact_number' => [
                 'nullable',
                 'string',
-                'max:30',
+                'max:13',
+                new PhilippineMobileNumber,
             ],
 
             'email' => [
@@ -391,15 +424,21 @@ class ResidentController extends Controller
             ],
 
             'household_address' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+
+            'purok' => [
                 'required',
                 'string',
-                'max:500',
+                Rule::in(BarangayAddress::puroks()),
+                new AddressFitsStorage,
             ],
 
             'civil_status' => [
                 'required',
-                'string',
-                'max:50',
+                'in:Single,Married,Widowed,Separated,Divorced',
             ],
 
             'philhealth_number' => [
@@ -410,10 +449,16 @@ class ResidentController extends Controller
 
             'status' => [
                 'required',
-                'string',
-                'max:50',
+                'in:Active,Inactive',
             ],
         ]);
+
+        $validated['household_address'] = BarangayAddress::format(
+            $validated['purok'],
+        );
+        unset($validated['purok']);
+
+        return $validated;
     }
 
     /**
@@ -461,7 +506,7 @@ class ResidentController extends Controller
          * This check is intentionally not enforced when editing a resident
          * into a family member if another valid head exists.
          */
-        if (!$query->exists()) {
+        if (! $query->exists()) {
             abort(
                 422,
                 'This household does not have a household head.'
@@ -475,7 +520,7 @@ class ResidentController extends Controller
     private function generateHouseholdCode(): string
     {
         do {
-            $code = 'HH-' . now()->format('Y') . '-' . strtoupper(
+            $code = 'HH-'.now()->format('Y').'-'.strtoupper(
                 substr(uniqid(), -6)
             );
         } while (
@@ -502,4 +547,3 @@ class ResidentController extends Controller
             ->implode(' ');
     }
 }
-

@@ -311,6 +311,16 @@
             height: 27px;
         }
 
+        .cl-logo img {
+            width: 42px;
+            height: 42px;
+            object-fit: contain;
+        }
+
+        .cl-mobile-brand .cl-logo svg {
+            display: none;
+        }
+
         .cl-brand-name {
             display: flex;
             flex-direction: column;
@@ -682,6 +692,47 @@
             max-width: 425px;
         }
 
+        .cl-home-link {
+            display: inline-flex;
+            width: 38px;
+            height: 38px;
+            flex: 0 0 38px;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(207, 229, 216, .9);
+            border-radius: 11px;
+            color: var(--clay-primary-dark);
+            background: rgba(255, 255, 255, .72);
+            box-shadow: 4px 4px 9px rgba(107, 134, 124, .10), -4px -4px 9px rgba(255, 255, 255, .82);
+            text-decoration: none;
+            transition: transform 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+        }
+
+        .cl-home-link:hover {
+            transform: translateY(-1px);
+            background: #fff;
+            box-shadow: 5px 6px 12px rgba(107, 134, 124, .14), -5px -5px 10px rgba(255, 255, 255, .9);
+        }
+
+        .cl-portal-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .cl-home-link:focus-visible {
+            outline: 2px solid var(--clay-primary);
+            outline-offset: 3px;
+        }
+
+        .cl-home-link svg {
+            width: 16px;
+            height: 16px;
+            flex: 0 0 16px;
+        }
+
         /* =====================================================
            MOBILE BRAND
         ====================================================== */
@@ -769,8 +820,6 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-
-            margin-bottom: 14px;
 
             padding: 7px 11px;
 
@@ -1356,6 +1405,11 @@
                 border-radius: 15px;
             }
 
+            .cl-mobile-brand .cl-logo img {
+                width: 38px;
+                height: 38px;
+            }
+
             .cl-mobile-brand .cl-brand-name strong {
                 font-size: 14px;
             }
@@ -1549,19 +1603,10 @@
 
                         <div class="cl-logo" aria-hidden="true">
 
-                            <svg
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="1.8"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
+                            <img
+                                src="{{ asset('images/esperanza-health-center-logo.jpg') }}"
+                                alt="Barangay Esperanza Health Center logo"
                             >
-                                <path d="M12 3v18"></path>
-                                <path d="M3 12h18"></path>
-                                <path d="M7.5 7.5c1.8-1.8 5.2-1.8 7 0"></path>
-                                <path d="M7.5 16.5c1.8 1.8 5.2 1.8 7 0"></path>
-                            </svg>
 
                         </div>
 
@@ -1750,6 +1795,10 @@
                         <div class="cl-mobile-brand-inner">
 
                             <div class="cl-logo" aria-hidden="true">
+                                <img
+                                    src="{{ asset('images/esperanza-health-center-logo.jpg') }}"
+                                    alt=""
+                                >
 
                                 <svg
                                     viewBox="0 0 24 24"
@@ -1783,40 +1832,59 @@
 
                     </div>
 
-
                     <!-- Login Card -->
                     <div class="cl-card">
 
                         <div class="cl-card-head">
 
-                            <!-- Portal -->
-                            <div class="cl-portal">
+                            <div class="cl-portal-row">
+                                <div class="cl-portal">
 
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="1.8"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="1.8"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    >
+                                        <rect
+                                            x="5"
+                                            y="10"
+                                            width="14"
+                                            height="10"
+                                            rx="2"
+                                        ></rect>
+
+                                        <path
+                                            d="M8 10V7a4 4 0 0 1 8 0v3"
+                                        ></path>
+                                    </svg>
+
+                                    <span>
+                                        Staff Portal
+                                    </span>
+
+                                </div>
+
+                                <a
+                                    href="{{ route('home') }}"
+                                    class="cl-home-link"
+                                    aria-label="Back to landing page"
+                                    title="Back to landing page"
                                 >
-                                    <rect
-                                        x="5"
-                                        y="10"
-                                        width="14"
-                                        height="10"
-                                        rx="2"
-                                    ></rect>
-
-                                    <path
-                                        d="M8 10V7a4 4 0 0 1 8 0v3"
-                                    ></path>
-                                </svg>
-
-                                <span>
-                                    Staff Portal
-                                </span>
-
+                                    <svg
+                                        aria-hidden="true"
+                                        viewBox="0 0 20 20"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="1.7"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    >
+                                        <path d="M15.5 10h-11m0 0 4.5-4.5M4.5 10l4.5 4.5"></path>
+                                    </svg>
+                                </a>
                             </div>
 
                             <p class="cl-welcome">
@@ -2344,4 +2412,3 @@
 </body>
 
 </html>
-

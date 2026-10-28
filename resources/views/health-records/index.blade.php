@@ -1152,7 +1152,7 @@
                                                     @if ($healthRecord->emergency_contact_number)
 
                                                         <p class="mt-0.5 text-xs text-[#9AA9A4]">
-                                                            {{ $healthRecord->emergency_contact_number }}
+                                                            {{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay($healthRecord->emergency_contact_number) }}
                                                         </p>
 
                                                     @endif
@@ -1195,7 +1195,8 @@
                                                         method="POST"
                                                         action="{{ route('health-records.destroy', $healthRecord) }}"
                                                         class="inline"
-                                                        onsubmit="return confirm('Are you sure you want to delete the health record of {{ $healthRecord->resident->full_name }}? This action cannot be undone.');"
+                                                        data-confirm-title="Delete this health record?"
+                                                        data-confirm-item="{{ $healthRecord->resident->full_name }}"
                                                     >
 
                                                         @csrf
@@ -1302,7 +1303,7 @@
                                                 {{ $healthRecord->emergency_contact_name }}
 
                                                 @if ($healthRecord->emergency_contact_number)
-                                                    · {{ $healthRecord->emergency_contact_number }}
+                                                    · {{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay($healthRecord->emergency_contact_number) }}
                                                 @endif
 
                                             </div>
@@ -1331,7 +1332,8 @@
                                             method="POST"
                                             action="{{ route('health-records.destroy', $healthRecord) }}"
                                             class="flex-1"
-                                            onsubmit="return confirm('Are you sure you want to delete the health record of {{ $healthRecord->resident->full_name }}? This action cannot be undone.');"
+                                            data-confirm-title="Delete this health record?"
+                                            data-confirm-item="{{ $healthRecord->resident->full_name }}"
                                         >
 
                                             @csrf

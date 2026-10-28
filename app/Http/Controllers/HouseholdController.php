@@ -4,9 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Household;
 use App\Models\Resident;
+use App\Rules\AddressFitsStorage;
+use App\Rules\PersonName;
+use App\Rules\PhilippineMobileNumber;
+use App\Support\BarangayAddress;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class HouseholdController extends Controller
@@ -16,6 +21,10 @@ class HouseholdController extends Controller
      */
     public function index(Request $request): View
     {
+        $request->validate([
+            'search' => ['nullable', 'string', 'max:255'],
+        ]);
+
         $search = $request->string('search')->trim()->toString();
 
         $households = Household::query()
@@ -59,7 +68,11 @@ class HouseholdController extends Controller
      */
     public function create(): View
     {
-        return view('households.create');
+        return view('households.create', [
+            'addressParts' => BarangayAddress::split(null),
+            'localityParts' => BarangayAddress::localityParts(),
+            'puroks' => BarangayAddress::puroks(),
+        ]);
     }
 
     /**
@@ -75,15 +88,23 @@ class HouseholdController extends Controller
             |--------------------------------------------------------------------------
             */
             'address' => [
-                'required',
+                'nullable',
                 'string',
                 'max:255',
+            ],
+
+            'purok' => [
+                'required',
+                'string',
+                Rule::in(BarangayAddress::puroks()),
+                new AddressFitsStorage,
             ],
 
             'contact_number' => [
                 'nullable',
                 'string',
-                'max:255',
+                'max:13',
+                new PhilippineMobileNumber,
             ],
 
             'status' => [
@@ -105,18 +126,21 @@ class HouseholdController extends Controller
                 'required',
                 'string',
                 'max:255',
+                new PersonName,
             ],
 
             'household_head.middle_name' => [
                 'nullable',
                 'string',
                 'max:255',
+                new PersonName,
             ],
 
             'household_head.last_name' => [
                 'required',
                 'string',
                 'max:255',
+                new PersonName,
             ],
 
             'household_head.suffix' => [
@@ -128,18 +152,19 @@ class HouseholdController extends Controller
             'household_head.birth_date' => [
                 'required',
                 'date',
+                'before_or_equal:today',
             ],
 
             'household_head.gender' => [
                 'required',
-                'string',
-                'max:50',
+                'in:Male,Female',
             ],
 
             'household_head.contact_number' => [
                 'nullable',
                 'string',
-                'max:255',
+                'max:13',
+                new PhilippineMobileNumber,
             ],
 
             'household_head.email' => [
@@ -150,8 +175,7 @@ class HouseholdController extends Controller
 
             'household_head.civil_status' => [
                 'required',
-                'string',
-                'max:100',
+                'in:Single,Married,Widowed,Separated,Divorced',
             ],
 
             'household_head.philhealth_number' => [
@@ -174,18 +198,21 @@ class HouseholdController extends Controller
                 'required',
                 'string',
                 'max:255',
+                new PersonName,
             ],
 
             'members.*.middle_name' => [
                 'nullable',
                 'string',
                 'max:255',
+                new PersonName,
             ],
 
             'members.*.last_name' => [
                 'required',
                 'string',
                 'max:255',
+                new PersonName,
             ],
 
             'members.*.suffix' => [
@@ -196,25 +223,39 @@ class HouseholdController extends Controller
 
             'members.*.relationship_to_head' => [
                 'required',
-                'string',
-                'max:100',
+                Rule::in([
+                    'Son',
+                    'Daughter',
+                    'Wife',
+                    'Husband',
+                    'Mother',
+                    'Father',
+                    'Grandmother',
+                    'Grandfather',
+                    'Sister',
+                    'Brother',
+                    'Grandchild',
+                    'Other Relative',
+                    'Other',
+                ]),
             ],
 
             'members.*.birth_date' => [
                 'required',
                 'date',
+                'before_or_equal:today',
             ],
 
             'members.*.gender' => [
                 'required',
-                'string',
-                'max:50',
+                'in:Male,Female',
             ],
 
             'members.*.contact_number' => [
                 'nullable',
                 'string',
-                'max:255',
+                'max:13',
+                new PhilippineMobileNumber,
             ],
 
             'members.*.email' => [
@@ -223,10 +264,16 @@ class HouseholdController extends Controller
                 'max:255',
             ],
 
-            'members.*.civil_status' => [
+            'members.*.purok' => [
                 'required',
                 'string',
-                'max:100',
+                Rule::in(BarangayAddress::puroks()),
+                new AddressFitsStorage,
+            ],
+
+            'members.*.civil_status' => [
+                'required',
+                'in:Single,Married,Widowed,Separated,Divorced',
             ],
 
             'members.*.philhealth_number' => [
@@ -235,6 +282,11 @@ class HouseholdController extends Controller
                 'max:255',
             ],
         ]);
+
+        $validated['address'] = BarangayAddress::format(
+            $validated['purok'],
+        );
+        unset($validated['purok']);
 
         DB::transaction(function () use ($validated) {
             /*
@@ -315,7 +367,7 @@ class HouseholdController extends Controller
                     'gender' => $member['gender'],
                     'contact_number' => $member['contact_number'] ?? null,
                     'email' => $member['email'] ?? null,
-                    'household_address' => $validated['address'],
+                    'household_address' => BarangayAddress::format($member['purok']),
                     'civil_status' => $member['civil_status'],
                     'philhealth_number' => $member['philhealth_number'] ?? null,
                     'status' => 'Active',
@@ -357,11 +409,18 @@ class HouseholdController extends Controller
         $familyMembers = $household->residents
             ->where('is_household_head', false)
             ->values();
+        $memberAddressParts = $familyMembers
+            ->map(fn (Resident $member): array => BarangayAddress::split($member->household_address))
+            ->all();
 
         return view('households.edit', [
+            'addressParts' => BarangayAddress::split($household->address),
             'household' => $household,
             'head' => $householdHead,
+            'localityParts' => BarangayAddress::localityParts(),
+            'memberAddressParts' => $memberAddressParts,
             'members' => $familyMembers,
+            'puroks' => BarangayAddress::puroks(),
         ]);
     }
 
@@ -383,19 +442,27 @@ class HouseholdController extends Controller
                 'required',
                 'string',
                 'max:255',
-                'unique:households,household_code,' . $household->id,
+                'unique:households,household_code,'.$household->id,
             ],
 
             'address' => [
-                'required',
+                'nullable',
                 'string',
                 'max:255',
+            ],
+
+            'purok' => [
+                'required',
+                'string',
+                Rule::in(BarangayAddress::puroks()),
+                new AddressFitsStorage,
             ],
 
             'contact_number' => [
                 'nullable',
                 'string',
-                'max:255',
+                'max:13',
+                new PhilippineMobileNumber,
             ],
 
             'status' => [
@@ -422,18 +489,21 @@ class HouseholdController extends Controller
                 'required',
                 'string',
                 'max:255',
+                new PersonName,
             ],
 
             'household_head.middle_name' => [
                 'nullable',
                 'string',
                 'max:255',
+                new PersonName,
             ],
 
             'household_head.last_name' => [
                 'required',
                 'string',
                 'max:255',
+                new PersonName,
             ],
 
             'household_head.suffix' => [
@@ -445,18 +515,19 @@ class HouseholdController extends Controller
             'household_head.birth_date' => [
                 'required',
                 'date',
+                'before_or_equal:today',
             ],
 
             'household_head.gender' => [
                 'required',
-                'string',
-                'max:50',
+                'in:Male,Female',
             ],
 
             'household_head.contact_number' => [
                 'nullable',
                 'string',
-                'max:255',
+                'max:13',
+                new PhilippineMobileNumber,
             ],
 
             'household_head.email' => [
@@ -467,8 +538,7 @@ class HouseholdController extends Controller
 
             'household_head.civil_status' => [
                 'required',
-                'string',
-                'max:100',
+                'in:Single,Married,Widowed,Separated,Divorced',
             ],
 
             'household_head.philhealth_number' => [
@@ -496,18 +566,21 @@ class HouseholdController extends Controller
                 'required',
                 'string',
                 'max:255',
+                new PersonName,
             ],
 
             'members.*.middle_name' => [
                 'nullable',
                 'string',
                 'max:255',
+                new PersonName,
             ],
 
             'members.*.last_name' => [
                 'required',
                 'string',
                 'max:255',
+                new PersonName,
             ],
 
             'members.*.suffix' => [
@@ -518,25 +591,39 @@ class HouseholdController extends Controller
 
             'members.*.relationship_to_head' => [
                 'required',
-                'string',
-                'max:100',
+                Rule::in([
+                    'Son',
+                    'Daughter',
+                    'Wife',
+                    'Husband',
+                    'Mother',
+                    'Father',
+                    'Grandmother',
+                    'Grandfather',
+                    'Sister',
+                    'Brother',
+                    'Grandchild',
+                    'Other Relative',
+                    'Other',
+                ]),
             ],
 
             'members.*.birth_date' => [
                 'required',
                 'date',
+                'before_or_equal:today',
             ],
 
             'members.*.gender' => [
                 'required',
-                'string',
-                'max:50',
+                'in:Male,Female',
             ],
 
             'members.*.contact_number' => [
                 'nullable',
                 'string',
-                'max:255',
+                'max:13',
+                new PhilippineMobileNumber,
             ],
 
             'members.*.email' => [
@@ -545,10 +632,16 @@ class HouseholdController extends Controller
                 'max:255',
             ],
 
-            'members.*.civil_status' => [
+            'members.*.purok' => [
                 'required',
                 'string',
-                'max:100',
+                Rule::in(BarangayAddress::puroks()),
+                new AddressFitsStorage,
+            ],
+
+            'members.*.civil_status' => [
+                'required',
+                'in:Single,Married,Widowed,Separated,Divorced',
             ],
 
             'members.*.philhealth_number' => [
@@ -557,6 +650,11 @@ class HouseholdController extends Controller
                 'max:255',
             ],
         ]);
+
+        $validated['address'] = BarangayAddress::format(
+            $validated['purok'],
+        );
+        unset($validated['purok']);
 
         DB::transaction(function () use (
             $validated,
@@ -571,7 +669,7 @@ class HouseholdController extends Controller
                 ->where('is_household_head', true)
                 ->first();
 
-            if (!$householdHead) {
+            if (! $householdHead) {
                 throw new \RuntimeException(
                     'Household head record could not be found.'
                 );
@@ -653,7 +751,7 @@ class HouseholdController extends Controller
             |--------------------------------------------------------------------------
             */
             foreach ($validated['members'] ?? [] as $member) {
-                $memberId = !empty($member['id'])
+                $memberId = ! empty($member['id'])
                     ? (int) $member['id']
                     : null;
 
@@ -668,7 +766,7 @@ class HouseholdController extends Controller
                         ->where('id', $memberId)
                         ->first();
 
-                    if (!$resident) {
+                    if (! $resident) {
                         throw new \RuntimeException(
                             'One of the selected family members does not belong to this household.'
                         );
@@ -688,7 +786,7 @@ class HouseholdController extends Controller
                         'gender' => $member['gender'],
                         'contact_number' => $member['contact_number'] ?? null,
                         'email' => $member['email'] ?? null,
-                        'household_address' => $validated['address'],
+                        'household_address' => BarangayAddress::format($member['purok']),
                         'civil_status' => $member['civil_status'],
                         'philhealth_number' => $member['philhealth_number'] ?? null,
                     ]);
@@ -717,7 +815,7 @@ class HouseholdController extends Controller
                         'gender' => $member['gender'],
                         'contact_number' => $member['contact_number'] ?? null,
                         'email' => $member['email'] ?? null,
-                        'household_address' => $validated['address'],
+                        'household_address' => BarangayAddress::format($member['purok']),
                         'civil_status' => $member['civil_status'],
                         'philhealth_number' => $member['philhealth_number'] ?? null,
                         'status' => 'Active',
@@ -772,13 +870,13 @@ class HouseholdController extends Controller
         ?string $suffix
     ): string {
         $name = trim(
-            $firstName . ' ' .
-            ($middleName ?? '') . ' ' .
+            $firstName.' '.
+            ($middleName ?? '').' '.
             $lastName
         );
 
-        if (!empty($suffix)) {
-            $name .= ', ' . $suffix;
+        if (! empty($suffix)) {
+            $name .= ', '.$suffix;
         }
 
         return $name;
@@ -798,7 +896,7 @@ class HouseholdController extends Controller
             : 1;
 
         do {
-            $code = 'HH-' . str_pad(
+            $code = 'HH-'.str_pad(
                 $nextNumber,
                 6,
                 '0',
