@@ -8,6 +8,8 @@ use App\Models\HealthVisit;
 use App\Models\Household;
 use App\Models\Resident;
 use App\Models\SeniorCitizen;
+use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
@@ -35,45 +37,80 @@ class DashboardController extends Controller
             today()
         )->count();
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | Monthly Health Visits
-        |--------------------------------------------------------------------------
-        */
-        $currentYear = now()->year;
-
-        $monthlyVisitCounts = HealthVisit::query()
-            ->selectRaw('MONTH(visit_date) as month, COUNT(*) as count')
-            ->whereYear('visit_date', $currentYear)
-            ->groupByRaw('MONTH(visit_date)')
-            ->orderByRaw('MONTH(visit_date)')
+        $today = CarbonImmutable::today();
+        $visitCountsByDay = HealthVisit::query()
+            ->toBase()
+            ->selectRaw('DATE(visit_date) as visit_day, COUNT(*) as visit_count')
+            ->groupByRaw('DATE(visit_date)')
             ->get()
-            ->keyBy('month');
+            ->mapWithKeys(fn (object $row): array => [$row->visit_day => (int) $row->visit_count]);
 
+        $visitCountsByMonth = [];
+        $visitCountsByYear = [];
+        foreach ($visitCountsByDay as $date => $count) {
+            $month = substr($date, 0, 7);
+            $year = (int) substr($date, 0, 4);
+            $visitCountsByMonth[$month] = ($visitCountsByMonth[$month] ?? 0) + $count;
+            $visitCountsByYear[$year] = ($visitCountsByYear[$year] ?? 0) + $count;
+        }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Build January - December
-        |--------------------------------------------------------------------------
-        */
-        $monthlyHealthVisits = collect(range(1, 12))
-            ->map(function (int $month) use ($monthlyVisitCounts) {
+        $weekStart = $today->startOfWeek(CarbonInterface::MONDAY);
+        $firstYear = min([$today->year, ...array_keys($visitCountsByYear)]);
+        $lastYear = max([$today->year, ...array_keys($visitCountsByYear)]);
 
-                return [
-                    'month' => now()
-                        ->startOfYear()
-                        ->addMonths($month - 1)
-                        ->format('M'),
+        $healthVisitChartData = [
+            'day' => [
+                'title' => 'Daily Health Visits',
+                'description' => 'Health visits over the last 30 days, including today',
+                'axis' => 'Day',
+                'points' => collect(range(29, 0))->map(function (int $offset) use ($today, $visitCountsByDay): array {
+                    $date = $today->subDays($offset);
 
-                    'count' => (int) (
-                        $monthlyVisitCounts->get($month)?->count ?? 0
-                    ),
-                ];
+                    return ['label' => $date->format('M j'), 'count' => $visitCountsByDay->get($date->toDateString(), 0)];
+                })->all(),
+            ],
+            'week' => [
+                'title' => 'Weekly Health Visits',
+                'description' => 'Health visits over the last 12 weeks, through today',
+                'axis' => 'Week starting Monday',
+                'points' => collect(range(11, 0))->map(function (int $offset) use ($weekStart, $today, $visitCountsByDay): array {
+                    $start = $weekStart->subWeeks($offset);
+                    $count = collect(range(0, 6))->sum(function (int $day) use ($start, $today, $visitCountsByDay): int {
+                        $date = $start->addDays($day);
 
-            })
-            ->values();
+                        return $date->lessThanOrEqualTo($today) ? $visitCountsByDay->get($date->toDateString(), 0) : 0;
+                    });
 
+                    return ['label' => $start->format('M j, Y'), 'count' => $count];
+                })->all(),
+            ],
+            'month' => [
+                'title' => 'Monthly Health Visits',
+                'description' => "Health visits recorded in {$today->year}",
+                'axis' => 'Month',
+                'points' => collect(range(0, 11))->map(function (int $offset) use ($today, $visitCountsByMonth): array {
+                    $date = $today->startOfYear()->addMonths($offset);
+
+                    return ['label' => $date->format('M'), 'count' => $visitCountsByMonth[$date->format('Y-m')] ?? 0];
+                })->all(),
+            ],
+            'year' => [
+                'title' => 'Yearly Health Visits',
+                'description' => 'Health visits over the last 5 calendar years',
+                'axis' => 'Year',
+                'points' => collect(range($today->year - 4, $today->year))
+                    ->map(fn (int $year): array => ['label' => (string) $year, 'count' => $visitCountsByYear[$year] ?? 0])
+                    ->all(),
+            ],
+            'all' => [
+                'title' => 'All Health Visits',
+                'description' => 'All recorded health visits, grouped by year',
+                'axis' => 'Year',
+                'points' => collect(range($firstYear, $lastYear))
+                    ->map(fn (int $year): array => ['label' => (string) $year, 'count' => $visitCountsByYear[$year] ?? 0])
+                    ->all(),
+            ],
+        ];
 
         /*
         |--------------------------------------------------------------------------
@@ -85,7 +122,6 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-
         /*
         |--------------------------------------------------------------------------
         | Recently Added Residents
@@ -94,7 +130,6 @@ class DashboardController extends Controller
         $recentResidents = Resident::latest()
             ->take(5)
             ->get();
-
 
         /*
         |--------------------------------------------------------------------------
@@ -113,7 +148,7 @@ class DashboardController extends Controller
 
             'todayHealthVisits' => $todayHealthVisits,
 
-            'monthlyHealthVisits' => $monthlyHealthVisits,
+            'healthVisitChartData' => $healthVisitChartData,
 
             'recentHealthVisits' => $recentHealthVisits,
 
@@ -121,8 +156,6 @@ class DashboardController extends Controller
 
         ]);
     }
-
-
 
     /**
      * Barangay Official Dashboard.
@@ -147,7 +180,6 @@ class DashboardController extends Controller
 
         $announcementCount = Announcement::count();
 
-
         /*
         |--------------------------------------------------------------------------
         | Upcoming Schedule
@@ -160,7 +192,6 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-
         /*
         |--------------------------------------------------------------------------
         | Recently Added Residents
@@ -169,7 +200,6 @@ class DashboardController extends Controller
         $recentResidents = Resident::latest()
             ->take(5)
             ->get();
-
 
         /*
         |--------------------------------------------------------------------------
@@ -180,7 +210,6 @@ class DashboardController extends Controller
             ->latest()
             ->take(3)
             ->get();
-
 
         /*
         |--------------------------------------------------------------------------
@@ -228,7 +257,6 @@ class DashboardController extends Controller
 
         $totalSeniorCitizens = SeniorCitizen::count();
 
-
         /*
         |--------------------------------------------------------------------------
         | Recently Added Residents
@@ -237,7 +265,6 @@ class DashboardController extends Controller
         $recentResidents = Resident::latest()
             ->take(5)
             ->get();
-
 
         /*
         |--------------------------------------------------------------------------

@@ -47,6 +47,7 @@ return [
     'unisms' => [
         'secret_key' => env('UNISMS_SECRET_KEY'),
         'sender_id' => env('UNISMS_SENDER_ID'),
+        'webhook_secret' => env('UNISMS_WEBHOOK_SECRET'),
         'enabled' => env('UNISMS_SMS_ENABLED', false),
         'base_url' => env(
             'UNISMS_BASE_URL',

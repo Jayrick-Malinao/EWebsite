@@ -8,6 +8,8 @@ use Illuminate\Translation\PotentiallyTranslatedString;
 
 class PersonName implements ValidationRule
 {
+    public function __construct(private bool $allowApostrophes = true) {}
+
     /**
      * Run the validation rule.
      *
@@ -17,9 +19,16 @@ class PersonName implements ValidationRule
     {
         if (
             ! is_string($value)
-            || preg_match('/\A[\p{L}]+(?:[ \'\x{2019}-][\p{L}]+)*\z/u', $value) !== 1
+            || preg_match(
+                $this->allowApostrophes
+                    ? '/\A[\p{L}]+(?:[ \'\x{2019}-][\p{L}]+)*\z/u'
+                    : '/\A[\p{L}]+(?:[ -][\p{L}]+)*\z/u',
+                $value
+            ) !== 1
         ) {
-            $fail('The :attribute may contain letters, spaces, hyphens, and apostrophes only.');
+            $fail($this->allowApostrophes
+                ? 'The :attribute may contain letters, spaces, hyphens, and apostrophes only.'
+                : 'The :attribute may contain letters, spaces, and hyphens only.');
         }
     }
 }

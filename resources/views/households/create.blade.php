@@ -989,6 +989,7 @@
                                 <input
                                     type="text"
                                     name="household_head[first_name]"
+                                    data-person-name-strict
                                     value="{{ old('household_head.first_name') }}"
                                     required
                                     style="text-transform: capitalize;"
@@ -1003,6 +1004,7 @@
                                 <input
                                     type="text"
                                     name="household_head[middle_name]"
+                                    data-person-name-strict
                                     value="{{ old('household_head.middle_name') }}"
                                     style="text-transform: capitalize;"
                                     class="clay-input mt-2"
@@ -1017,6 +1019,7 @@
                                 <input
                                     type="text"
                                     name="household_head[last_name]"
+                                    data-person-name-strict
                                     value="{{ old('household_head.last_name') }}"
                                     required
                                     style="text-transform: capitalize;"
@@ -1026,15 +1029,16 @@
 
                             <div>
                                 <label class="clay-label block text-sm font-semibold">
-                                    Suffix
+                                    Suffix (Optional)
                                 </label>
-                                <input
-                                    type="text"
+                                <select
                                     name="household_head[suffix]"
-                                    value="{{ old('household_head.suffix') }}"
-                                    placeholder="Jr., Sr., III"
-                                    class="clay-input mt-2"
+                                    class="clay-select mt-2"
                                 >
+                                    <option value="">None</option>
+                                    <option value="Jr." @selected(old('household_head.suffix') === 'Jr.')>Jr.</option>
+                                    <option value="Sr." @selected(old('household_head.suffix') === 'Sr.')>Sr.</option>
+                                </select>
                             </div>
 
                         </div>
@@ -1051,9 +1055,18 @@
                                     type="date"
                                     name="household_head[birth_date]"
                                     value="{{ old('household_head.birth_date') }}"
+                                    max="{{ now()->format('Y-m-d') }}"
+                                    data-age-source
+                                    data-today="{{ now()->format('Y-m-d') }}"
                                     required
                                     class="clay-input mt-2"
                                 >
+                            </div>
+
+                            <div>
+                                <label class="clay-label block text-sm font-semibold">Age
+                                    <input type="text" readonly data-age-display class="clay-input mt-2">
+                                </label>
                             </div>
 
                             <div>
@@ -1093,11 +1106,14 @@
 
                             <div>
                                 <label class="clay-label block text-sm font-semibold">
-                                    PhilHealth Number
+                                    PhilHealth Number (Optional)
                                 </label>
                                 <input
                                     type="text"
                                     name="household_head[philhealth_number]"
+                                    inputmode="numeric"
+                                    pattern="[0-9]*"
+                                    title="Use digits only."
                                     value="{{ old('household_head.philhealth_number') }}"
                                     placeholder="PhilHealth number"
                                     class="clay-input mt-2"
@@ -1111,23 +1127,25 @@
 
                             <div>
                                 <label class="clay-label block text-sm font-semibold">
-                                    Contact Number
+                                    Contact Number <span class="required-mark">*</span>
                                 </label>
                                 <input
                                     type="tel"
                                     name="household_head[contact_number]"
-                                    value="{{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay(old('household_head.contact_number')) ?: '+63' }}"
+                                    required
+                                    value="{{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay(old('household_head.contact_number')) }}"
+                                    data-local-mobile
                                     inputmode="numeric"
-                                    maxlength="24"
-                                    placeholder="+6391 7123 4567"
-                                    title="Only Globe and DITO SIM numbers are supported."
+                                    maxlength="13"
+                                    placeholder="09XX-XXXX-XXX"
+                                    title="Enter an 11-digit mobile number starting with 09."
                                     class="clay-input mt-2"
                                 >
                             </div>
 
                             <div>
                                 <label class="clay-label block text-sm font-semibold">
-                                    Email
+                                    Email (Optional)
                                 </label>
                                 <input
                                     type="email"
@@ -1171,21 +1189,7 @@
                         {{-- Household contact and status --}}
                         <div class="grid gap-5 md:grid-cols-2">
 
-                            <div>
-                                <label class="clay-label block text-sm font-semibold">
-                                    Household Contact Number
-                                </label>
-                                <input
-                                    type="tel"
-                                    name="contact_number"
-                                    value="{{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay(old('contact_number')) ?: '+63' }}"
-                                    inputmode="numeric"
-                                    maxlength="24"
-                                    placeholder="+6391 7123 4567"
-                                    title="Only Globe and DITO SIM numbers are supported."
-                                    class="clay-input mt-2"
-                                >
-                            </div>
+                            <p class="text-sm text-[#6D817A]">Household members use the household head's contact number.</p>
 
                             <div>
                                 <label class="clay-label block text-sm font-semibold">
@@ -1469,6 +1473,7 @@
                         <input
                             type="text"
                             data-field="first_name"
+                            data-person-name-strict
                             required
                             class="clay-input mt-2"
                         >
@@ -1484,6 +1489,7 @@
                         <input
                             type="text"
                             data-field="middle_name"
+                            data-person-name-strict
                             class="clay-input mt-2"
                         >
 
@@ -1499,6 +1505,7 @@
                         <input
                             type="text"
                             data-field="last_name"
+                            data-person-name-strict
                             required
                             class="clay-input mt-2"
                         >
@@ -1508,15 +1515,17 @@
                     <div>
 
                         <label class="clay-label block text-sm font-semibold">
-                            Suffix
+                            Suffix (Optional)
                         </label>
 
-                        <input
-                            type="text"
+                        <select
                             data-field="suffix"
-                            placeholder="Jr., Sr., III"
-                            class="clay-input mt-2"
+                            class="clay-select mt-2"
                         >
+                            <option value="">None</option>
+                            <option value="Jr.">Jr.</option>
+                            <option value="Sr.">Sr.</option>
+                        </select>
 
                     </div>
 
@@ -1526,24 +1535,40 @@
                 {{-- Personal --}}
                 <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
 
-                    {{-- Relationship --}}
+                    {{-- Birth Date --}}
                     <div>
 
+                        <label class="clay-label block text-sm font-semibold">
+                            Birth Date
+                            <span class="required-mark">*</span>
+                        </label>
+
+                        <input
+                            type="date"
+                            data-field="birth_date"
+                            max="{{ now()->format('Y-m-d') }}"
+                            data-age-source
+                            data-today="{{ now()->format('Y-m-d') }}"
+                            required
+                            class="clay-input mt-2"
+                        >
+
+                    </div>
+
+                    <div>
+                        <label class="clay-label block text-sm font-semibold">Age
+                            <input type="text" readonly data-age-display class="clay-input mt-2">
+                        </label>
+                    </div>
+
+                    {{-- Relationship --}}
+                    <div>
                         <label class="clay-label block text-sm font-semibold">
                             Relationship
                             <span class="required-mark">*</span>
                         </label>
-
-                        <select
-                            data-field="relationship_to_head"
-                            required
-                            class="clay-select mt-2"
-                        >
-
-                            <option value="">
-                                Select relationship
-                            </option>
-
+                        <select data-field="relationship_to_head" required class="clay-select mt-2">
+                            <option value="">Select relationship</option>
                             <option value="Son">Son</option>
                             <option value="Daughter">Daughter</option>
                             <option value="Wife">Wife</option>
@@ -1557,27 +1582,7 @@
                             <option value="Grandchild">Grandchild</option>
                             <option value="Other Relative">Other Relative</option>
                             <option value="Other">Other</option>
-
                         </select>
-
-                    </div>
-
-
-                    {{-- Birth Date --}}
-                    <div>
-
-                        <label class="clay-label block text-sm font-semibold">
-                            Birth Date
-                            <span class="required-mark">*</span>
-                        </label>
-
-                        <input
-                            type="date"
-                            data-field="birth_date"
-                            required
-                            class="clay-input mt-2"
-                        >
-
                     </div>
 
 
@@ -1663,12 +1668,15 @@
                     <div>
 
                         <label class="clay-label block text-sm font-semibold">
-                            PhilHealth Number
+                            PhilHealth Number (Optional)
                         </label>
 
                         <input
                             type="text"
                             data-field="philhealth_number"
+                            inputmode="numeric"
+                            pattern="[0-9]*"
+                            title="Use digits only."
                             placeholder="PhilHealth number"
                             class="clay-input mt-2"
                         >
@@ -1677,40 +1685,38 @@
 
                     <div>
 
-                        <label class="clay-label block text-sm font-semibold">
-                            Contact Number
-                        </label>
-
-                        <input
-                            type="tel"
-                            data-field="contact_number"
-                            value="+63"
-                            inputmode="numeric"
-                            maxlength="24"
-                            placeholder="+6391 7123 4567"
-                            title="Only Globe and DITO SIM numbers are supported."
-                            class="clay-input mt-2"
-                        >
+                        <p class="text-sm text-[#6D817A]">Uses the household head's contact number.</p>
 
                     </div>
 
                 </div>
 
 
-                {{-- Email --}}
-                <div>
+                {{-- Email and status --}}
+                <div class="grid gap-5 sm:grid-cols-2">
 
-                    <label class="clay-label block text-sm font-semibold">
-                        Email
-                    </label>
+                    <div>
+                        <label class="clay-label block text-sm font-semibold">
+                            Email (Optional)
+                        </label>
 
-                    <input
-                        type="email"
-                        data-field="email"
-                        placeholder="name@example.com"
-                        class="clay-input mt-2"
-                    >
+                        <input
+                            type="email"
+                            data-field="email"
+                            placeholder="name@example.com"
+                            class="clay-input mt-2"
+                        >
+                    </div>
 
+                    <div>
+                        <label class="clay-label block text-sm font-semibold">
+                            Status <span class="required-mark">*</span>
+                            <select data-field="status" required class="clay-select mt-2">
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
+                        </label>
+                    </div>
                 </div>
 
 
@@ -1874,6 +1880,10 @@
 
                 container.appendChild(fragment);
 
+                card.querySelectorAll('[data-age-source], [data-local-mobile]').forEach((input) => {
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                });
+
                 memberIndex++;
 
                 updateMemberNumbers();
@@ -1936,14 +1946,6 @@
                         }
 
 
-                        const oldMembers = @js(old('members', []));
-
-                        if (Array.isArray(oldMembers)) {
-                            oldMembers.forEach((member) => {
-                                addMember(member, false);
-                            });
-                        }
-
                         updateMemberNumbers();
 
                     }
@@ -1969,6 +1971,10 @@
                INITIAL STATE
             ====================================================== */
 
+            const oldMembers = @js(old('members', []));
+            if (oldMembers && typeof oldMembers === 'object') {
+                Object.values(oldMembers).forEach((member) => addMember(member, false));
+            }
             updateMemberNumbers();
 
         });

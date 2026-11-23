@@ -131,14 +131,6 @@
             -4px -4px 10px rgba(255, 255, 255, 0.94);
     }
 
-    .clay-alert-warning {
-        background: #FAF5EC;
-        border: 1px solid rgba(183, 121, 31, 0.18);
-        box-shadow:
-            4px 4px 10px rgba(107, 134, 124, 0.14),
-            -4px -4px 10px rgba(255, 255, 255, 0.94);
-    }
-
     .clay-error {
         background: #FEF2F2;
         border: 1px solid rgba(220, 38, 38, 0.16);
@@ -421,6 +413,7 @@
                                         id="first_name"
                                         type="text"
                                         name="first_name"
+                                        data-person-name-strict
                                         value="{{ old('first_name') }}"
                                         placeholder="First name"
                                         required
@@ -444,6 +437,7 @@
                                         id="middle_name"
                                         type="text"
                                         name="middle_name"
+                                        data-person-name-strict
                                         value="{{ old('middle_name') }}"
                                         placeholder="Middle name"
                                         autocomplete="additional-name"
@@ -465,6 +459,7 @@
                                         id="last_name"
                                         type="text"
                                         name="last_name"
+                                        data-person-name-strict
                                         value="{{ old('last_name') }}"
                                         placeholder="Last name"
                                         required
@@ -589,16 +584,26 @@
                             </label>
 
 
-                            <input
-                                id="password"
-                                type="password"
-                                name="password"
-                                placeholder="Enter password"
-                                required
-                                minlength="8"
-                                autocomplete="new-password"
-                                class="clay-input w-full rounded-xl px-4 py-3 text-sm text-[#164238] outline-none transition placeholder:text-[#9AA9A4] @error('password') border-[#DC2626] @enderror"
-                            >
+                            <div class="relative">
+                                <input
+                                    id="password"
+                                    type="password"
+                                    name="password"
+                                    placeholder="Enter password"
+                                    required
+                                    minlength="8"
+                                    autocomplete="new-password"
+                                    class="clay-input w-full rounded-xl px-4 py-3 pr-11 text-sm text-[#164238] outline-none transition placeholder:text-[#9AA9A4] @error('password') border-[#DC2626] @enderror"
+                                >
+                                <button
+                                    type="button"
+                                    class="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-[#6D817A] transition hover:text-[#164238]"
+                                    data-toggle-password="password"
+                                    aria-label="Show password"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12s3.75-6.75 9.75-6.75S21.75 12 21.75 12 18 18.75 12 18.75 2.25 12 2.25 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                                </button>
+                            </div>
 
 
                             <p class="mt-1.5 text-xs text-[#6D817A]">
@@ -631,16 +636,26 @@
                             </label>
 
 
-                            <input
-                                id="password_confirmation"
-                                type="password"
-                                name="password_confirmation"
-                                placeholder="Re-enter password"
-                                required
-                                minlength="8"
-                                autocomplete="new-password"
-                                class="clay-input w-full rounded-xl px-4 py-3 text-sm text-[#164238] outline-none transition placeholder:text-[#9AA9A4]"
-                            >
+                            <div class="relative">
+                                <input
+                                    id="password_confirmation"
+                                    type="password"
+                                    name="password_confirmation"
+                                    placeholder="Re-enter password"
+                                    required
+                                    minlength="8"
+                                    autocomplete="new-password"
+                                    class="clay-input w-full rounded-xl px-4 py-3 pr-11 text-sm text-[#164238] outline-none transition placeholder:text-[#9AA9A4]"
+                                >
+                                <button
+                                    type="button"
+                                    class="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-[#6D817A] transition hover:text-[#164238]"
+                                    data-toggle-password="password_confirmation"
+                                    aria-label="Show confirmation password"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12s3.75-6.75 9.75-6.75S21.75 12 21.75 12 18 18.75 12 18.75 2.25 12 2.25 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                                </button>
+                            </div>
 
                         </div>
 
@@ -752,50 +767,6 @@
             </div>
 
 
-            {{-- =================================================
-                 SECURITY NOTICE
-            ================================================== --}}
-            <div class="clay-alert-warning mt-7 rounded-2xl p-5">
-
-                <div class="flex gap-3">
-
-                    <div class="mt-0.5 shrink-0 text-[#B7791F]">
-
-                        <svg
-                            class="h-5 w-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M12 9v3m0 4h.01M10.29 3.86l-8.1 14A2 2 0 003.92 21h16.16a2 2 0 001.73-3.14l-8.1-14a2 2 0 00-3.42 0z"
-                            />
-                        </svg>
-
-                    </div>
-
-
-                    <div class="min-w-0">
-
-                        <p class="text-sm font-semibold text-[#66400D]">
-                            Staff account security
-                        </p>
-
-                        <p class="mt-1 text-sm leading-6 text-[#76541C]">
-                            Only the System Administrator should create staff
-                            accounts. Make sure the email address and assigned
-                            role belong to the correct staff member.
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </div>
-
         </div>
 
     </div>
@@ -804,6 +775,23 @@
 
 
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('[data-toggle-password]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                const input = document.getElementById(button.dataset.togglePassword);
+                if (!input) {
+                    return;
+                }
+
+                const isPassword = input.type === 'password';
+                input.type = isPassword ? 'text' : 'password';
+                button.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+            });
+        });
+    });
+</script>
 
 </body>
 

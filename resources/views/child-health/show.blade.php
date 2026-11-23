@@ -234,22 +234,6 @@
                     </div>
                 </section>
 
-                {{-- Delete Form Action --}}
-                <section class="clay-card p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div>
-                        <h4 class="text-sm font-bold text-[#164238]">Delete Record</h4>
-                        <p class="text-xs text-[#6D817A]">Permanently remove this child health monitoring record.</p>
-                    </div>
-
-                    <form method="POST" action="{{ route('child-health.destroy', $childHealth) }}" data-confirm-title="Delete this child health record?" data-confirm-item="{{ $childHealth->resident?->full_name ?? 'Child health record' }}">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="clay-delete-btn min-h-[44px] px-5 py-2.5 rounded-xl text-xs font-bold">
-                            Delete Record
-                        </button>
-                    </form>
-                </section>
-
             </div>
 
         </div>

@@ -724,33 +724,14 @@
 
                         <div class="clay-section-body">
 
-                            <label
-                                for="resident_id"
-                                class="clay-label mb-2 block text-sm font-semibold"
-                            >
-                                Resident <span class="clay-required">*</span>
+                            <label class="clay-label mb-2 block text-sm font-semibold">
+                                Resident
                             </label>
-
-                            <select
-                                id="resident_id"
-                                name="resident_id"
-                                required
-                                class="clay-input px-4 py-2.5 text-sm"
-                            >
-
-                                @foreach ($residents as $resident)
-
-                                    <option
-                                        value="{{ $resident->id }}"
-                                        @selected(old('resident_id', $healthRecord->resident_id) == $resident->id)
-                                    >
-                                        {{ $resident->full_name }}
-                                        — Resident #{{ $resident->id }}
-                                    </option>
-
-                                @endforeach
-
-                            </select>
+                            <div class="clay-input px-4 py-2.5 text-sm">
+                                {{ $healthRecord->resident?->full_name }}
+                                — Resident #{{ $healthRecord->resident_id }}
+                            </div>
+                            <input type="hidden" name="resident_id" value="{{ $healthRecord->resident_id }}">
 
                             @error('resident_id')
                                 <p class="clay-field-error mt-1.5 text-xs">
@@ -1106,32 +1087,28 @@
 
                         <div class="grid gap-5 p-5 md:grid-cols-3">
 
-                            {{-- Name --}}
-                            <div>
-
-                                <label
-                                    for="emergency_contact_name"
-                                    class="clay-label mb-2 block text-sm font-semibold"
-                                >
-                                    Contact Name
-                                </label>
-
-                                <input
-                                    type="text"
-                                    id="emergency_contact_name"
-                                    name="emergency_contact_name"
-                                    value="{{ old('emergency_contact_name', $healthRecord->emergency_contact_name) }}"
-                                    placeholder="Full name"
-                                    class="clay-input px-4 py-2.5 text-sm"
-                                >
-
-                                @error('emergency_contact_name')
-                                    <p class="clay-field-error mt-1.5 text-xs">
-                                        {{ $message }}
-                                    </p>
-                                @enderror
-
-                            </div>
+                            @foreach ([
+                                'first_name' => 'First Name',
+                                'middle_name' => 'Middle Name',
+                                'last_name' => 'Last Name',
+                            ] as $namePart => $label)
+                                <div>
+                                    <label for="emergency_contact_{{ $namePart }}" class="clay-label mb-2 block text-sm font-semibold">
+                                        {{ $label }}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="emergency_contact_{{ $namePart }}"
+                                        name="emergency_contact_{{ $namePart }}"
+                                        value="{{ old('emergency_contact_'.$namePart, $emergencyContactNameParts[$namePart]) }}"
+                                        placeholder="{{ $label }}"
+                                        class="clay-input px-4 py-2.5 text-sm"
+                                    >
+                                    @error('emergency_contact_'.$namePart)
+                                        <p class="clay-field-error mt-1.5 text-xs">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            @endforeach
 
                             {{-- Number --}}
                             <div>
@@ -1166,21 +1143,28 @@
                             {{-- Relationship --}}
                             <div>
 
-                                <label
-                                    for="emergency_contact_relationship"
-                                    class="clay-label mb-2 block text-sm font-semibold"
-                                >
+                                <label for="emergency_contact_relationship" class="clay-label mb-2 block text-sm font-semibold">
                                     Relationship
                                 </label>
-
-                                <input
-                                    type="text"
+                                @php
+                                    $relationshipOptions = ['Spouse', 'Parent', 'Child', 'Sibling', 'Relative', 'Guardian', 'Friend', 'Other'];
+                                    $relationshipValue = old('emergency_contact_relationship', $healthRecord->emergency_contact_relationship);
+                                @endphp
+                                <select
                                     id="emergency_contact_relationship"
                                     name="emergency_contact_relationship"
-                                    value="{{ old('emergency_contact_relationship', $healthRecord->emergency_contact_relationship) }}"
-                                    placeholder="e.g. Spouse, Parent, Sibling"
                                     class="clay-input px-4 py-2.5 text-sm"
                                 >
+                                    <option value="">Select relationship</option>
+                                    @foreach ($relationshipOptions as $relationship)
+                                        <option value="{{ $relationship }}" @selected($relationshipValue === $relationship)>
+                                            {{ $relationship }}
+                                        </option>
+                                    @endforeach
+                                    @if ($relationshipValue && !in_array($relationshipValue, $relationshipOptions, true))
+                                        <option value="{{ $relationshipValue }}" selected>{{ $relationshipValue }}</option>
+                                    @endif
+                                </select>
 
                                 @error('emergency_contact_relationship')
                                     <p class="clay-field-error mt-1.5 text-xs">

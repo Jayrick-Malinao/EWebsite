@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AnnouncementSmsDelivery;
 use App\Models\Household;
 use App\Models\Resident;
 use App\Rules\AddressFitsStorage;
@@ -100,13 +101,6 @@ class HouseholdController extends Controller
                 new AddressFitsStorage,
             ],
 
-            'contact_number' => [
-                'nullable',
-                'string',
-                'max:13',
-                new PhilippineMobileNumber,
-            ],
-
             'status' => [
                 'required',
                 'in:Active,Inactive',
@@ -126,27 +120,26 @@ class HouseholdController extends Controller
                 'required',
                 'string',
                 'max:255',
-                new PersonName,
+                new PersonName(false),
             ],
 
             'household_head.middle_name' => [
                 'nullable',
                 'string',
                 'max:255',
-                new PersonName,
+                new PersonName(false),
             ],
 
             'household_head.last_name' => [
                 'required',
                 'string',
                 'max:255',
-                new PersonName,
+                new PersonName(false),
             ],
 
             'household_head.suffix' => [
                 'nullable',
-                'string',
-                'max:50',
+                Rule::in(['Jr.', 'Sr.']),
             ],
 
             'household_head.birth_date' => [
@@ -161,10 +154,10 @@ class HouseholdController extends Controller
             ],
 
             'household_head.contact_number' => [
-                'nullable',
+                'required',
                 'string',
                 'max:13',
-                new PhilippineMobileNumber,
+                new PhilippineMobileNumber($request),
             ],
 
             'household_head.email' => [
@@ -182,6 +175,7 @@ class HouseholdController extends Controller
                 'nullable',
                 'string',
                 'max:255',
+                'regex:/\A[0-9]+\z/',
             ],
 
             /*
@@ -198,27 +192,26 @@ class HouseholdController extends Controller
                 'required',
                 'string',
                 'max:255',
-                new PersonName,
+                new PersonName(false),
             ],
 
             'members.*.middle_name' => [
                 'nullable',
                 'string',
                 'max:255',
-                new PersonName,
+                new PersonName(false),
             ],
 
             'members.*.last_name' => [
                 'required',
                 'string',
                 'max:255',
-                new PersonName,
+                new PersonName(false),
             ],
 
             'members.*.suffix' => [
                 'nullable',
-                'string',
-                'max:50',
+                Rule::in(['Jr.', 'Sr.']),
             ],
 
             'members.*.relationship_to_head' => [
@@ -251,11 +244,10 @@ class HouseholdController extends Controller
                 'in:Male,Female',
             ],
 
-            'members.*.contact_number' => [
-                'nullable',
-                'string',
-                'max:13',
-                new PhilippineMobileNumber,
+            'members.*.status' => [
+                'sometimes',
+                'required',
+                Rule::in(['Active', 'Inactive']),
             ],
 
             'members.*.email' => [
@@ -280,7 +272,11 @@ class HouseholdController extends Controller
                 'nullable',
                 'string',
                 'max:255',
+                'regex:/\A[0-9]+\z/',
             ],
+        ], [
+            'household_head.philhealth_number.regex' => 'The household head PhilHealth number must contain digits only.',
+            'members.*.philhealth_number.regex' => 'The family member PhilHealth number must contain digits only.',
         ]);
 
         $validated['address'] = BarangayAddress::format(
@@ -319,7 +315,7 @@ class HouseholdController extends Controller
                 'household_code' => $householdCode,
                 'household_head_name' => $headName,
                 'address' => $validated['address'],
-                'contact_number' => $validated['contact_number'] ?? null,
+                'contact_number' => $head['contact_number'],
                 'status' => $validated['status'],
             ]);
 
@@ -365,12 +361,12 @@ class HouseholdController extends Controller
                     'suffix' => $member['suffix'] ?? null,
                     'birth_date' => $member['birth_date'],
                     'gender' => $member['gender'],
-                    'contact_number' => $member['contact_number'] ?? null,
+                    'contact_number' => $head['contact_number'],
                     'email' => $member['email'] ?? null,
                     'household_address' => BarangayAddress::format($member['purok']),
                     'civil_status' => $member['civil_status'],
                     'philhealth_number' => $member['philhealth_number'] ?? null,
-                    'status' => 'Active',
+                    'status' => $member['status'] ?? 'Active',
                 ]);
             }
         });
@@ -410,7 +406,9 @@ class HouseholdController extends Controller
             ->where('is_household_head', false)
             ->values();
         $memberAddressParts = $familyMembers
-            ->map(fn (Resident $member): array => BarangayAddress::split($member->household_address))
+            ->mapWithKeys(fn (Resident $member): array => [
+                $member->id => BarangayAddress::split($member->household_address),
+            ])
             ->all();
 
         return view('households.edit', [
@@ -432,6 +430,12 @@ class HouseholdController extends Controller
         Request $request,
         Household $household
     ): RedirectResponse {
+        $memberNameRule = function (string $attribute, mixed $value, \Closure $fail) use ($request): void {
+            $memberIndex = explode('.', $attribute)[1];
+            $existingMemberId = $request->input("members.$memberIndex.id");
+            (new PersonName($existingMemberId !== null))->validate($attribute, $value, $fail);
+        };
+
         $validated = $request->validate([
             /*
             |--------------------------------------------------------------------------
@@ -456,13 +460,6 @@ class HouseholdController extends Controller
                 'string',
                 Rule::in(BarangayAddress::puroks()),
                 new AddressFitsStorage,
-            ],
-
-            'contact_number' => [
-                'nullable',
-                'string',
-                'max:13',
-                new PhilippineMobileNumber,
             ],
 
             'status' => [
@@ -524,7 +521,7 @@ class HouseholdController extends Controller
             ],
 
             'household_head.contact_number' => [
-                'nullable',
+                'required',
                 'string',
                 'max:13',
                 new PhilippineMobileNumber,
@@ -545,6 +542,7 @@ class HouseholdController extends Controller
                 'nullable',
                 'string',
                 'max:255',
+                'regex:/\A[0-9]+\z/',
             ],
 
             /*
@@ -566,27 +564,33 @@ class HouseholdController extends Controller
                 'required',
                 'string',
                 'max:255',
-                new PersonName,
+                $memberNameRule,
             ],
 
             'members.*.middle_name' => [
                 'nullable',
                 'string',
                 'max:255',
-                new PersonName,
+                $memberNameRule,
             ],
 
             'members.*.last_name' => [
                 'required',
                 'string',
                 'max:255',
-                new PersonName,
+                $memberNameRule,
             ],
 
             'members.*.suffix' => [
                 'nullable',
                 'string',
                 'max:50',
+                function (string $attribute, mixed $value, \Closure $fail) use ($request): void {
+                    $memberIndex = explode('.', $attribute)[1];
+                    if ($request->input("members.$memberIndex.id") === null && ! in_array($value, ['Jr.', 'Sr.'], true)) {
+                        $fail('The :attribute must be Jr. or Sr.');
+                    }
+                },
             ],
 
             'members.*.relationship_to_head' => [
@@ -619,11 +623,10 @@ class HouseholdController extends Controller
                 'in:Male,Female',
             ],
 
-            'members.*.contact_number' => [
-                'nullable',
-                'string',
-                'max:13',
-                new PhilippineMobileNumber,
+            'members.*.status' => [
+                'sometimes',
+                'required',
+                Rule::in(['Active', 'Inactive']),
             ],
 
             'members.*.email' => [
@@ -648,7 +651,11 @@ class HouseholdController extends Controller
                 'nullable',
                 'string',
                 'max:255',
+                'regex:/\A[0-9]+\z/',
             ],
+        ], [
+            'household_head.philhealth_number.regex' => 'The household head PhilHealth number must contain digits only.',
+            'members.*.philhealth_number.regex' => 'The family member PhilHealth number must contain digits only.',
         ]);
 
         $validated['address'] = BarangayAddress::format(
@@ -698,7 +705,7 @@ class HouseholdController extends Controller
                 'household_code' => $validated['household_code'],
                 'household_head_name' => $headName,
                 'address' => $validated['address'],
-                'contact_number' => $validated['contact_number'] ?? null,
+                'contact_number' => $head['contact_number'],
                 'status' => $validated['status'],
             ]);
 
@@ -784,11 +791,12 @@ class HouseholdController extends Controller
                         'suffix' => $member['suffix'] ?? null,
                         'birth_date' => $member['birth_date'],
                         'gender' => $member['gender'],
-                        'contact_number' => $member['contact_number'] ?? null,
+                        'contact_number' => $head['contact_number'],
                         'email' => $member['email'] ?? null,
                         'household_address' => BarangayAddress::format($member['purok']),
                         'civil_status' => $member['civil_status'],
                         'philhealth_number' => $member['philhealth_number'] ?? null,
+                        'status' => $member['status'] ?? $resident->status,
                     ]);
                 }
 
@@ -813,12 +821,12 @@ class HouseholdController extends Controller
                         'suffix' => $member['suffix'] ?? null,
                         'birth_date' => $member['birth_date'],
                         'gender' => $member['gender'],
-                        'contact_number' => $member['contact_number'] ?? null,
+                        'contact_number' => $head['contact_number'],
                         'email' => $member['email'] ?? null,
                         'household_address' => BarangayAddress::format($member['purok']),
                         'civil_status' => $member['civil_status'],
                         'philhealth_number' => $member['philhealth_number'] ?? null,
-                        'status' => 'Active',
+                        'status' => $member['status'] ?? 'Active',
                     ]);
                 }
             }
@@ -837,20 +845,28 @@ class HouseholdController extends Controller
      */
     public function destroy(Household $household): RedirectResponse
     {
-        DB::transaction(function () use ($household) {
-            /*
-            |--------------------------------------------------------------------------
-            | Delete residents first
-            |--------------------------------------------------------------------------
-            |
-            | This prevents foreign-key problems if household_id is
-            | configured with restrict/no-action behavior.
-            |
-            */
-            $household->residents()->delete();
+        $deleted = DB::transaction(function () use ($household): bool {
+            $hasOtherHouseholdDeliveries = AnnouncementSmsDelivery::query()
+                ->where('household_id', '!=', $household->id)
+                ->whereIn('household_head_resident_id', $household->residents()->select('id'))
+                ->exists();
 
+            if ($hasOtherHouseholdDeliveries) {
+                return false;
+            }
+
+            $household->announcementSmsDeliveries()->delete();
+            $household->residents()->delete();
             $household->delete();
+
+            return true;
         });
+
+        if (! $deleted) {
+            return redirect()
+                ->route('households.index')
+                ->with('error', 'This household cannot be deleted because one of its residents is referenced by an SMS delivery for another household.');
+        }
 
         return redirect()
             ->route('households.index')

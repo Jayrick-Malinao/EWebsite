@@ -687,32 +687,40 @@
                             {{-- Resident --}}
                             <div class="md:col-span-2">
 
+                                @php
+                                    $selectedResident = $residents->firstWhere('id', old('resident_id'));
+                                    $residentSearchValue = old(
+                                        'resident_search',
+                                        $selectedResident
+                                            ? "{$selectedResident->full_name} — Resident #{$selectedResident->id}"
+                                            : ''
+                                    );
+                                @endphp
+
                                 <label
-                                    for="resident_id"
+                                    for="resident_search"
                                     class="clay-label mb-2 block"
                                 >
-                                    Resident <span class="required-mark">*</span>
+                                    Search or select resident <span class="required-mark">*</span>
                                 </label>
 
-                                <select
-                                    id="resident_id"
-                                    name="resident_id"
+                                <input
+                                    id="resident_search"
+                                    type="text"
+                                    list="resident_options"
+                                    value="{{ $residentSearchValue }}"
                                     required
+                                    autocomplete="off"
+                                    placeholder="Type a resident name"
                                     class="clay-select clay-focus"
+                                    data-resident-search
                                 >
-                                    <option value="">
-                                        Select a resident
-                                    </option>
-
+                                <input type="hidden" id="resident_id" name="resident_id" value="{{ old('resident_id') }}">
+                                <datalist id="resident_options">
                                     @foreach ($residents as $resident)
-                                        <option
-                                            value="{{ $resident->id }}"
-                                            @selected(old('resident_id') == $resident->id)
-                                        >
-                                            {{ $resident->full_name }}
-                                        </option>
+                                        <option value="{{ $resident->full_name }} — Resident #{{ $resident->id }}" data-resident-id="{{ $resident->id }}"></option>
                                     @endforeach
-                                </select>
+                                </datalist>
 
                                 @error('resident_id')
                                     <p class="clay-field-error mt-2 text-xs font-bold">
@@ -722,32 +730,11 @@
 
                             </div>
 
-                            {{-- Visit Date --}}
-                            <div>
-
-                                <label
-                                    for="visit_date"
-                                    class="clay-label mb-2 block"
-                                >
-                                    Visit Date & Time <span class="required-mark">*</span>
-                                </label>
-
-                                <input
-                                    type="datetime-local"
-                                    id="visit_date"
-                                    name="visit_date"
-                                    value="{{ old('visit_date', now()->format('Y-m-d\TH:i')) }}"
-                                    max="{{ now()->format('Y-m-d\TH:i') }}"
-                                    required
-                                    class="clay-input clay-focus"
-                                >
-
-                                @error('visit_date')
-                                    <p class="clay-field-error mt-2 text-xs font-bold">
-                                        {{ $message }}
-                                    </p>
-                                @enderror
-
+                            <div class="md:col-span-2">
+                                <p class="clay-label mb-2 block">Visit Date &amp; Time</p>
+                                <p class="text-sm text-[#6D817A]">
+                                    The current date and time will be recorded automatically when this visit is saved.
+                                </p>
                             </div>
 
                             {{-- Visit Type --}}
@@ -1070,6 +1057,32 @@
 
     </main>
 
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const residentSearch = document.querySelector('[data-resident-search]');
+        const residentId = document.getElementById('resident_id');
+        const residentOptions = document.getElementById('resident_options');
+
+        if (!residentSearch || !residentId || !residentOptions) {
+            return;
+        }
+
+        const options = Array.from(residentOptions.options);
+        const syncResidentId = () => {
+            const match = options.find((option) => option.value === residentSearch.value.trim());
+            residentId.value = match ? match.dataset.residentId : '';
+            residentSearch.setCustomValidity(
+                residentSearch.value.trim() && !match
+                    ? 'Select a resident from the suggestions.'
+                    : ''
+            );
+        };
+
+        residentSearch.addEventListener('input', syncResidentId);
+        residentSearch.addEventListener('change', syncResidentId);
+        syncResidentId();
+    });
+</script>
 </body>
 
 </html>

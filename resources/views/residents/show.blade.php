@@ -741,24 +741,6 @@
 
             </div>
 
-            {{-- FOOTER --}}
-            <footer class="resident-card mt-6 p-5 sm:p-6">
-                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div class="resident-record-footer">
-                        <p class="font-bold text-[#164238]">Barangay Esperanza Health Center</p>
-                        <p>Resident Records Management</p>
-                        <p>Protect resident information and access records only for authorized purposes.</p>
-                    </div>
-
-                    <a
-                        href="{{ route('residents.index') }}"
-                        class="resident-button resident-secondary"
-                    >
-                        Return to Resident List
-                    </a>
-                </div>
-            </footer>
-
         </div>
     </main>
 

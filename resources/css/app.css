@@ -8,6 +8,123 @@
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
+table:has([data-menu-trigger], [data-action-menu-trigger]) {
+    width: 100%;
+    min-width: 0;
+}
+
+table:has([data-menu-trigger], [data-action-menu-trigger]) thead th:last-child,
+table td:has([data-menu-trigger], [data-action-menu-trigger]) {
+    min-width: 17.25rem;
+}
+
+div.overflow-x-auto:has(table),
+aside.claymorphism-sidebar nav {
+    scrollbar-width: thin;
+    scrollbar-color: #8aa99c transparent;
+}
+
+div.overflow-x-auto:has(table)::-webkit-scrollbar,
+aside.claymorphism-sidebar nav::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+}
+
+div.overflow-x-auto:has(table)::-webkit-scrollbar-thumb,
+aside.claymorphism-sidebar nav::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: #8aa99c;
+}
+
+.clay-action-menu.is-floating {
+    position: fixed;
+    z-index: 1000;
+    inset: auto;
+    display: block;
+    box-sizing: border-box;
+    width: 180px;
+    min-width: 0;
+    margin: 0;
+    overflow: auto;
+    border: 1px solid rgb(255 255 255 / 80%);
+    border-radius: 1rem;
+    background: #f5faf7;
+    padding: 0.5rem;
+    box-shadow: 0 12px 35px rgb(107 134 124 / 18%);
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.clay-action-menu.is-floating .clay-round-action {
+    display: flex;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    border: 0;
+    border-radius: 0.75rem;
+    background: transparent;
+    padding: 0.5rem 0.75rem;
+    box-shadow: none;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-align: left;
+}
+
+.clay-action-menu.is-floating .clay-round-action:hover {
+    transform: none;
+    background: #edf5f0;
+}
+
+.clay-action-menu.is-floating .clay-round-delete:hover {
+    background: #fdf1f1;
+}
+
+.record-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.record-actions-panel[hidden] {
+    display: none;
+}
+
+.clay-action-menu-trigger:focus-visible,
+.record-actions-panel :is(a, button):focus-visible {
+    outline: 2px solid #0f6f5a;
+    outline-offset: 2px;
+}
+
+.record-actions-panel.is-floating :is(a, button) {
+    display: flex;
+    width: 100%;
+    min-height: 0;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    border: 0;
+    border-radius: 0.75rem;
+    background: transparent;
+    padding: 0.5rem 0.75rem;
+    color: #164238;
+    box-shadow: none;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-align: left;
+}
+
+.record-actions-panel.is-floating :is(a, button):hover {
+    background: #edf5f0;
+}
+
+.record-actions-panel.is-floating .record-action-danger {
+    color: #b42323;
+}
+
+.record-actions-panel.is-floating .record-action-danger:hover {
+    background: #fdf1f1;
+}
+
 @layer components {
     .clay-dashboard {
         --dashboard-primary: #168b70;
@@ -319,7 +436,7 @@
     }
 
     .claymorphism-sidebar:not(#adminSidebar) nav a svg,
-    .claymorphism-sidebar:not(#adminSidebar) > div:nth-of-type(3) button svg {
+    .claymorphism-sidebar:not(#adminSidebar) > div:nth-of-type(3) form button svg {
         flex-shrink: 0;
         color: #4c665f !important;
         fill: none !important;
@@ -340,7 +457,7 @@
         font-weight: 700 !important;
     }
 
-    .claymorphism-sidebar:not(#adminSidebar) > div:nth-of-type(3) button {
+    .claymorphism-sidebar:not(#adminSidebar) > div:nth-of-type(3) form button {
         border: 1px solid transparent !important;
         border-radius: 14px !important;
         color: #536a63 !important;
@@ -349,7 +466,7 @@
         transition: transform 160ms ease, box-shadow 160ms ease, color 160ms ease, background-color 160ms ease !important;
     }
 
-    .claymorphism-sidebar:not(#adminSidebar) > div:nth-of-type(3) button:hover {
+    .claymorphism-sidebar:not(#adminSidebar) > div:nth-of-type(3) form button:hover {
         transform: translateY(-1px);
         border-color: rgb(255 255 255 / 78%) !important;
         color: #dc2626 !important;
@@ -451,8 +568,19 @@
     }
 
     .notification-bell-panel > div:first-child {
-        border-color: #dce9e2 !important;
-        background: #f5faf7 !important;
+        border-color: #0f6f5a !important;
+        background: #0f6f5a !important;
+    }
+
+    @media (max-width: 639px) {
+        .notification-bell-panel {
+            position: fixed !important;
+            top: 4.5rem !important;
+            right: 0.75rem !important;
+            left: 0.75rem !important;
+            width: auto !important;
+            max-height: min(32rem, calc(100dvh - 5.25rem)) !important;
+        }
     }
 
     @media (prefers-reduced-motion: reduce) {

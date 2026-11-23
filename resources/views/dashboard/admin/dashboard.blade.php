@@ -115,7 +115,16 @@
         }
 
         .clay-dashboard .text-slate-400 {
-            color: #9AA9A4 !important;
+            color: #526B61 !important;
+        }
+
+        .clay-dashboard .text-\[\#9AA9A4\] {
+            color: #526B61 !important;
+            font-size: 12px;
+        }
+
+        .clay-dashboard .animate-ping {
+            animation: none;
         }
 
         /* =========================================================
@@ -215,11 +224,10 @@
 
             border: 1px solid rgba(255, 255, 255, 0.82) !important;
 
-            border-radius: 24px !important;
+            border-radius: 20px !important;
 
             box-shadow:
-                10px 10px 22px var(--gov-shadow),
-                -10px -10px 22px var(--gov-highlight),
+                0 6px 18px rgba(107, 134, 124, 0.13),
                 inset 1px 1px 0 rgba(255, 255, 255, 0.84) !important;
         }
 
@@ -241,11 +249,10 @@
 
             border: 1px solid rgba(255, 255, 255, 0.86) !important;
 
-            border-radius: 22px !important;
+            border-radius: 18px !important;
 
             box-shadow:
-                8px 8px 18px rgba(107, 134, 124, 0.21),
-                -8px -8px 18px rgba(255, 255, 255, 0.92),
+                0 5px 16px rgba(107, 134, 124, 0.13),
                 inset 1px 1px 0 rgba(255, 255, 255, 0.80) !important;
 
             transition:
@@ -275,8 +282,7 @@
             transform: translateY(-2px);
 
             box-shadow:
-                10px 10px 23px rgba(107, 134, 124, 0.24),
-                -10px -10px 23px rgba(255, 255, 255, 0.95),
+                0 8px 20px rgba(107, 134, 124, 0.17),
                 inset 1px 1px 0 rgba(255, 255, 255, 0.84) !important;
         }
 
@@ -373,11 +379,10 @@
 
             border: 1px solid rgba(255, 255, 255, 0.88);
 
-            border-radius: 26px;
+            border-radius: 20px;
 
             box-shadow:
-                10px 10px 22px rgba(107, 134, 124, 0.22),
-                -10px -10px 22px rgba(255, 255, 255, 0.94),
+                0 6px 18px rgba(107, 134, 124, 0.13),
                 inset 1px 1px 0 rgba(255, 255, 255, 0.82);
         }
 
@@ -722,20 +727,24 @@
             <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
                 {{-- Page heading --}}
-                <div>
+                <div class="flex min-w-0 items-start gap-3">
+                    @include('dashboard.mobile-menu-button', ['sidebarId' => 'adminSidebar'])
 
-                    <p class="text-xs font-medium uppercase tracking-wide text-[#168B70]">
-                        System Administrator
-                    </p>
+                    <div class="min-w-0">
 
-                    <h1 class="mt-1 text-xl font-bold tracking-tight text-[#164238] sm:text-2xl">
-                        Welcome back, {{ auth()->user()->name }}
-                    </h1>
+                        <p class="text-xs font-medium uppercase tracking-wide text-[#168B70]">
+                            System Administrator
+                        </p>
 
-                    <p class="mt-1 text-xs text-[#6D817A] sm:text-sm">
-                        Monitor and manage Barangay Esperanza Health Center records.
-                    </p>
+                        <h1 class="mt-1 text-xl font-bold tracking-tight text-[#164238] sm:text-2xl">
+                            Welcome back, {{ auth()->user()->name }}
+                        </h1>
 
+                        <p class="mt-1 text-xs text-[#6D817A] sm:text-sm">
+                            Monitor and manage Barangay Esperanza Health Center records.
+                        </p>
+
+                    </div>
                 </div>
 
 
@@ -1051,41 +1060,42 @@
             ====================================================== --}}
             <div class="mb-5 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
 
-                <div class="mb-3 flex items-start justify-between gap-3">
+                <div class="mb-3 flex flex-wrap items-start justify-between gap-3">
 
                     <div>
 
-                        <h2 class="text-sm font-semibold text-[#164238]">
+                        <h2 id="healthVisitChartTitle" class="text-sm font-semibold text-[#164238]">
                             Monthly Health Visits
                         </h2>
 
-                        <p class="mt-0.5 text-xs text-[#6D817A]">
-                            Health visits recorded in {{ now()->year }}
+                        <p id="healthVisitChartDescription" class="mt-0.5 text-xs text-[#6D817A]">
+                            {{ $healthVisitChartData['month']['description'] }}
                         </p>
 
                     </div>
 
-                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-[#168B70]">
-
-                        <svg
-                            class="h-4 w-4"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.8"
-                            viewBox="0 0 24 24"
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button
+                            type="button"
+                            id="healthVisitChartStyle"
+                            class="flex h-9 w-9 items-center justify-center rounded-lg border border-white/80 bg-emerald-50 text-[#168B70] transition hover:bg-emerald-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#168B70]"
+                            aria-label="Graph style: area. Switch to bar chart"
+                            title="Graph style: area. Switch to bar chart"
                         >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                d="M4 19V5"
-                            />
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h15m0 0-3-3m3 3-3 3M20 17H5m0 0 3-3m-3 3 3 3"/>
+                            </svg>
+                        </button>
+                        <span id="healthVisitChartStyleStatus" class="sr-only" aria-live="polite"></span>
 
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                d="M4 17h4v-5h4v3h4V7h4"
-                            />
-                        </svg>
+                        <label for="healthVisitChartRange" class="sr-only">Health visit time range</label>
+                        <select id="healthVisitChartRange" class="h-9 rounded-lg border border-[#C8DDD2] bg-white px-3 text-xs font-semibold text-[#164238] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#168B70]">
+                            <option value="day">Day</option>
+                            <option value="week">Week</option>
+                            <option value="month" selected>Month</option>
+                            <option value="year">Year</option>
+                            <option value="all">All</option>
+                        </select>
 
                     </div>
 
@@ -1093,7 +1103,7 @@
 
                 <div class="h-48 sm:h-56">
 
-                    <canvas id="monthlyHealthVisitChart"></canvas>
+                    <canvas id="monthlyHealthVisitChart" role="img" aria-label="Area chart of monthly health visits"></canvas>
 
                 </div>
 
@@ -1896,17 +1906,25 @@
             };
 
             /* =====================================================
-               1. MONTHLY HEALTH VISITS — LINE CHART
+               1. HEALTH VISITS CHART
             ====================================================== */
             const monthlyCanvas = document.getElementById('monthlyHealthVisitChart');
 
             if (monthlyCanvas) {
-                const monthlyData = @json($monthlyHealthVisits);
+                const chartData = @json($healthVisitChartData);
+                const rangeControl = document.getElementById('healthVisitChartRange');
+                const styleControl = document.getElementById('healthVisitChartStyle');
+                const styleStatus = document.getElementById('healthVisitChartStyleStatus');
+                const chartTitle = document.getElementById('healthVisitChartTitle');
+                const chartDescription = document.getElementById('healthVisitChartDescription');
+                const styles = ['area', 'bar'];
+                let styleIndex = 0;
+                const monthlyData = chartData.month.points;
 
-                new Chart(monthlyCanvas, {
+                const healthVisitChart = new Chart(monthlyCanvas, {
                     type: 'line',
                     data: {
-                        labels: monthlyData.map(item => item.month),
+                        labels: monthlyData.map(item => item.label),
                         datasets: [{
                             label: 'Health Visits',
                             data: monthlyData.map(item => item.count),
@@ -1991,6 +2009,32 @@
                             }
                         }
                     }
+                });
+
+                const updateHealthVisitChart = () => {
+                    const selectedRange = chartData[rangeControl.value];
+                    const style = styles[styleIndex];
+                    const nextStyle = styles[(styleIndex + 1) % styles.length];
+
+                    healthVisitChart.config.type = style === 'bar' ? 'bar' : 'line';
+                    healthVisitChart.data.labels = selectedRange.points.map(item => item.label);
+                    healthVisitChart.data.datasets[0].data = selectedRange.points.map(item => item.count);
+                    healthVisitChart.data.datasets[0].fill = style === 'area';
+                    healthVisitChart.options.scales.x.title.text = selectedRange.axis;
+                    chartTitle.textContent = selectedRange.title;
+                    chartDescription.textContent = selectedRange.description;
+                    monthlyCanvas.setAttribute('aria-label', `${style} chart of ${selectedRange.title.toLowerCase()}`);
+                    const styleLabel = `Graph style: ${style}. Switch to ${nextStyle} chart`;
+                    styleControl.setAttribute('aria-label', styleLabel);
+                    styleControl.title = styleLabel;
+                    healthVisitChart.update();
+                };
+
+                rangeControl.addEventListener('change', updateHealthVisitChart);
+                styleControl.addEventListener('click', () => {
+                    styleIndex = (styleIndex + 1) % styles.length;
+                    updateHealthVisitChart();
+                    styleStatus.textContent = `Graph style: ${styles[styleIndex]}`;
                 });
             }
 

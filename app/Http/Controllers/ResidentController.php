@@ -9,9 +9,12 @@ use App\Rules\PersonName;
 use App\Rules\PhilippineMobileNumber;
 use App\Services\AuditLogService;
 use App\Support\BarangayAddress;
+use App\Support\PhilippineMobileNumberFormatter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class ResidentController extends Controller
@@ -23,9 +26,11 @@ class ResidentController extends Controller
     {
         $request->validate([
             'search' => ['nullable', 'string', 'max:255'],
+            'filter' => ['nullable', Rule::in(['senior_age', 'senior_registered', 'pregnant', 'children_18', 'children_5'])],
         ]);
 
         $search = trim((string) $request->input('search'));
+        $filter = (string) $request->input('filter', '');
 
         $residents = Resident::query()
             ->with('household')
@@ -38,11 +43,22 @@ class ResidentController extends Controller
                         ->orWhere('contact_number', 'like', "%{$search}%");
                 });
             })
+            ->when($filter === 'senior_age', fn ($query) => $query
+                ->whereDate('birth_date', '<=', today()->subYearsNoOverflow(60)->toDateString()))
+            ->when($filter === 'senior_registered', fn ($query) => $query
+                ->whereHas('seniorCitizen', fn ($query) => $query->where('senior_status', 'Active')))
+            ->when($filter === 'pregnant', fn ($query) => $query
+                ->whereHas('maternalCares', fn ($query) => $query
+                    ->where('pregnancy_status', 'Pregnant')
+                    ->whereNull('actual_delivery_date')))
+            ->when(in_array($filter, ['children_18', 'children_5'], true), fn ($query) => $query
+                ->whereDate('birth_date', '>', today()->subYearsNoOverflow($filter === 'children_18' ? 19 : 6)->toDateString())
+                ->whereDate('birth_date', '<=', today()->toDateString()))
             ->latest()
             ->paginate(15)
             ->withQueryString();
 
-        return view('residents.index', compact('residents', 'search'));
+        return view('residents.index', compact('residents', 'search', 'filter'));
     }
 
     /**
@@ -69,64 +85,67 @@ class ResidentController extends Controller
     {
         $validated = $this->validateResident($request);
 
-        /*
-         * A household head does not need to select an existing household.
-         * A new household will be created automatically for the head.
-         */
-        if ($validated['is_household_head']) {
-            $this->ensureNoExistingHouseholdHead($validated);
-
-            $household = Household::create([
-                'household_code' => $this->generateHouseholdCode(),
-                'household_head_name' => $this->fullNameFromData($validated),
-                'address' => $validated['household_address'],
-                'contact_number' => $validated['contact_number'] ?? null,
-                'status' => 'Active',
-            ]);
-
-            $validated['household_id'] = $household->id;
-            $validated['relationship_to_head'] = 'Household Head';
-        } else {
+        return DB::transaction(function () use ($validated): RedirectResponse {
             /*
-             * A family member MUST belong to an existing household.
+             * A household head does not need to select an existing household.
+             * A new household will be created automatically for the head.
              */
-            $household = Household::findOrFail($validated['household_id']);
+            if ($validated['is_household_head']) {
+                $this->ensureNoExistingHouseholdHead($validated);
 
-            $this->ensureHouseholdHasHead($household);
+                $household = Household::create([
+                    'household_code' => $this->generateHouseholdCode(),
+                    'household_head_name' => $this->fullNameFromData($validated),
+                    'address' => $validated['household_address'],
+                    'contact_number' => $validated['contact_number'] ?? null,
+                    'status' => 'Active',
+                ]);
+
+                $validated['household_id'] = $household->id;
+                $validated['relationship_to_head'] = 'Household Head';
+            } else {
+                /*
+                 * A family member MUST belong to an existing household.
+                 */
+                $household = Household::findOrFail($validated['household_id']);
+
+                $this->ensureHouseholdHasHead($household);
+                $validated['contact_number'] = $this->householdHeadContact($household);
+
+                /*
+                 * Family members should not be marked as household heads.
+                 */
+                $validated['is_household_head'] = false;
+            }
+
+            $resident = Resident::create($validated);
 
             /*
-             * Family members should not be marked as household heads.
+             * Keep the household's displayed head name synchronized
+             * with the actual resident marked as household head.
              */
-            $validated['is_household_head'] = false;
-        }
+            if ($resident->is_household_head) {
+                $household->update([
+                    'household_head_name' => $resident->full_name,
+                    'address' => $resident->household_address,
+                    'contact_number' => $resident->contact_number,
+                ]);
+            }
 
-        $resident = Resident::create($validated);
+            /*
+             * Record the resident creation after the resident and
+             * related household information have been successfully saved.
+             */
+            AuditLogService::created(
+                module: 'Residents',
+                model: $resident,
+                description: 'Resident created: '.$resident->full_name.'.',
+            );
 
-        /*
-         * Keep the household's displayed head name synchronized
-         * with the actual resident marked as household head.
-         */
-        if ($resident->is_household_head) {
-            $household->update([
-                'household_head_name' => $resident->full_name,
-                'address' => $resident->household_address,
-                'contact_number' => $resident->contact_number,
-            ]);
-        }
-
-        /*
-         * Record the resident creation after the resident and
-         * related household information have been successfully saved.
-         */
-        AuditLogService::created(
-            module: 'Residents',
-            model: $resident,
-            description: 'Resident created: '.$resident->full_name.'.',
-        );
-
-        return redirect()
-            ->route('residents.index')
-            ->with('success', 'Resident added successfully.');
+            return redirect()
+                ->route('residents.index')
+                ->with('success', 'Resident added successfully.');
+        });
     }
 
     /**
@@ -174,99 +193,115 @@ class ResidentController extends Controller
 
         $validated = $this->validateResident($request, $resident);
 
-        $oldHousehold = $resident->household;
+        return DB::transaction(function () use ($validated, $resident, $oldValues): RedirectResponse {
+            $oldHousehold = $resident->household;
 
-        if ($validated['is_household_head']) {
-            /*
-             * The resident is becoming / remaining a household head.
-             */
-            $household = $resident->household;
+            if ($validated['is_household_head']) {
+                /*
+                 * The resident is becoming / remaining a household head.
+                 */
+                $household = $resident->household;
 
-            if (! $household) {
-                $household = Household::create([
-                    'household_code' => $this->generateHouseholdCode(),
-                    'household_head_name' => $this->fullNameFromData($validated),
-                    'address' => $validated['household_address'],
-                    'contact_number' => $validated['contact_number'] ?? null,
-                    'status' => 'Active',
-                ]);
+                if ($household && ! empty($validated['household_id']) && (int) $validated['household_id'] !== $household->id) {
+                    throw ValidationException::withMessages([
+                        'household_id' => 'A household head cannot be moved to another household through this form.',
+                    ]);
+                }
 
-                $validated['household_id'] = $household->id;
+                if ($household) {
+                    $validated['household_id'] = $household->id;
+                }
+
+                if (! $household) {
+                    $household = Household::create([
+                        'household_code' => $this->generateHouseholdCode(),
+                        'household_head_name' => $this->fullNameFromData($validated),
+                        'address' => $validated['household_address'],
+                        'contact_number' => $validated['contact_number'] ?? null,
+                        'status' => 'Active',
+                    ]);
+
+                    $validated['household_id'] = $household->id;
+                }
+
+                $this->ensureNoExistingHouseholdHead(
+                    $validated,
+                    $resident
+                );
+
+                $validated['relationship_to_head'] = 'Household Head';
+            } else {
+                /*
+                 * A family member MUST have a household.
+                 */
+                if (empty($validated['household_id'])) {
+                    return back()
+                        ->withErrors([
+                            'household_id' => 'Please select a household for this family member.',
+                        ])
+                        ->withInput();
+                }
+
+                $household = Household::findOrFail($validated['household_id']);
+
+                $this->ensureHouseholdHasHead($household, $resident);
+                $validated['contact_number'] = $this->householdHeadContact($household, $resident);
+
+                $validated['is_household_head'] = false;
             }
 
-            $this->ensureNoExistingHouseholdHead(
-                $validated,
-                $resident
+            $resident->update($validated);
+
+            /*
+             * Update the household information when its head is changed.
+             */
+            if ($resident->is_household_head) {
+                $household->update([
+                    'household_head_name' => $resident->full_name,
+                    'address' => $resident->household_address,
+                    'contact_number' => $resident->contact_number,
+                ]);
+                $household->residents()->where('id', '!=', $resident->id)->update([
+                    'contact_number' => $resident->contact_number,
+                ]);
+            }
+
+            /*
+             * If the resident moved away from an old household and was its head,
+             * the old household should no longer point to that resident.
+             */
+            if (
+                $oldHousehold &&
+                $oldHousehold->id !== ($resident->household_id ?? null) &&
+                $oldHousehold->residents()
+                    ->where('is_household_head', true)
+                    ->doesntExist()
+            ) {
+                $oldHousehold->update([
+                    'household_head_name' => null,
+                ]);
+            }
+
+            /*
+             * Refresh the model so the audit log contains the actual
+             * values persisted in the database.
+             */
+            $resident->refresh();
+
+            $newValues = $resident->getAttributes();
+
+            AuditLogService::updated(
+                module: 'Residents',
+                model: $resident,
+                oldValues: $oldValues,
+                newValues: $newValues,
+                description: 'Resident updated: '.$resident->full_name.'.',
             );
 
-            $validated['relationship_to_head'] = 'Household Head';
-        } else {
-            /*
-             * A family member MUST have a household.
-             */
-            if (empty($validated['household_id'])) {
-                return back()
-                    ->withErrors([
-                        'household_id' => 'Please select a household for this family member.',
-                    ])
-                    ->withInput();
-            }
-
-            $household = Household::findOrFail($validated['household_id']);
-
-            $this->ensureHouseholdHasHead($household, $resident);
-
-            $validated['is_household_head'] = false;
-        }
-
-        $resident->update($validated);
-
-        /*
-         * Update the household information when its head is changed.
-         */
-        if ($resident->is_household_head) {
-            $household->update([
-                'household_head_name' => $resident->full_name,
-                'address' => $resident->household_address,
-                'contact_number' => $resident->contact_number,
-            ]);
-        }
-
-        /*
-         * If the resident moved away from an old household and was its head,
-         * the old household should no longer point to that resident.
-         */
-        if (
-            $oldHousehold &&
-            $oldHousehold->id !== ($resident->household_id ?? null) &&
-            $oldHousehold->residents()
-                ->where('is_household_head', true)
-                ->doesntExist()
-        ) {
-            $oldHousehold->update([
-                'household_head_name' => null,
-            ]);
-        }
-
-        /*
-         * Refresh the model so the audit log contains the actual
-         * values persisted in the database.
-         */
-        $resident->refresh();
-
-        $newValues = $resident->getAttributes();
-
-        AuditLogService::updated(
-            module: 'Residents',
-            model: $resident,
-            oldValues: $oldValues,
-            newValues: $newValues,
-            description: 'Resident updated: '.$resident->full_name.'.',
-        );
-
-        return redirect()
-            ->route('residents.index')
-            ->with('success', 'Resident updated successfully.');
+            return redirect()
+                ->route('residents.index')
+                ->with('success', 'Resident updated successfully.');
+        });
     }
 
     /**
@@ -377,26 +412,26 @@ class ResidentController extends Controller
                 'required',
                 'string',
                 'max:100',
-                new PersonName,
+                new PersonName($resident !== null),
             ],
 
             'middle_name' => [
                 'nullable',
                 'string',
                 'max:100',
-                new PersonName,
+                new PersonName($resident !== null),
             ],
 
             'last_name' => [
                 'required',
                 'string',
                 'max:100',
-                new PersonName,
+                new PersonName($resident !== null),
             ],
 
             'suffix' => [
                 'nullable',
-                Rule::in(['Jr.', 'Sr.', 'II', 'III', 'IV', 'V']),
+                Rule::in($resident ? ['Jr.', 'Sr.', 'II', 'III', 'IV', 'V'] : ['Jr.', 'Sr.']),
             ],
 
             'birth_date' => [
@@ -411,10 +446,11 @@ class ResidentController extends Controller
             ],
 
             'contact_number' => [
-                'nullable',
+                Rule::excludeIf(! $isHouseholdHead),
+                'required',
                 'string',
                 'max:13',
-                new PhilippineMobileNumber,
+                new PhilippineMobileNumber($resident ? null : $request),
             ],
 
             'email' => [
@@ -445,12 +481,15 @@ class ResidentController extends Controller
                 'nullable',
                 'string',
                 'max:50',
+                'regex:/\A[0-9]+\z/',
             ],
 
             'status' => [
                 'required',
                 'in:Active,Inactive',
             ],
+        ], [
+            'philhealth_number.regex' => 'The PhilHealth number must contain digits only.',
         ]);
 
         $validated['household_address'] = BarangayAddress::format(
@@ -459,6 +498,23 @@ class ResidentController extends Controller
         unset($validated['purok']);
 
         return $validated;
+    }
+
+    private function householdHeadContact(Household $household, ?Resident $resident = null): string
+    {
+        $head = $household->residents()
+            ->where('is_household_head', true)
+            ->when($resident, fn ($query) => $query->where('id', '!=', $resident->id))
+            ->first();
+        $number = PhilippineMobileNumberFormatter::normalize(trim((string) $head?->contact_number));
+
+        if (! PhilippineMobileNumberFormatter::isValid($number)) {
+            throw ValidationException::withMessages([
+                'household_id' => 'The household head must have a valid contact number before adding or updating members.',
+            ]);
+        }
+
+        return $number;
     }
 
     /**

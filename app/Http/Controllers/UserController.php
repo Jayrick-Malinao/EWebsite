@@ -156,21 +156,21 @@ class UserController extends Controller
                 'required',
                 'string',
                 'max:255',
-                new PersonName,
+                new PersonName(false),
             ],
 
             'middle_name' => [
                 'nullable',
                 'string',
                 'max:255',
-                new PersonName,
+                new PersonName(false),
             ],
 
             'last_name' => [
                 'required',
                 'string',
                 'max:255',
-                new PersonName,
+                new PersonName(false),
             ],
 
             'email' => [

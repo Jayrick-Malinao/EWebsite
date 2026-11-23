@@ -41,7 +41,6 @@ class AnalyticsController extends Controller
             $totalResidents - $maleResidents - $femaleResidents
         );
 
-
         /*
         |--------------------------------------------------------------------------
         | Resident Status
@@ -53,7 +52,6 @@ class AnalyticsController extends Controller
             ->groupBy('status')
             ->orderByDesc('total')
             ->get();
-
 
         /*
         |--------------------------------------------------------------------------
@@ -93,6 +91,10 @@ class AnalyticsController extends Controller
                 }
             });
 
+        $ageGroups['Unknown'] = max(
+            0,
+            $totalResidents - array_sum($ageGroups)
+        );
 
         /*
         |--------------------------------------------------------------------------
@@ -109,7 +111,6 @@ class AnalyticsController extends Controller
         $totalChildHealth = ChildHealth::count();
 
         $totalSeniorCitizens = SeniorCitizen::count();
-
 
         /*
         |--------------------------------------------------------------------------
@@ -134,7 +135,6 @@ class AnalyticsController extends Controller
             ->orderBy('month')
             ->get();
 
-
         /*
         |--------------------------------------------------------------------------
         | Maternal Care Analytics
@@ -157,7 +157,6 @@ class AnalyticsController extends Controller
             ->groupBy('month')
             ->orderBy('month')
             ->get();
-
 
         /*
         |--------------------------------------------------------------------------
@@ -182,7 +181,6 @@ class AnalyticsController extends Controller
             ->orderBy('month')
             ->get();
 
-
         /*
         |--------------------------------------------------------------------------
         | Senior Citizen Analytics
@@ -200,7 +198,6 @@ class AnalyticsController extends Controller
         $seniorCitizenPensionCount = SeniorCitizen::query()
             ->where('receives_social_pension', true)
             ->count();
-
 
         /*
         |--------------------------------------------------------------------------
@@ -230,7 +227,6 @@ class AnalyticsController extends Controller
         $lowStockInventory = MedicalInventory::query()
             ->where('quantity', '<=', 10)
             ->count();
-
 
         /*
         |--------------------------------------------------------------------------
@@ -264,7 +260,6 @@ class AnalyticsController extends Controller
             ->orderBy('month')
             ->get();
 
-
         /*
         |--------------------------------------------------------------------------
         | Gender Summary
@@ -286,7 +281,6 @@ class AnalyticsController extends Controller
             ],
         ]);
 
-
         /*
         |--------------------------------------------------------------------------
         | Dashboard Summary
@@ -300,7 +294,6 @@ class AnalyticsController extends Controller
             'Child Health' => $totalChildHealth,
             'Senior Citizens' => $totalSeniorCitizens,
         ];
-
 
         return view('analytics.index', compact(
             'totalResidents',
@@ -344,4 +337,3 @@ class AnalyticsController extends Controller
         ));
     }
 }
-

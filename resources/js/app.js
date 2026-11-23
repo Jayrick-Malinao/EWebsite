@@ -4,7 +4,135 @@ window.Alpine = Alpine;
 
 Alpine.start();
 
+const actionMenuTriggers = new WeakMap();
+
+const installActionMenus = () => {
+    let openMenu = null;
+    const gap = 8;
+
+    const closeMenu = (restoreFocus = false) => {
+        if (!openMenu) {
+            return;
+        }
+
+        const { trigger, panel, placeholder, originalStyle } = openMenu;
+        openMenu = null;
+        panel.classList.add('hidden');
+        panel.hidden = true;
+        panel.classList.remove('is-floating');
+        if (originalStyle === null) {
+            panel.removeAttribute('style');
+        } else {
+            panel.setAttribute('style', originalStyle);
+        }
+        placeholder.replaceWith(panel);
+        trigger.setAttribute('aria-expanded', 'false');
+
+        if (restoreFocus) {
+            trigger.focus({ preventScroll: true });
+        }
+    };
+
+    const showMenu = (trigger, focusFirst = false) => {
+        const panel = trigger.nextElementSibling;
+        if (!(panel instanceof HTMLElement) || !panel.matches('[data-menu-panel], [role="menu"]')) {
+            return;
+        }
+
+        const placeholder = document.createComment('action menu');
+        const originalStyle = panel.getAttribute('style');
+        panel.before(placeholder);
+        document.body.appendChild(panel);
+        openMenu = { trigger, panel, placeholder, originalStyle };
+        actionMenuTriggers.set(panel, trigger);
+        panel.classList.add('is-floating');
+        panel.classList.remove('hidden');
+        panel.hidden = false;
+        trigger.setAttribute('aria-expanded', 'true');
+
+        const triggerRect = trigger.getBoundingClientRect();
+        panel.style.maxWidth = `${Math.max(0, triggerRect.left - 2 * gap)}px`;
+        panel.style.maxHeight = `${Math.max(0, window.innerHeight - 2 * gap)}px`;
+        const panelRect = panel.getBoundingClientRect();
+        panel.style.left = `${Math.max(gap, triggerRect.left - gap - panelRect.width)}px`;
+        panel.style.top = `${Math.max(gap, Math.min(
+            triggerRect.top + (triggerRect.height - panelRect.height) / 2,
+            window.innerHeight - gap - panelRect.height,
+        ))}px`;
+
+        if (focusFirst) {
+            panel.querySelector('a, button')?.focus();
+        }
+    };
+
+    document.addEventListener('click', (event) => {
+        if (!(event.target instanceof Element)) {
+            return;
+        }
+
+        const trigger = event.target.closest('[data-menu-trigger], [data-action-menu-trigger]');
+        if (trigger) {
+            const wasOpen = openMenu?.trigger === trigger;
+            closeMenu();
+            if (!wasOpen) {
+                showMenu(trigger);
+            }
+        } else if (openMenu && !openMenu.panel.contains(event.target)) {
+            closeMenu();
+        } else if (openMenu && event.target.closest('a, button')) {
+            const panel = openMenu.panel;
+            setTimeout(() => {
+                if (openMenu?.panel === panel) {
+                    closeMenu();
+                }
+            }, 0);
+        }
+    });
+
+    document.addEventListener('keydown', (event) => {
+        const trigger = event.target instanceof Element
+            ? event.target.closest('[data-menu-trigger], [data-action-menu-trigger]')
+            : null;
+
+        if (trigger && event.key === 'ArrowDown') {
+            event.preventDefault();
+            closeMenu();
+            showMenu(trigger, true);
+        } else if (openMenu && event.key === 'Escape') {
+            event.preventDefault();
+            closeMenu(true);
+        } else if (openMenu && openMenu.panel.contains(event.target)
+            && ['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
+            const items = Array.from(openMenu.panel.querySelectorAll('a, button:not([disabled])'));
+            if (items.length === 0) {
+                return;
+            }
+            event.preventDefault();
+            const current = items.indexOf(document.activeElement);
+            const index = event.key === 'Home' ? 0
+                : event.key === 'End' ? items.length - 1
+                    : (current + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+            items[index].focus();
+        }
+    });
+
+    document.addEventListener('focusin', (event) => {
+        if (openMenu && event.target !== openMenu.trigger && !openMenu.panel.contains(event.target)) {
+            closeMenu();
+        }
+    });
+    document.addEventListener('scroll', (event) => {
+        if (openMenu && !openMenu.panel.contains(event.target)) {
+            closeMenu();
+        }
+    }, true);
+    window.addEventListener('resize', () => closeMenu());
+};
+
+installActionMenus();
+
 const personNamePattern = /^[\p{L}]+(?:[ '\u2019-][\p{L}]+)*$/u;
+const strictPersonNamePattern = /^[\p{L}]+(?:[ -][\p{L}]+)*$/u;
 const phoneFieldNames = new Set([
     'caregiver_contact',
     'contact_number',
@@ -24,17 +152,48 @@ const personNameFieldNames = new Set([
 
 const fieldName = (input) => input.name.match(/\[([^\]]+)\]$/)?.[1] || input.name;
 
-const isPersonNameInput = (input) => personNameFieldNames.has(fieldName(input));
+const isPersonNameInput = (input) => input.hasAttribute('data-person-name-strict')
+    || personNameFieldNames.has(fieldName(input));
+
+const isNamePartInput = (input) => input.hasAttribute('data-person-name-strict')
+    || /^(?:emergency_contact_)?(?:first|middle|last)_name$/.test(fieldName(input));
 
 const isPhoneInput = (input) => phoneFieldNames.has(fieldName(input));
 const isSearchInput = (input) => input.name === 'search';
 
+const filterInputCharacters = (input, invalidCharacters) => {
+    const position = input.selectionStart ?? input.value.length;
+    const filtered = input.value.replace(invalidCharacters, '');
+
+    if (filtered !== input.value) {
+        const filteredPosition = input.value.slice(0, position).replace(invalidCharacters, '').length;
+        input.value = filtered;
+        input.setSelectionRange(filteredPosition, filteredPosition);
+    }
+};
+
+const filterFormInput = (input) => {
+    if (isNamePartInput(input)) {
+        filterInputCharacters(input, input.hasAttribute('data-person-name-strict')
+            ? /[^\p{L} -]/gu
+            : /[^\p{L} '\u2019-]/gu);
+    } else if (fieldName(input) === 'philhealth_number') {
+        filterInputCharacters(input, /[^0-9]/g);
+    }
+
+    if (isPersonNameInput(input)) {
+        validatePersonNameInput(input);
+    }
+};
+
 const validatePersonNameInput = (input) => {
-    const hasInvalidName = input.value !== '' && !personNamePattern.test(input.value);
+    const strict = input.hasAttribute('data-person-name-strict');
+    const hasInvalidName = input.value !== ''
+        && !(strict ? strictPersonNamePattern : personNamePattern).test(input.value);
 
     input.setCustomValidity(
         hasInvalidName
-            ? 'Use letters, spaces, hyphens, and apostrophes only.'
+            ? (strict ? 'Use letters, spaces, and hyphens only.' : 'Use letters, spaces, hyphens, and apostrophes only.')
             : '',
     );
 
@@ -82,7 +241,72 @@ const formatMobileNumberForDisplay = (value) => {
     return `+${normalizedValue.slice(0, 4)} ${normalizedValue.slice(4, 8)} ${normalizedValue.slice(8)}`;
 };
 
+const formatLocalMobileNumber = (value) => {
+    const normalized = normalizeMobileNumber(value);
+    const digits = /^639\d{9}$/.test(normalized)
+        ? `0${normalized.slice(2)}`
+        : value.replace(/\D/g, '').slice(0, 11);
+
+    return [digits.slice(0, 4), digits.slice(4, 8), digits.slice(8)]
+        .filter(Boolean)
+        .join('-');
+};
+
+const prepareLocalMobileInput = (input, preserveCaret = false) => {
+    const caret = input.selectionStart ?? input.value.length;
+    const digitsBeforeCaret = input.value.slice(0, caret).replace(/\D/g, '').length;
+    const formatted = formatLocalMobileNumber(input.value);
+
+    input.type = 'tel';
+    input.inputMode = 'numeric';
+    input.maxLength = 13;
+    input.placeholder = '09XX-XXXX-XXX';
+    input.title = 'Enter an 11-digit mobile number starting with 09.';
+    input.value = formatted;
+    input.setCustomValidity(
+        formatted !== '' && !/^09\d{2}-\d{4}-\d{3}$/.test(formatted)
+            ? 'Enter an 11-digit mobile number starting with 09.'
+            : '',
+    );
+
+    if (preserveCaret) {
+        let position = 0;
+        let digits = 0;
+        while (position < formatted.length && digits < digitsBeforeCaret) {
+            if (/\d/.test(formatted[position])) {
+                digits++;
+            }
+            position++;
+        }
+        input.setSelectionRange(position, position);
+    }
+};
+
+const updateBirthDateAge = (input) => {
+    const ageInput = input.parentElement?.nextElementSibling?.querySelector('[data-age-display]');
+    if (!ageInput) {
+        return;
+    }
+
+    const birthDate = input.value;
+    const today = input.dataset.today;
+    if (!birthDate || !today || birthDate > today || input.validity.badInput || input.validity.rangeOverflow) {
+        ageInput.value = '';
+        return;
+    }
+
+    const [birthYear, birthMonth, birthDay] = birthDate.split('-').map(Number);
+    const [year, month, day] = today.split('-').map(Number);
+    const beforeBirthday = month < birthMonth || (month === birthMonth && day < birthDay);
+    ageInput.value = String(year - birthYear - Number(beforeBirthday));
+};
+
 const preparePhoneInput = (input) => {
+    if (input.hasAttribute('data-local-mobile')) {
+        prepareLocalMobileInput(input);
+        return;
+    }
+
     input.type = 'tel';
     input.inputMode = 'numeric';
     input.maxLength = 24;
@@ -109,6 +333,9 @@ const installFormInputFormatting = () => {
         if (isPhoneInput(input)) {
             preparePhoneInput(input);
         }
+        if (input.hasAttribute('data-age-source')) {
+            updateBirthDateAge(input);
+        }
     });
 
     document.addEventListener('focusin', (event) => {
@@ -134,9 +361,41 @@ const installFormInputFormatting = () => {
             return;
         }
 
-        if (isPersonNameInput(input)) {
-            validatePersonNameInput(input);
+        if (!event.isComposing) {
+            filterFormInput(input);
         }
+        if (input.hasAttribute('data-local-mobile')) {
+            prepareLocalMobileInput(input, true);
+        }
+        if (input.hasAttribute('data-age-source')) {
+            updateBirthDateAge(input);
+        }
+    });
+
+    document.addEventListener('compositionend', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            filterFormInput(event.target);
+        }
+    });
+
+    document.addEventListener('paste', (event) => {
+        const input = event.target;
+        if (!(input instanceof HTMLInputElement) || !input.hasAttribute('data-local-mobile')) {
+            return;
+        }
+
+        const pasted = event.clipboardData?.getData('text');
+        if (pasted === undefined) {
+            return;
+        }
+
+        event.preventDefault();
+        const start = input.selectionStart ?? input.value.length;
+        const end = input.selectionEnd ?? start;
+        const replacement = formatLocalMobileNumber(pasted);
+        input.value = input.value.slice(0, start) + replacement + input.value.slice(end);
+        input.setSelectionRange(start + replacement.length, start + replacement.length);
+        prepareLocalMobileInput(input, true);
     });
 
     document.addEventListener('focusout', (event) => {
@@ -215,7 +474,9 @@ const installDeleteConfirmations = () => {
     const openConfirmation = (form, submitter = null, trigger = null) => {
         pendingForm = form;
         pendingSubmitter = submitter;
-        returnFocus = trigger || submitter || document.activeElement;
+        const source = trigger || submitter || document.activeElement;
+        const menu = source instanceof Element ? source.closest('.clay-action-menu') : null;
+        returnFocus = (menu && actionMenuTriggers.get(menu)) || source;
 
         const actionText = (
             submitter?.dataset.confirmButton
@@ -228,11 +489,11 @@ const installDeleteConfirmations = () => {
 
         title.textContent = trigger?.dataset.confirmTitle
             || form.dataset.confirmTitle
-            || (isCancellation ? 'Cancel this certificate?' : 'Delete this record?');
+            || (isCancellation ? 'Cancel this record?' : 'Delete this record?');
         description.textContent = trigger?.dataset.confirmMessage
             || form.dataset.confirmMessage
             || (isCancellation
-                ? 'The certificate status will be changed. Please confirm before continuing.'
+                ? 'The record status will be changed. Please confirm before continuing.'
                 : 'Please make sure you selected the correct record before continuing.');
 
         const itemText = trigger?.dataset.confirmItem
@@ -246,7 +507,7 @@ const installDeleteConfirmations = () => {
         notice.textContent = 'This action cannot be undone.';
 
         confirmButton.textContent = form.dataset.confirmButton
-            || (isCancellation ? 'Cancel certificate' : (actionText || 'Delete'));
+            || (isCancellation ? 'Cancel record' : (actionText || 'Delete'));
         confirmButton.disabled = false;
         cancelButton.textContent = 'Cancel';
 

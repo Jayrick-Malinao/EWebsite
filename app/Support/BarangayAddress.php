@@ -71,6 +71,13 @@ class BarangayAddress
             $address = substr($address, 0, -strlen($suffix));
         }
 
+        if (in_array($address, self::puroks(), true)) {
+            return [
+                'address' => '',
+                'purok' => $address,
+            ];
+        }
+
         return [
             'address' => $address,
             'purok' => null,

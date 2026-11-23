@@ -896,15 +896,20 @@
                                     New Password
                                 </label>
 
-                                <input
-                                    type="password"
-                                    id="password"
-                                    name="password"
-                                    minlength="8"
-                                    autocomplete="new-password"
-                                    placeholder="Enter new password"
-                                    class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-[#164238] outline-none transition placeholder:text-slate-400 focus:border-[#168B70] focus:ring-2 focus:ring-[#168B70]/20 @error('password') border-red-400 @enderror"
-                                >
+                                <div class="relative">
+                                    <input
+                                        type="password"
+                                        id="password"
+                                        name="password"
+                                        minlength="8"
+                                        autocomplete="new-password"
+                                        placeholder="Enter new password"
+                                        class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 pr-11 text-sm text-[#164238] outline-none transition placeholder:text-slate-400 focus:border-[#168B70] focus:ring-2 focus:ring-[#168B70]/20 @error('password') border-red-400 @enderror"
+                                    >
+                                    <button type="button" class="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-[#6D817A] transition hover:text-[#164238]" data-toggle-password="password" aria-label="Show password">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12s3.75-6.75 9.75-6.75S21.75 12 21.75 12 18 18.75 12 18.75 2.25 12 2.25 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    </button>
+                                </div>
 
                                 @error('password')
                                     <p class="mt-2 text-sm text-red-600">
@@ -926,15 +931,20 @@
                                     Confirm New Password
                                 </label>
 
-                                <input
-                                    type="password"
-                                    id="password_confirmation"
-                                    name="password_confirmation"
-                                    minlength="8"
-                                    autocomplete="new-password"
-                                    placeholder="Confirm new password"
-                                    class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-[#164238] outline-none transition placeholder:text-slate-400 focus:border-[#168B70] focus:ring-2 focus:ring-[#168B70]/20"
-                                >
+                                <div class="relative">
+                                    <input
+                                        type="password"
+                                        id="password_confirmation"
+                                        name="password_confirmation"
+                                        minlength="8"
+                                        autocomplete="new-password"
+                                        placeholder="Confirm new password"
+                                        class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 pr-11 text-sm text-[#164238] outline-none transition placeholder:text-slate-400 focus:border-[#168B70] focus:ring-2 focus:ring-[#168B70]/20"
+                                    >
+                                    <button type="button" class="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-[#6D817A] transition hover:text-[#164238]" data-toggle-password="password_confirmation" aria-label="Show confirmation password">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12s3.75-6.75 9.75-6.75S21.75 12 21.75 12 18 18.75 12 18.75 2.25 12 2.25 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    </button>
+                                </div>
 
                                 <p class="mt-2 text-xs text-[#6D817A]">
                                     Leave blank if you do not want to change the password.
@@ -979,44 +989,27 @@
 
                 </form>
 
-                {{-- Security Notice --}}
-                <div class="mt-8 rounded-2xl border border-[#CFE5DC] bg-[#EEF8F3] p-5">
-                    <div class="flex gap-3">
-
-                        <div class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-white text-[#0F6F5A] shadow-sm">
-                            <svg
-                                class="h-5 w-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-5a2 2 0 00-2-2H6a2 2 0 00-2 2v5a2 2 0 002 2zm10-9V7a4 4 0 00-8 0v3h8z"
-                                />
-                            </svg>
-                        </div>
-
-                        <div>
-                            <h3 class="text-sm font-semibold text-[#0F6F5A]">
-                                Account Management Security
-                            </h3>
-
-                            <p class="mt-1 text-xs leading-5 text-[#6D817A]">
-                                Staff account changes are recorded in the system
-                                audit logs for accountability and security.
-                            </p>
-                        </div>
-
-                    </div>
-                </div>
-
             </div>
         </div>
 
     </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('[data-toggle-password]').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    const input = document.getElementById(button.dataset.togglePassword);
+                    if (!input) {
+                        return;
+                    }
+
+                    const isPassword = input.type === 'password';
+                    input.type = isPassword ? 'text' : 'password';
+                    button.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+                });
+            });
+        });
+    </script>
 
 </body>
 

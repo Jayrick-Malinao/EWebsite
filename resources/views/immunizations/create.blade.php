@@ -373,40 +373,41 @@
 
                         <div class="p-5">
 
+                            @php
+                                $selectedResident = $residents->firstWhere('id', old('resident_id'));
+                                $residentSearchValue = old(
+                                    'resident_search',
+                                    $selectedResident
+                                        ? "{$selectedResident->full_name} — Resident #{$selectedResident->id}"
+                                        : ''
+                                );
+                            @endphp
+
                             <label
-                                for="resident_id"
+                                for="resident_search"
                                 class="block text-sm font-semibold text-[#234E43]"
                             >
-                                Resident
+                                Search or select resident
                                 <span class="text-red-500">*</span>
                             </label>
 
-                            <select
-                                id="resident_id"
-                                name="resident_id"
+                            <input
+                                id="resident_search"
+                                type="text"
+                                list="resident_options"
+                                value="{{ $residentSearchValue }}"
                                 required
+                                autocomplete="off"
+                                placeholder="Type a resident name"
                                 class="clay-select mt-2 w-full rounded-xl px-4 py-2.5 text-sm outline-none transition"
+                                data-resident-search
                             >
-
-                                <option value="">
-                                    Select resident
-                                </option>
-
+                            <input type="hidden" id="resident_id" name="resident_id" value="{{ old('resident_id') }}">
+                            <datalist id="resident_options">
                                 @foreach ($residents as $resident)
-
-                                    <option
-                                        value="{{ $resident->id }}"
-                                        @selected(old('resident_id') == $resident->id)
-                                    >
-                                        {{ $resident->full_name }}
-                                        @if ($resident->birth_date)
-                                            — {{ $resident->birth_date->format('M d, Y') }}
-                                        @endif
-                                    </option>
-
+                                    <option value="{{ $resident->full_name }} — Resident #{{ $resident->id }}" data-resident-id="{{ $resident->id }}"></option>
                                 @endforeach
-
-                            </select>
+                            </datalist>
 
                             @error('resident_id')
                                 <p class="mt-1.5 text-xs font-medium text-red-600">
@@ -535,18 +536,14 @@
                                 <input
                                     type="date"
                                     id="date_administered"
-                                    name="date_administered"
-                                    value="{{ old('date_administered') }}"
-                                    required
-                                    max="{{ now()->format('Y-m-d') }}"
+                                    value="{{ today()->format('Y-m-d') }}"
+                                    readonly
+                                    aria-readonly="true"
                                     class="clay-input mt-2 w-full rounded-xl px-4 py-2.5 text-sm outline-none transition"
                                 >
-
-                                @error('date_administered')
-                                    <p class="mt-1.5 text-xs font-medium text-red-600">
-                                        {{ $message }}
-                                    </p>
-                                @enderror
+                                <p class="mt-1.5 text-xs text-[#6D817A]">
+                                    The date is set automatically when the record is saved.
+                                </p>
 
                             </div>
 
@@ -773,6 +770,27 @@
     {{-- Mobile Sidebar Script --}}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+
+            const residentSearch = document.querySelector('[data-resident-search]');
+            const residentId = document.getElementById('resident_id');
+            const residentOptions = document.getElementById('resident_options');
+
+            if (residentSearch && residentId && residentOptions) {
+                const options = Array.from(residentOptions.options);
+                const syncResidentId = () => {
+                    const match = options.find((option) => option.value === residentSearch.value.trim());
+                    residentId.value = match ? match.dataset.residentId : '';
+                    residentSearch.setCustomValidity(
+                        residentSearch.value.trim() && !match
+                            ? 'Select a resident from the suggestions.'
+                            : ''
+                    );
+                };
+
+                residentSearch.addEventListener('input', syncResidentId);
+                residentSearch.addEventListener('change', syncResidentId);
+                syncResidentId();
+            }
 
             const sidebar = document.querySelector('aside');
             const overlay = document.getElementById('sidebar-overlay');

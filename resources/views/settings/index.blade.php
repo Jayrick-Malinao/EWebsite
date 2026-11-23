@@ -177,6 +177,14 @@
             box-shadow: 8px 8px 18px rgba(107, 134, 124, 0.18), -8px -8px 18px rgba(255, 255, 255, 0.92), inset 1px 1px 0 rgba(255, 255, 255, 0.84);
         }
 
+        .settings-hover-card {
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .settings-hover-card:hover {
+            transform: translateY(-2px);
+        }
+
         /* ---------- Toggle ---------- */
         .clay-toggle-track {
             background: linear-gradient(145deg, #E4EFE9, #F1F7F4);
@@ -371,7 +379,7 @@
                     @method('PUT')
 
                     {{-- HEALTH CENTER INFORMATION --}}
-                    <section class="clay-table">
+                    <section class="clay-table settings-hover-card">
                         <div class="border-b border-white/70 px-5 py-5 sm:px-6">
                             <div class="flex items-start gap-4">
                                 <div class="clay-icon clay-icon-green h-11 w-11 rounded-xl">
@@ -519,7 +527,7 @@
                     </section>
 
                     {{-- SYSTEM PREFERENCES --}}
-                    <section class="clay-table">
+                    <section class="clay-table settings-hover-card">
                         <div class="border-b border-white/70 px-5 py-5 sm:px-6">
                             <div class="flex items-start gap-4">
                                 <div class="clay-icon clay-icon-green h-11 w-11 rounded-xl">
@@ -652,7 +660,7 @@
                     </section>
 
                     {{-- NOTIFICATION SETTINGS --}}
-                    <section class="clay-table">
+                    <section class="clay-table settings-hover-card">
                         <div class="border-b border-white/70 px-5 py-5 sm:px-6">
                             <div class="flex items-start gap-4">
                                 <div class="clay-icon clay-icon-orange h-11 w-11 rounded-xl">
@@ -770,8 +778,54 @@
                 ==================================================== --}}
                 <aside class="min-w-0 space-y-6 xl:sticky xl:top-28">
 
+                    {{-- Organization information --}}
+                    <section class="clay-table settings-hover-card">
+                        <div class="border-b border-white/70 px-5 py-5">
+                            <div class="flex items-center gap-4">
+                                <img
+                                    src="{{ asset('images/esperanza-health-center-logo.jpg') }}"
+                                    alt="Barangay Esperanza Health Center logo"
+                                    class="h-12 w-12 rounded-xl object-cover shadow-sm"
+                                >
+                                <div class="min-w-0">
+                                    <h3 class="truncate text-base font-bold text-[#164238]">
+                                        {{ $settings['health_center_name'] ?? 'Health Center' }}
+                                    </h3>
+                                    <p class="mt-1 text-xs text-[#6D817A]">
+                                        {{ collect([
+                                            $settings['barangay'] ?? null,
+                                            $settings['municipality'] ?? null,
+                                            $settings['province'] ?? null,
+                                        ])->filter()->implode(', ') ?: 'Organization details' }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <dl class="space-y-4 px-5 py-5">
+                            <div>
+                                <dt class="text-[11px] font-bold uppercase tracking-wide text-[#6D817A]">Address</dt>
+                                <dd class="mt-1 text-sm leading-5 text-[#234E43]">
+                                    {{ $settings['health_center_address'] ?? '—' }}
+                                </dd>
+                            </div>
+                            <div>
+                                <dt class="text-[11px] font-bold uppercase tracking-wide text-[#6D817A]">Contact</dt>
+                                <dd class="mt-1 text-sm text-[#234E43]">
+                                    {{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay($settings['contact_number'] ?? '') ?: '—' }}
+                                </dd>
+                            </div>
+                            <div>
+                                <dt class="text-[11px] font-bold uppercase tracking-wide text-[#6D817A]">Email</dt>
+                                <dd class="mt-1 break-words text-sm text-[#234E43]">
+                                    {{ $settings['email'] ?? '—' }}
+                                </dd>
+                            </div>
+                        </dl>
+                    </section>
+
                     {{-- Profile --}}
-                    <section class="clay-table">
+                    <section class="clay-table settings-hover-card">
                         <div class="border-b border-white/70 px-5 py-5">
                             <div class="flex items-center gap-4">
                                 <div class="clay-avatar flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-base font-bold">
@@ -882,7 +936,7 @@
                     </section>
 
                     {{-- Password --}}
-                    <section class="clay-table">
+                    <section class="clay-table settings-hover-card">
                         <div class="border-b border-white/70 px-5 py-5">
                             <div class="flex items-center gap-2">
                                 <div class="clay-icon clay-icon-orange h-7 w-7 rounded-lg">

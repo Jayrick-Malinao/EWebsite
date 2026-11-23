@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Announcement;
-use App\Models\Certificate;
 use App\Models\ChildHealth;
 use App\Models\Event;
 use App\Models\HealthRecord;
@@ -45,7 +44,6 @@ class DatabaseAssistantController extends Controller
         'senior_citizens',
         'medical_inventories',
         'events',
-        'certificates',
         'announcements',
         'users',
         'audit_logs',
@@ -90,13 +88,13 @@ class DatabaseAssistantController extends Controller
             return $this->reply($this->isTagalogMessage($normalized)
                 ? 'Kumusta! Makakatulong ako sa paghahanap ng impormasyon sa '
                     .'database tungkol sa mga residente, sambahayan, iskedyul, '
-                    .'anunsyo, imbentaryo, sertipiko, at mga rekord na pinapayagan '
+                    .'anunsyo, imbentaryo, at mga rekord na pinapayagan '
                     .'ng iyong account.'
                 : 'Hello! I am the Barangay Esperanza Health Center database '
                     .'assistant. You can ask me about residents, households, '
                     .'senior citizens, maternal care, child health, health visits, '
                     .'immunizations, medical inventory, schedules, announcements, '
-                    .'staff accounts, certificates, and database summaries. '
+                    .'staff accounts and database summaries. '
                     .'Available information depends on your account permissions.');
         }
 
@@ -107,14 +105,14 @@ class DatabaseAssistantController extends Controller
             return $this->reply($this->isTagalogMessage($normalized)
                 ? 'Maaari akong sumagot tungkol sa bilang ng residente at '
                     .'sambahayan, pinapayagang paghahanap ng rekord, mga susunod '
-                    .'na iskedyul, nailathalang anunsyo, pag-expire ng imbentaryo, '
-                    .'at sertipiko. Halimbawa: “Ilan ang rehistradong residente?” '
+                    .'na iskedyul, nailathalang anunsyo, at pag-expire ng imbentaryo. '
+                    .'Halimbawa: “Ilan ang rehistradong residente?” '
                     .'o “May schedule ba this week?” Makikita lamang ang mga '
                     .'rekord na pinapayagan ng iyong tungkulin.'
                 : 'I can answer current resident and household counts, permitted '
                 .'resident or household lookups, upcoming schedules, published '
-                .'announcements, inventory expiry, certificate counts and '
-                .'statuses, and other database questions available to your role. '
+                .'announcements, inventory expiry, and other database questions '
+                .'available to your role. '
                 .'Examples: “How many residents are registered?”, “May schedule '
                 .'ba this week?”, or “Which medicines are expiring soon?” '
                 .'Clinical records and inventory are available only to roles '
@@ -333,14 +331,6 @@ class DatabaseAssistantController extends Controller
                 );
             }
 
-            if ($this->isCertificateStatusQuestion($normalized)) {
-                return $this->certificateStatusResponse();
-            }
-
-            if ($this->isCertificateCountQuestion($normalized)) {
-                return $this->certificateCountResponse();
-            }
-
             if ($this->isHouseholdLookupQuestion($normalized)) {
                 return $this->householdLookupResponse($message);
             }
@@ -418,7 +408,7 @@ class DatabaseAssistantController extends Controller
             && preg_match('/\b(households?|sambahayan)\b/', $message) !== 1
             && preg_match(
                 '/\b(health visits?|health records?|immunizations?|maternal care|'
-                .'child health|senior citizens?|certificates?)\b/',
+                .'child health|senior citizens?)\b/',
                 $message
             ) !== 1
             && preg_match('/\b(records?|profile|information|details)\b/', $message) !== 1;
@@ -703,7 +693,7 @@ class DatabaseAssistantController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | Inventory, schedules, announcements, certificates
+    | Inventory, schedules, announcements
     |--------------------------------------------------------------------------
     */
 
@@ -875,15 +865,6 @@ class DatabaseAssistantController extends Controller
         );
     }
 
-    private function isCertificateStatusQuestion(string $message): bool
-    {
-        return preg_match('/\b(certificates?|sertipiko)\b/', $message) === 1
-            && preg_match(
-                '/\b(status|statuses|issued|cancelled|canceled|katayuan)\b/',
-                $message
-            ) === 1;
-    }
-
     private function isAnnouncementStatusQuestion(string $message): bool
     {
         return preg_match(
@@ -918,52 +899,6 @@ class DatabaseAssistantController extends Controller
             .($tagalog
                 ? "\n\nPinagmulan: announcements table."
                 : "\n\nSource: announcements table.")
-        );
-    }
-
-    private function certificateStatusResponse(): JsonResponse
-    {
-        $statuses = Certificate::query()
-            ->select('status')
-            ->selectRaw('COUNT(*) AS total')
-            ->groupBy('status')
-            ->orderBy('status')
-            ->get();
-
-        if ($statuses->isEmpty()) {
-            return $this->reply(
-                'No certificate records or statuses are currently recorded.'
-            );
-        }
-
-        $lines = $statuses->map(
-            fn ($status) => '- '.($status->status ?: 'Not recorded')
-                .': '.$status->total
-        );
-
-        return $this->reply(
-            "CERTIFICATE STATUS\n\n"
-            .$lines->implode("\n")
-            ."\n\nSource: certificates table."
-        );
-    }
-
-    private function isCertificateCountQuestion(string $message): bool
-    {
-        return preg_match('/\b(certificates?|sertipiko)\b/', $message) === 1
-            && preg_match(
-                '/\b(how many|count|number of|total|ilan|ilang|pila)\b/',
-                $message
-            ) === 1;
-    }
-
-    private function certificateCountResponse(): JsonResponse
-    {
-        $total = Certificate::count();
-
-        return $this->reply(
-            "There are {$total} certificate record(s) in the database.\n\n"
-            .'Source: certificates table.'
         );
     }
 
@@ -1136,7 +1071,7 @@ PROMPT;
         if ($type === 'unsupported') {
             return 'That information is not available through the assistant. '
                 .'Try asking about residents, households, schedules, '
-                .'announcements, inventory, certificates, or records your '
+                .'announcements, inventory, or records your '
                 .'role is authorized to view.';
         }
 
@@ -1250,7 +1185,6 @@ PROMPT;
             ['maternal_cares.resident_id', 'residents.id'],
             ['child_healths.resident_id', 'residents.id'],
             ['senior_citizens.resident_id', 'residents.id'],
-            ['certificates.resident_id', 'residents.id'],
             ['announcement_recipients.announcement_id', 'announcements.id'],
             ['announcement_recipients.resident_id', 'residents.id'],
             ['announcement_sms_deliveries.announcement_id', 'announcements.id'],
@@ -1693,7 +1627,7 @@ PROMPT;
         $normalized = $this->normalizeMessage($message);
         $mentionsRecordType = preg_match(
             '/\b(health records?|health visits?|medical history|immunizations?|'
-            .'maternal care|child health|senior citizens?|certificates?)\b/',
+            .'maternal care|child health|senior citizens?)\b/',
             $normalized
         ) === 1;
         $showHealthRecord = preg_match(
@@ -1706,7 +1640,6 @@ PROMPT;
         $showMaternalCare = preg_match('/\b(maternal care|prenatal|pregnancy)\b/', $normalized) === 1;
         $showChildHealth = preg_match('/\b(child health|child records?|nutrition)\b/', $normalized) === 1;
         $showSeniorCitizen = preg_match('/\b(senior citizens?|elderly|osca)\b/', $normalized) === 1;
-        $showCertificates = preg_match('/\b(certificates?)\b/', $normalized) === 1;
 
         if (
             preg_match('/\b(records?|record types?)\b/', $normalized) === 1
@@ -1714,8 +1647,8 @@ PROMPT;
         ) {
             return $this->reply(
                 'Which record do you mean: health records, visits, '
-                .'immunizations, maternal care, child health, senior citizen '
-                .'records, or certificates?'
+                .'immunizations, maternal care, child health, or senior citizen '
+                .'records?'
             );
         }
 
@@ -1725,7 +1658,7 @@ PROMPT;
             'health records', 'health record', 'health visits', 'health visit',
             'medical history', 'immunizations', 'immunization',
             'maternal care', 'child health', 'senior citizen',
-            'certificates', 'certificate', 'sino si', 'hanapin ang',
+            'sino si', 'hanapin ang',
             'ipakita ang', 'saan nakatira si', 'nasaan si',
             'contact number', 'phone number', 'email address',
         ]);
@@ -1949,20 +1882,6 @@ PROMPT;
             }
         }
 
-        if ($canViewClinical && $showCertificates) {
-            $certificates = Certificate::where('resident_id', $resident->id)
-                ->orderByDesc('date_issued')->limit(10)->get();
-
-            $sections[] = "CERTIFICATES\n"
-                .($certificates->isEmpty()
-                    ? 'No certificates are registered.'
-                    : $certificates->map(fn ($item) => '- '.($item->certificate_type ?: 'Certificate')
-                        .' | Number: '.($item->certificate_number ?: 'Not specified')
-                        .' | Issued: '.$this->formatDate($item->date_issued)
-                        .' | Status: '.($item->status ?: 'Not specified')
-                    )->implode("\n"));
-        }
-
         return $this->reply(
             'Database information for '.$this->residentName($resident)
             ."\n\n".implode("\n\n", $sections)
@@ -2001,8 +1920,7 @@ PROMPT;
         return preg_match(
             '/\b(ano|ilan|ilang|pila|saan|sino|may|ba|mga|ang|ng|sa|'
             .'para|kamusta|kumusta|ipakita|ilista|rehistrado|residente|'
-            .'sambahayan|gamot|anunsyo|abiso|iskedyul|matatanda|'
-            .'sertipiko|kawani)\b/u',
+            .'sambahayan|gamot|anunsyo|abiso|iskedyul|matatanda|kawani)\b/u',
             $message
         ) === 1;
     }
@@ -2138,7 +2056,7 @@ PROMPT;
 
         if (
             preg_match(
-                '/\b(residents?|residentes?|health visits?|health records?|immunizations?|maternal care|child health|senior citizens?|certificates?|sertipiko)\b/',
+                '/\b(residents?|residentes?|health visits?|health records?|immunizations?|maternal care|child health|senior citizens?)\b/',
                 $message
             ) === 1
             && preg_match('/\b(how many|count|number of|total|ilan|ilang|pila)\b/', $message) === 1

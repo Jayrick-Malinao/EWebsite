@@ -8,28 +8,34 @@ use App\Models\AnnouncementSmsDelivery;
 use App\Models\Resident;
 use App\Models\User;
 use App\Notifications\AnnouncementPublishedNotification;
+use App\Services\AnnouncementRecipientService;
+use App\Services\AnnouncementSmsStatusSyncService;
 use App\Services\UniSmsService;
+use App\Support\PhilippineMobileNumberFormatter;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class AnnouncementController extends Controller
 {
-    public function index()
+    public function index(UniSmsService $smsService)
     {
         $announcements = Announcement::query()
             ->with('creator')
-            ->withCount([
-                'recipients',
-                'smsDeliveries',
-            ])
+            ->withCount('recipients')
             ->latest()
             ->paginate(10);
 
-        return view('announcements.index', compact('announcements'));
+        $smsBalance = $smsService->accountBalance();
+
+        return view('announcements.index', compact(
+            'announcements',
+            'smsBalance'
+        ));
     }
 
     public function create()
@@ -44,22 +50,41 @@ class AnnouncementController extends Controller
         return view('announcements.create', compact('residents'));
     }
 
-    public function preview(Request $request): JsonResponse
+    public function destroy(Announcement $announcement)
     {
-        $validated = $this->validateAnnouncement($request);
+        $announcement->delete();
 
-        $residents = $this->resolveTargetResidents($validated);
+        return redirect()
+            ->route('announcements.index')
+            ->with('success', 'Announcement deleted successfully.');
+    }
+
+    public function preview(
+        Request $request,
+        AnnouncementRecipientService $recipientService
+    ): JsonResponse {
+        $validated = $this->validatePreview($request);
+        $resolved = $recipientService->resolve($validated);
 
         return response()->json(
-            $this->buildPreview($residents)
+            $recipientService->buildPreview($resolved)
         );
     }
 
-    public function store(Request $request)
-    {
+    public function store(
+        Request $request,
+        AnnouncementRecipientService $recipientService
+    ) {
         $validated = $this->validateAnnouncement($request);
+        $resolved = $recipientService->resolve($validated);
+        $residents = $resolved['qualifying_residents'];
+        $smsRecipients = $resolved['sms_recipients'];
 
-        $residents = $this->resolveTargetResidents($validated);
+        if (isset($validated['preview_hash']) && ! hash_equals($recipientService->previewHash($resolved), $validated['preview_hash'])) {
+            return back()->withInput()->withErrors([
+                'target_type' => 'The recipient list changed. Please review the updated preview before publishing.',
+            ]);
+        }
 
         if ($residents->isEmpty()) {
             return back()
@@ -69,13 +94,21 @@ class AnnouncementController extends Controller
                 ]);
         }
 
-        $announcement = DB::transaction(function () use ($validated, $residents) {
+        $announcement = DB::transaction(function () use ($validated, $residents, $smsRecipients) {
             $announcement = Announcement::create([
                 'title' => $validated['title'],
                 'message' => $validated['message'],
                 'target_type' => $validated['target_type'],
-                'min_age' => $validated['min_age'] ?? null,
-                'max_age' => $validated['max_age'] ?? null,
+                'min_age' => match ($validated['target_type']) {
+                    'children' => 0,
+                    'age_bracket' => $validated['min_age'],
+                    default => null,
+                },
+                'max_age' => match ($validated['target_type']) {
+                    'children' => 5,
+                    'age_bracket' => $validated['max_age'],
+                    default => null,
+                },
                 'priority' => $validated['priority'],
                 'status' => 'Published',
                 'published_at' => now(),
@@ -83,7 +116,7 @@ class AnnouncementController extends Controller
             ]);
 
             $this->createRecipients($announcement, $residents);
-            $this->createSmsDeliveries($announcement, $residents);
+            $this->createSmsDeliveries($announcement, $smsRecipients);
 
             return $announcement;
         });
@@ -111,14 +144,11 @@ class AnnouncementController extends Controller
 
         return redirect()
             ->route('announcements.show', $announcement)
-            ->with(
-                'success',
-                'Announcement published successfully. SMS delivery records were prepared; no SMS messages were sent.'
-            );
+            ->with('success', 'Announcement published successfully. No SMS messages were sent.');
     }
 
     /**
-     * Send pending SMS messages for an announcement.
+     * Send prepared SMS messages for an announcement.
      *
      * Real SMS sending is disabled unless UNISMS_SMS_ENABLED=true.
      */
@@ -151,7 +181,8 @@ class AnnouncementController extends Controller
         }
 
         $deliveries = $announcement->smsDeliveries()
-            ->where('status', 'Pending')
+            ->where('status', 'Prepared')
+            ->whereNull('attempt_started_at')
             ->orderBy('id')
             ->get();
 
@@ -160,38 +191,72 @@ class AnnouncementController extends Controller
                 ->route('announcements.show', $announcement)
                 ->with(
                     'info',
-                    'There are no pending SMS messages for this announcement.'
+                    'There are no prepared SMS messages for this announcement.'
                 );
         }
 
         $sentCount = 0;
         $failedCount = 0;
+        $unknownCount = 0;
         $skippedCount = 0;
 
         foreach ($deliveries as $delivery) {
-            $number = trim((string) $delivery->contact_number);
+            $number = PhilippineMobileNumberFormatter::normalize(
+                trim((string) $delivery->contact_number)
+            );
+            $claimed = DB::transaction(function () use ($announcement, $delivery, $number): bool {
+                Announcement::query()->whereKey($announcement->id)->lockForUpdate()->firstOrFail();
 
-            // Do not call UniSMS when the recipient number is missing.
-            if ($number === '') {
-                $delivery->update([
-                    'status' => 'Failed',
-                    'failure_reason' => 'No contact number is recorded for this household head.',
-                    'sent_at' => null,
-                ]);
+                $alreadyAttempted = $announcement->smsDeliveries()
+                    ->where('id', '!=', $delivery->id)
+                    ->where('status', '!=', 'Prepared')
+                    ->get(['contact_number'])
+                    ->contains(fn (AnnouncementSmsDelivery $other): bool => PhilippineMobileNumberFormatter::normalize(
+                        trim((string) $other->contact_number)
+                    ) === $number);
 
-                $failedCount++;
+                if ($alreadyAttempted) {
+                    $announcement->smsDeliveries()
+                        ->whereKey($delivery->id)
+                        ->where('status', 'Prepared')
+                        ->whereNull('attempt_started_at')
+                        ->update([
+                            'status' => 'Failed',
+                            'failure_reason' => 'A delivery for this number has already been processed for this announcement.',
+                        ]);
+
+                    return false;
+                }
+
+                return $announcement->smsDeliveries()
+                    ->whereKey($delivery->id)
+                    ->where('status', 'Prepared')
+                    ->whereNull('attempt_started_at')
+                    ->update([
+                        'status' => 'Unknown',
+                        'attempt_started_at' => now(),
+                        'failure_reason' => 'Submission started; provider acceptance is not yet confirmed.',
+                    ]) === 1;
+            });
+
+            if (! $claimed) {
+                $skippedCount++;
 
                 continue;
             }
 
-            /*
-             * Recheck the delivery status before sending.
-             * This is a safeguard against processing an already-updated record.
-             */
-            $delivery->refresh();
+            if (! PhilippineMobileNumberFormatter::isValid($number)) {
+                $failureReason = trim((string) $delivery->contact_number) === ''
+                    ? 'No valid recipient contact number is recorded.'
+                    : 'The recipient contact number is not a valid Philippine mobile number.';
 
-            if ($delivery->status !== 'Pending') {
-                $skippedCount++;
+                $delivery->update([
+                    'status' => 'Failed',
+                    'failure_reason' => $failureReason,
+                    'sent_at' => null,
+                ]);
+
+                $failedCount++;
 
                 continue;
             }
@@ -206,16 +271,22 @@ class AnnouncementController extends Controller
 
             if (($result['success'] ?? false) === true) {
                 $delivery->update([
-                    'status' => 'Sent',
+                    'status' => 'Pending',
                     'sent_at' => now(),
                     'failure_reason' => null,
+                    'provider_reference' => $result['message_id'],
+                    'provider_status' => $result['provider_status'],
+                    'provider_http_status' => $result['http_status'],
                 ]);
 
                 $sentCount++;
             } else {
                 $delivery->update([
-                    'status' => 'Failed',
+                    'status' => ($result['outcome_uncertain'] ?? false) ? 'Unknown' : 'Failed',
                     'sent_at' => null,
+                    'provider_reference' => $result['message_id'] ?? null,
+                    'provider_status' => $result['provider_status'] ?? null,
+                    'provider_http_status' => $result['http_status'] ?? null,
                     'failure_reason' => mb_substr(
                         (string) (
                             $result['message']
@@ -226,11 +297,19 @@ class AnnouncementController extends Controller
                     ),
                 ]);
 
-                $failedCount++;
+                if ($result['outcome_uncertain'] ?? false) {
+                    $unknownCount++;
+                } else {
+                    $failedCount++;
+                }
             }
         }
 
         $summary = "SMS processing finished. Accepted: {$sentCount}; failed: {$failedCount}.";
+
+        if ($unknownCount > 0) {
+            $summary .= " Unknown: {$unknownCount}.";
+        }
 
         if ($skippedCount > 0) {
             $summary .= " Skipped: {$skippedCount}.";
@@ -239,29 +318,200 @@ class AnnouncementController extends Controller
         return redirect()
             ->route('announcements.show', $announcement)
             ->with(
-                $failedCount > 0 ? 'warning' : 'success',
+                $failedCount > 0 || $unknownCount > 0 ? 'warning' : 'success',
                 $summary
             );
     }
 
-    public function show(Announcement $announcement)
+    public function refreshSmsStatus(Announcement $announcement, AnnouncementSmsStatusSyncService $sync)
+    {
+        $result = $sync->synchronize($announcement);
+
+        if ($result['locked']) {
+            return back()->with('warning', 'A UniSMS status check is already in progress for this announcement.');
+        }
+
+        $updated = $result['updated'];
+        $failed = $result['unavailable'];
+        $missingReferences = $result['missing'];
+        $invalidReferences = $result['invalid'];
+
+        $summary = "UniSMS status checks: {$updated} updated; {$result['skipped']} skipped; {$result['not_due']} not yet due; {$failed} unavailable; {$missingReferences} missing references; {$invalidReferences} invalid references.";
+        if ($updated === 0 && $failed === 0 && $missingReferences === 0 && $invalidReferences === 0 && $result['skipped'] === 0 && ! $result['deferred']) {
+            return back()->with('info', $summary.' No SMS messages are available for a manual status check.');
+        }
+        if ($result['errors'] !== []) {
+            $summary .= ' '.implode(' ', array_unique($result['errors']));
+        }
+        if ($result['deferred']) {
+            $summary .= ' Remaining checks were deferred.';
+        }
+
+        return back()->with($failed > 0 || $missingReferences > 0 || $invalidReferences > 0 || $result['deferred'] ? 'warning' : 'success', $summary);
+    }
+
+    public function prepareSmsRetry(Announcement $announcement, int $deliveryId)
+    {
+        $prepared = DB::transaction(function () use ($announcement, $deliveryId): bool {
+            $announcement = Announcement::query()->whereKey($announcement->id)->lockForUpdate()->firstOrFail();
+            $delivery = $announcement->smsDeliveries()->whereKey($deliveryId)->lockForUpdate()->firstOrFail();
+
+            if (! $delivery->canPrepareRetry()) {
+                return false;
+            }
+
+            DB::table('announcement_sms_retry_history')->insert([
+                'announcement_sms_delivery_id' => $delivery->id,
+                'requested_by' => auth()->id(),
+                'provider_reference' => $delivery->provider_reference,
+                'provider_status' => $delivery->provider_status,
+                'provider_http_status' => $delivery->provider_http_status,
+                'attempt_started_at' => $delivery->attempt_started_at,
+                'sent_at' => $delivery->sent_at,
+                'failure_reason' => $delivery->failure_reason,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            $delivery->update([
+                'status' => 'Prepared',
+                'failure_reason' => null,
+                'attempt_started_at' => null,
+                'sent_at' => null,
+                'provider_reference' => null,
+                'provider_status' => null,
+                'provider_http_status' => null,
+                'status_checked_at' => null,
+                'status_check_attempted_at' => null,
+                'status_check_result' => null,
+                'status_lookup_http_status' => null,
+            ]);
+
+            return true;
+        });
+
+        if (! $prepared) {
+            return back()->with('warning', 'This SMS is not eligible for a safe retry. Pending and uncertain submissions must not be resent.');
+        }
+
+        return back()->with('success', 'The rejected SMS is prepared for retry. No SMS was sent; use the send button to confirm submission.');
+    }
+
+    public function smsWebhook(Request $request, UniSmsService $smsService): JsonResponse
+    {
+        $secret = config('services.unisms.webhook_secret');
+        $providedSecret = $request->header('webhook-secret-key');
+
+        if (! is_string($secret) || trim($secret) === '') {
+            return response()->json(['error' => 'Webhook is not configured.'], 503);
+        }
+
+        if (! is_string($providedSecret) || ! hash_equals($secret, $providedSecret)) {
+            return response()->json(['error' => 'Unauthorized.'], 403);
+        }
+
+        $payload = $request->validate([
+            'id' => ['required', 'string', 'max:128'],
+            'event' => ['required', Rule::in(['message.sent', 'message.failed', 'message.retrying'])],
+            'message' => ['required', 'array'],
+            'message.reference_id' => ['required', 'string', 'max:128'],
+            'message.status' => ['required', 'string'],
+            'message.fail_reason' => ['nullable', 'string'],
+            'message.recipient' => ['nullable', 'string'],
+            'message.content' => ['nullable', 'string'],
+        ]);
+        $message = $payload['message'];
+        $expectedStatus = match ($payload['event']) {
+            'message.sent' => 'sent',
+            'message.failed' => 'failed',
+            'message.retrying' => 'retrying',
+        };
+
+        if ($payload['id'] !== $message['reference_id'] || $message['status'] !== $expectedStatus
+            || ! $smsService->isValidReference($message['reference_id'])) {
+            return response()->json(['error' => 'Inconsistent message status.'], 422);
+        }
+
+        return DB::transaction(function () use ($smsService, $message, $expectedStatus): JsonResponse {
+            $delivery = AnnouncementSmsDelivery::query()
+                ->where('provider_reference', $message['reference_id'])
+                ->lockForUpdate()
+                ->first();
+
+            if (! $delivery) {
+                return response()->json(['error' => 'Message reference not found.'], 404);
+            }
+
+            if (($expectedStatus === 'sent' && $delivery->status === 'Unknown' && $delivery->provider_status === 'sent')
+                || ($expectedStatus === 'retrying' && $delivery->status === 'Pending' && $delivery->provider_status === 'retrying')) {
+                return response()->json(['status' => 'processed']);
+            }
+
+            $result = $smsService->updateDeliveryStatus($delivery, $message);
+
+            if ($result === null) {
+                return response()->json(['error' => 'Invalid message status.'], 422);
+            }
+
+            if ($result === false
+                && ! in_array($delivery->status, ['Failed', 'Delivered'], true)
+                && ! ($expectedStatus === 'retrying' && in_array($delivery->provider_status, ['sent', 'failed'], true))) {
+                return response()->json(['error' => 'Message status could not be updated.'], 503);
+            }
+
+            return response()->json(['status' => 'processed']);
+        });
+    }
+
+    public function show(Announcement $announcement, AnnouncementSmsStatusSyncService $sync, UniSmsService $smsService)
     {
         $announcement->load([
             'creator',
             'recipients.resident.household',
             'smsDeliveries.household',
             'smsDeliveries.householdHead',
+            'smsDeliveries.resident',
         ]);
+
+        $directoryAnnouncements = Announcement::query()
+            ->withCount('recipients')
+            ->latest()
+            ->paginate(8, ['*'], 'directory_page')
+            ->withQueryString();
+
+        $lastSuccessfulSmsChecks = DB::table('announcement_sms_status_checks')
+            ->whereIn('announcement_sms_delivery_id', $announcement->smsDeliveries->modelKeys())
+            ->where('result', 'success')
+            ->selectRaw('announcement_sms_delivery_id, MAX(checked_at) as checked_at')
+            ->groupBy('announcement_sms_delivery_id')
+            ->pluck('checked_at', 'announcement_sms_delivery_id')
+            ->map(fn (string $checkedAt): Carbon => Carbon::parse($checkedAt));
+        $latestSmsReasons = DB::table('announcement_sms_status_checks')
+            ->whereIn('id', DB::table('announcement_sms_status_checks')
+                ->whereIn('announcement_sms_delivery_id', $announcement->smsDeliveries->modelKeys())
+                ->whereNotNull('provider_reason')
+                ->selectRaw('MAX(id)')
+                ->groupBy('announcement_sms_delivery_id'))
+            ->get()
+            ->keyBy('announcement_sms_delivery_id');
+        $smsSyncOverview = $sync->overview($announcement);
 
         // Read the existing UniSMS configuration without enabling SMS.
         $smsEnabled = (bool) config('services.unisms.enabled', false);
         $smsConfigured = filled(config('services.unisms.secret_key'))
             && filled(config('services.unisms.sender_id'));
+        $smsStatusConfigured = filled(config('services.unisms.secret_key'));
 
         return view('announcements.show', compact(
             'announcement',
             'smsEnabled',
-            'smsConfigured'
+            'smsConfigured',
+            'smsStatusConfigured',
+            'directoryAnnouncements',
+            'lastSuccessfulSmsChecks',
+            'latestSmsReasons',
+            'smsSyncOverview',
+            'smsService'
         ));
     }
 
@@ -291,9 +541,66 @@ class AnnouncementController extends Controller
             .$body;
     }
 
+    private function validatePreview(Request $request): array
+    {
+        $validated = $request->validate([
+            'target_type' => [
+                'required',
+                Rule::in([
+                    'specific',
+                    'senior',
+                    'children',
+                    'pregnant',
+                    'postnatal',
+                    'general',
+                    'age_bracket',
+                ]),
+            ],
+            'resident_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('residents', 'id')->where('status', 'Active'),
+            ],
+            'resident_ids' => ['nullable', 'array'],
+            'resident_ids.*' => [
+                'required',
+                'integer',
+                'distinct',
+                Rule::exists('residents', 'id')->where('status', 'Active'),
+            ],
+            'min_age' => [
+                'required_if:target_type,age_bracket',
+                'nullable',
+                'integer',
+                'min:0',
+                'max:255',
+            ],
+            'max_age' => [
+                'required_if:target_type,age_bracket',
+                'nullable',
+                'integer',
+                'min:0',
+                'max:255',
+                'gte:min_age',
+            ],
+        ]);
+
+        if (
+            $validated['target_type'] === 'specific'
+            && empty($validated['resident_ids'])
+            && empty($validated['resident_id'])
+        ) {
+            throw ValidationException::withMessages([
+                'resident_ids' => 'Select at least one active resident.',
+            ]);
+        }
+
+        return $validated;
+    }
+
     private function validateAnnouncement(Request $request): array
     {
-        return $request->validate([
+        $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'message' => ['required', 'string', 'max:5000'],
             'target_type' => [
@@ -303,147 +610,59 @@ class AnnouncementController extends Controller
                     'senior',
                     'children',
                     'pregnant',
+                    'postnatal',
                     'general',
                     'age_bracket',
                 ]),
             ],
-            'resident_id' => ['nullable', 'integer', 'exists:residents,id'],
-            'min_age' => ['nullable', 'integer', 'min:0', 'max:120'],
-            'max_age' => ['nullable', 'integer', 'min:0', 'max:120', 'gte:min_age'],
+            'resident_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('residents', 'id')->where('status', 'Active'),
+            ],
+            'resident_ids' => [
+                'nullable',
+                'array',
+            ],
+            'resident_ids.*' => [
+                'required',
+                'integer',
+                'distinct',
+                Rule::exists('residents', 'id')->where('status', 'Active'),
+            ],
+            'min_age' => [
+                'required_if:target_type,age_bracket',
+                'nullable',
+                'integer',
+                'min:0',
+                'max:255',
+            ],
+            'max_age' => [
+                'required_if:target_type,age_bracket',
+                'nullable',
+                'integer',
+                'min:0',
+                'max:255',
+                'gte:min_age',
+            ],
             'priority' => [
                 'required',
                 Rule::in(['Normal', 'Important', 'Urgent']),
             ],
+            'preview_hash' => ['nullable', 'string', 'size:64'],
         ]);
-    }
 
-    private function resolveTargetResidents(array $validated): Collection
-    {
-        $query = Resident::query()
-            ->where('status', 'Active')
-            ->with([
-                'household',
-                'seniorCitizen',
-                'maternalCares',
-                'childHealths',
+        if (
+            $validated['target_type'] === 'specific'
+            && empty($validated['resident_ids'])
+            && empty($validated['resident_id'])
+        ) {
+            throw ValidationException::withMessages([
+                'resident_ids' => 'Select at least one active resident.',
             ]);
-
-        return match ($validated['target_type']) {
-            'specific' => $this->resolveSpecificResident($query, $validated),
-            'senior' => $this->resolveSeniorResidents($query),
-            'children' => $this->resolveChildren($query, $validated),
-            'pregnant' => $this->resolvePregnantResidents($query),
-            'general' => $query->get(),
-            'age_bracket' => $this->resolveAgeBracket($query, $validated),
-        };
-    }
-
-    private function resolveSpecificResident($query, array $validated): Collection
-    {
-        if (empty($validated['resident_id'])) {
-            return collect();
         }
 
-        return $query->whereKey($validated['resident_id'])->get();
-    }
-
-    private function resolveSeniorResidents($query): Collection
-    {
-        return $query->get()
-            ->filter(function (Resident $resident) {
-                return $this->calculateAge($resident) >= 60
-                    || $resident->seniorCitizen?->senior_status === 'Active';
-            })
-            ->values();
-    }
-
-    private function resolveChildren($query, array $validated): Collection
-    {
-        $minAge = $validated['min_age'] ?? 0;
-        $maxAge = $validated['max_age'] ?? 5;
-
-        return $query->get()
-            ->filter(function (Resident $resident) use ($minAge, $maxAge) {
-                $age = $this->calculateAge($resident);
-
-                return $age >= $minAge && $age <= $maxAge;
-            })
-            ->values();
-    }
-
-    private function resolvePregnantResidents($query): Collection
-    {
-        return $query->get()
-            ->filter(function (Resident $resident) {
-                return $resident->maternalCares->contains(
-                    function ($maternalCare) {
-                        return $maternalCare->pregnancy_status === 'Pregnant'
-                            && is_null($maternalCare->actual_delivery_date);
-                    }
-                );
-            })
-            ->values();
-    }
-
-    private function resolveAgeBracket($query, array $validated): Collection
-    {
-        $minAge = $validated['min_age'];
-        $maxAge = $validated['max_age'];
-
-        return $query->get()
-            ->filter(function (Resident $resident) use ($minAge, $maxAge) {
-                $age = $this->calculateAge($resident);
-
-                return $age >= $minAge && $age <= $maxAge;
-            })
-            ->values();
-    }
-
-    private function calculateAge(Resident $resident): int
-    {
-        if (! $resident->birth_date) {
-            return 0;
-        }
-
-        return Carbon::parse($resident->birth_date)->age;
-    }
-
-    private function buildPreview(Collection $residents): array
-    {
-        $households = $residents
-            ->filter(fn (Resident $resident) => $resident->household)
-            ->groupBy('household_id');
-
-        $householdPreview = $households->map(function (Collection $members) {
-            $household = $members->first()->household;
-
-            $householdHead = $members->firstWhere('is_household_head', true);
-
-            if (! $householdHead) {
-                $householdHead = $household->residents?->firstWhere('is_household_head', true);
-            }
-
-            return [
-                'household_id' => $household->id,
-                'household_code' => $household->household_code,
-                'household_head' => $householdHead?->full_name,
-                'contact_number' => $householdHead?->contact_number,
-                'qualifying_members' => $members->map(
-                    fn (Resident $resident) => [
-                        'id' => $resident->id,
-                        'name' => $resident->full_name,
-                        'age' => $this->calculateAge($resident),
-                    ]
-                )->values()->all(),
-            ];
-        })->values();
-
-        return [
-            'qualifying_residents' => $residents->count(),
-            'affected_households' => $households->count(),
-            'sms_recipients' => $householdPreview->count(),
-            'households' => $householdPreview->all(),
-        ];
+        return $validated;
     }
 
     private function createRecipients(
@@ -464,37 +683,18 @@ class AnnouncementController extends Controller
 
     private function createSmsDeliveries(
         Announcement $announcement,
-        Collection $residents
+        Collection $smsRecipients
     ): void {
-        $residents
-            ->filter(fn (Resident $resident) => $resident->household)
-            ->groupBy('household_id')
-            ->each(function (Collection $members) use ($announcement) {
-                $household = $members->first()->household;
-
-                $householdHead = $household->residents
-                    ->firstWhere('is_household_head', true);
-
-                if (! $householdHead) {
-                    return;
-                }
-
-                $contactNumber = trim((string) $householdHead->contact_number);
-
-                AnnouncementSmsDelivery::firstOrCreate(
-                    [
-                        'announcement_id' => $announcement->id,
-                        'household_id' => $household->id,
-                    ],
-                    [
-                        'household_head_resident_id' => $householdHead->id,
-                        'contact_number' => $contactNumber,
-                        'status' => 'Pending',
-                        'failure_reason' => $contactNumber === ''
-                            ? 'Household head has no contact number.'
-                            : null,
-                    ]
-                );
-            });
+        foreach ($smsRecipients as $recipient) {
+            AnnouncementSmsDelivery::create([
+                'announcement_id' => $announcement->id,
+                'household_id' => $recipient['household_id'],
+                'household_head_resident_id' => $recipient['household_head_resident_id'],
+                'resident_id' => $recipient['resident_id'],
+                'recipient_type' => $recipient['recipient_type'],
+                'contact_number' => $recipient['contact_number'],
+                'status' => 'Prepared',
+            ]);
+        }
     }
 }

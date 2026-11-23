@@ -655,21 +655,29 @@
                         </div>
 
 
-                        {{-- Birth Date --}}
-                        <div>
-                            <label for="birth_date" class="clay-label mb-2 block text-sm font-semibold">
-                                Birth Date <span class="clay-required">*</span>
-                            </label>
+                        <div class="grid grid-cols-2 gap-5 sm:col-span-2">
+                            <div>
+                                <label for="birth_date" class="clay-label mb-2 block text-sm font-semibold">
+                                    Birth Date <span class="clay-required">*</span>
+                                </label>
 
-                            <input
-                                id="birth_date"
-                                name="birth_date"
-                                type="date"
-                                value="{{ old('birth_date', $resident->birth_date?->format('Y-m-d')) }}"
-                                max="{{ now()->format('Y-m-d') }}"
-                                required
-                                class="clay-input px-4 py-3 text-sm outline-none"
-                            >
+                                <input
+                                    id="birth_date"
+                                    name="birth_date"
+                                    type="date"
+                                    value="{{ old('birth_date', $resident->birth_date?->format('Y-m-d')) }}"
+                                    max="{{ now()->format('Y-m-d') }}"
+                                    data-age-source
+                                    data-today="{{ now()->format('Y-m-d') }}"
+                                    required
+                                    class="clay-input px-4 py-3 text-sm outline-none"
+                                >
+                            </div>
+
+                            <div>
+                                <label for="age" class="clay-label mb-2 block text-sm font-semibold">Age</label>
+                                <input id="age" type="text" readonly data-age-display class="clay-input px-4 py-3 text-sm outline-none">
+                            </div>
                         </div>
 
 
@@ -792,6 +800,8 @@
                             <input
                                 id="contact_number"
                                 name="contact_number"
+                                @disabled(! $resident->is_household_head)
+                                @required($resident->is_household_head)
                                 type="tel"
                                 value="{{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay(old('contact_number', $resident->contact_number)) ?: '+63' }}"
                                 inputmode="numeric"
@@ -801,6 +811,9 @@
                                 title="Only Globe and DITO SIM numbers are supported."
                                 class="clay-input px-4 py-3 text-sm outline-none"
                             >
+                            @unless ($resident->is_household_head)
+                                <p class="mt-1.5 text-xs text-[#6D817A]">Uses the household head's contact number.</p>
+                            @endunless
                         </div>
 
 
@@ -936,6 +949,9 @@
                             <input
                                 id="philhealth_number"
                                 name="philhealth_number"
+                                inputmode="numeric"
+                                pattern="[0-9]*"
+                                title="Use digits only."
                                 type="text"
                                 value="{{ old('philhealth_number', $resident->philhealth_number) }}"
                                 maxlength="100"
@@ -952,7 +968,7 @@
                 <div class="flex items-center justify-end gap-3">
 
                     <a
-                        href="{{ route('residents.show', $resident) }}"
+                        href="{{ route('residents.index') }}"
                         class="clay-cancel-button inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold"
                     >
                         Cancel

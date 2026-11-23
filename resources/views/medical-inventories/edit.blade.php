@@ -144,7 +144,7 @@
                             </p>
 
                             <h1 class="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
-                                Add Inventory Item
+                                Edit Inventory Item
                             </h1>
 
                             <p class="mt-0.5 text-sm text-slate-500">
@@ -434,7 +434,7 @@
                                     />
                                 </svg>
 
-                                Save Inventory Item
+                                Update Inventory Item
 
                             </button>
 

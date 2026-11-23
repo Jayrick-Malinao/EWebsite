@@ -63,7 +63,7 @@ class LoginController extends Controller
     /**
      * Redirect the authenticated user to the correct dashboard.
      */
-    private function redirectByRole(): RedirectResponse
+    public function redirectByRole(): RedirectResponse
     {
         return match (Auth::user()->role) {
             'System Administrator' => redirect()->route('admin.dashboard'),

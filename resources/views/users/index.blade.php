@@ -534,31 +534,6 @@
                 translateY(-1px);
         }
 
-        .clay-filter-reset {
-            background:
-                linear-gradient(
-                    145deg,
-                    #F8FCFA,
-                    #EAF2EE
-                ) !important;
-
-            border:
-                1px solid rgba(255, 255, 255, 0.84) !important;
-
-            color:
-                #385C52 !important;
-
-            box-shadow:
-                5px 5px 10px rgba(107, 134, 124, 0.14),
-                -5px -5px 10px rgba(255, 255, 255, 0.88),
-                inset 1px 1px 0 rgba(255, 255, 255, 0.78);
-        }
-
-        .clay-filter-reset:hover {
-            background:
-                #EDF5F0 !important;
-        }
-
         /* =========================================================
            TABLE HEADER
         ========================================================== */
@@ -1689,13 +1664,14 @@
 
 
                 <form
+                    id="staff-filter-form"
                     method="GET"
                     action="{{ route('users.index') }}"
-                    class="grid gap-4 md:grid-cols-2 lg:grid-cols-4"
+                    class="flex flex-col gap-4 sm:flex-row sm:items-end"
                 >
 
                     {{-- Search --}}
-                    <div class="lg:col-span-2">
+                    <div class="min-w-0 flex-1">
 
                         <label
                             for="search"
@@ -1739,86 +1715,8 @@
                     </div>
 
 
-                    {{-- Role --}}
-                    <div>
-
-                        <label
-                            for="role"
-                            class="mb-2 block text-sm font-semibold text-[#385C52]"
-                        >
-                            Role
-                        </label>
-
-                        <select
-                            id="role"
-                            name="role"
-                            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-[#128C5A] focus:ring-2 focus:ring-[#128C5A]/20"
-                        >
-
-                            <option value="">
-                                All Roles
-                            </option>
-
-                            <option
-                                value="Health Worker"
-                                @selected(request('role') === 'Health Worker')
-                            >
-                                Health Worker
-                            </option>
-
-                            <option
-                                value="Official"
-                                @selected(request('role') === 'Official')
-                            >
-                                Official
-                            </option>
-
-                        </select>
-
-                    </div>
-
-
-                    {{-- Status --}}
-                    <div>
-
-                        <label
-                            for="status"
-                            class="mb-2 block text-sm font-semibold text-[#385C52]"
-                        >
-                            Status
-                        </label>
-
-                        <select
-                            id="status"
-                            name="status"
-                            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-[#128C5A] focus:ring-2 focus:ring-[#128C5A]/20"
-                        >
-
-                            <option value="">
-                                All Statuses
-                            </option>
-
-                            <option
-                                value="active"
-                                @selected(request('status') === 'active')
-                            >
-                                Active
-                            </option>
-
-                            <option
-                                value="inactive"
-                                @selected(request('status') === 'inactive')
-                            >
-                                Inactive
-                            </option>
-
-                        </select>
-
-                    </div>
-
-
                     {{-- Buttons --}}
-                    <div class="flex items-end gap-2 md:col-span-2 lg:col-span-4">
+                    <div class="flex flex-wrap items-end gap-2">
 
                         <button
                             type="submit"
@@ -1840,33 +1738,36 @@
                                 />
                             </svg>
 
-                            Apply Filters
+                            Search
 
                         </button>
 
-                        <a
-                            href="{{ route('users.index') }}"
-                            class="clay-filter-reset inline-flex min-h-10 items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition"
-                        >
-
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="h-4 w-4"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                stroke-width="2"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    d="M4 4v6h6M20 20v-6h-6M5.5 15a7 7 0 0011.95 2.45L20 15M4 9l2.55-2.45A7 7 0 0118.5 9"
-                                />
-                            </svg>
-
-                            Reset
-
-                        </a>
+                        <details class="relative">
+                            <summary class="clay-filter-submit flex min-h-10 cursor-pointer list-none items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white transition [&::-webkit-details-marker]:hidden">
+                                Filter
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" />
+                                </svg>
+                            </summary>
+                            <div class="absolute left-0 z-30 mt-2 w-64 space-y-4 rounded-xl border border-white/80 bg-[#F5FAF7] p-4 shadow-lg sm:left-auto sm:right-0">
+                                <div>
+                                    <label for="role" class="mb-2 block text-sm font-semibold text-[#385C52]">Role</label>
+                                    <select id="role" name="role" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-[#128C5A] focus:ring-2 focus:ring-[#128C5A]/20">
+                                        <option value="">All Roles</option>
+                                        <option value="Health Worker" @selected(request('role') === 'Health Worker')>Health Worker</option>
+                                        <option value="Official" @selected(request('role') === 'Official')>Official</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="status" class="mb-2 block text-sm font-semibold text-[#385C52]">Status</label>
+                                    <select id="status" name="status" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-[#128C5A] focus:ring-2 focus:ring-[#128C5A]/20">
+                                        <option value="">All Statuses</option>
+                                        <option value="active" @selected(request('status') === 'active')>Active</option>
+                                        <option value="inactive" @selected(request('status') === 'inactive')>Inactive</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </details>
 
                     </div>
 
@@ -1962,12 +1863,7 @@
                                     Status
                                 </th>
 
-                                <th
-                                    scope="col"
-                                    class="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-500"
-                                >
-                                    Actions
-                                </th>
+                                <th scope="col" class="px-6 py-3"><span class="sr-only">Actions</span></th>
 
                             </tr>
 
@@ -2059,121 +1955,46 @@
                                     {{-- Actions --}}
                                     <td class="px-6 py-4">
 
-                                        <div class="flex items-center justify-end gap-2">
-
-                                            <a
-                                                href="{{ route('users.edit', $user) }}"
-                                                class="clay-action clay-action-edit inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold transition"
+                                        <div class="relative flex items-center justify-end">
+                                            <button
+                                                type="button"
+                                                class="clay-action-menu-trigger flex h-10 w-10 items-center justify-center rounded-full text-[#6D817A] transition hover:text-[#164238]"
+                                                aria-label="More actions for {{ $user->name }}"
+                                                aria-expanded="false"
+                                                data-menu-trigger
                                             >
-
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    class="h-3.5 w-3.5"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    stroke="currentColor"
-                                                    stroke-width="2"
-                                                >
-                                                    <path
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round"
-                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.5-7.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 7.5-7.5z"
-                                                    />
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                                                    <circle cx="10" cy="5" r="1.5"/>
+                                                    <circle cx="10" cy="10" r="1.5"/>
+                                                    <circle cx="10" cy="15" r="1.5"/>
                                                 </svg>
+                                            </button>
 
-                                                Edit
+                                            <div class="clay-action-menu absolute right-0 top-full z-20 mt-2 hidden min-w-[180px] rounded-2xl border border-white/80 bg-[#F5FAF7] p-2 shadow-[0_12px_35px_rgba(107,134,124,0.18)]" data-menu-panel>
+                                                <a href="{{ route('users.edit', $user) }}" class="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-[#164238] transition hover:bg-[#EDF5F0]" title="Edit staff account">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.5-7.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 7.5-7.5z"/></svg>
+                                                    Edit
+                                                </a>
 
-                                            </a>
+                                                <form method="POST" action="{{ route('users.toggle-status', $user) }}" class="toggle-status-form">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="button" class="toggle-status-button flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-semibold text-[#164238] transition hover:bg-[#EDF5F0] {{ $user->status === 'active' ? 'text-[#B42323]' : 'text-[#168B70]' }}" data-user-name="{{ $user->name }}" data-action="{{ $user->status === 'active' ? 'deactivate' : 'activate' }}">
+                                                        @if ($user->status === 'active')
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                                                            Deactivate
+                                                        @else
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                                            Activate
+                                                        @endif
+                                                    </button>
+                                                </form>
 
-
-                                            <form
-                                                method="POST"
-                                                action="{{ route('users.toggle-status', $user) }}"
-                                                class="toggle-status-form"
-                                            >
-
-                                                @csrf
-                                                @method('PATCH')
-
-                                                <button
-                                                    type="button"
-                                                    class="toggle-status-button clay-action inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold transition
-                                                        {{ $user->status === 'active'
-                                                            ? 'clay-action-danger'
-                                                            : 'clay-action-activate' }}"
-                                                    data-user-name="{{ $user->name }}"
-                                                    data-action="{{ $user->status === 'active' ? 'deactivate' : 'activate' }}"
-                                                >
-
-                                                    @if ($user->status === 'active')
-
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            class="h-3.5 w-3.5"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                            stroke="currentColor"
-                                                            stroke-width="2"
-                                                        >
-                                                            <path
-                                                                stroke-linecap="round"
-                                                                stroke-linejoin="round"
-                                                                d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
-                                                            />
-                                                        </svg>
-
-                                                        Deactivate
-
-                                                    @else
-
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            class="h-3.5 w-3.5"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                            stroke="currentColor"
-                                                            stroke-width="2"
-                                                        >
-                                                            <path
-                                                                stroke-linecap="round"
-                                                                stroke-linejoin="round"
-                                                                d="M5 13l4 4L19 7"
-                                                            />
-                                                        </svg>
-
-                                                        Activate
-
-                                                    @endif
-
-                                                </button>
-
-                                            </form>
-
-
-                                            <a
-                                                href="{{ route('users.delete', $user) }}"
-                                                class="clay-action clay-action-danger inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold transition"
-                                            >
-
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    class="h-3.5 w-3.5"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    stroke="currentColor"
-                                                    stroke-width="2"
-                                                >
-                                                    <path
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round"
-                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-8 0h10"
-                                                    />
-                                                </svg>
-
-                                                Delete
-
-                                            </a>
-
+                                                <a href="{{ route('users.delete', $user) }}" class="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-[#B42323] transition hover:bg-[#FDF1F1]" title="Delete staff account">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-8 0h10"/></svg>
+                                                    Delete
+                                                </a>
+                                            </div>
                                         </div>
 
                                     </td>
@@ -2316,11 +2137,11 @@
 
 
                         {{-- Actions --}}
-                        <div class="mt-5 flex flex-wrap items-center gap-2">
+                        <div class="mt-5">
+                            @component('partials.record-actions', ['label' => 'More actions for '.$user->name])
 
                             <a
                                 href="{{ route('users.edit', $user) }}"
-                                class="clay-action clay-action-edit inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition"
                             >
 
                                 <svg
@@ -2354,10 +2175,7 @@
 
                                 <button
                                     type="button"
-                                    class="toggle-status-button clay-action inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition
-                                        {{ $user->status === 'active'
-                                            ? 'clay-action-danger'
-                                            : 'clay-action-activate' }}"
+                                    class="toggle-status-button {{ $user->status === 'active' ? 'record-action-danger' : '' }}"
                                     data-user-name="{{ $user->name }}"
                                     data-action="{{ $user->status === 'active' ? 'deactivate' : 'activate' }}"
                                 >
@@ -2409,7 +2227,7 @@
 
                             <a
                                 href="{{ route('users.delete', $user) }}"
-                                class="clay-action clay-action-danger inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition"
+                                class="record-action-danger"
                             >
 
                                 <svg
@@ -2431,6 +2249,7 @@
 
                             </a>
 
+                            @endcomponent
                         </div>
 
                     </div>
@@ -2484,51 +2303,6 @@
 
             @endif
 
-
-            {{-- =================================================
-                 SECURITY NOTICE
-            ================================================== --}}
-            <div class="clay-security mt-6 p-5">
-
-                <div class="flex items-start gap-3">
-
-                    <div class="clay-security-icon mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
-
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-5 w-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                d="M12 15v2m0-8v4m0-9a9 9 0 110 18 9 9 0 010-18z"
-                            />
-                        </svg>
-
-                    </div>
-
-                    <div>
-
-                        <h3 class="text-sm font-bold text-amber-900">
-                            Account Security
-                        </h3>
-
-                        <p class="mt-1 text-sm leading-6 text-amber-800">
-                            Only System Administrators can manage staff accounts.
-                            System Administrator accounts are protected from
-                            editing, activation/deactivation, and deletion through
-                            this module.
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </div>
 
         </div>
 
@@ -2645,6 +2419,11 @@
     ========================================================== --}}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+
+            const filterForm = document.getElementById('staff-filter-form');
+            filterForm.querySelectorAll('select').forEach((select) => {
+                select.addEventListener('change', () => filterForm.requestSubmit());
+            });
 
             const modal =
                 document.getElementById('statusConfirmModal');
@@ -2781,6 +2560,7 @@
                     );
 
                 });
+
 
 
             cancelButton.addEventListener(

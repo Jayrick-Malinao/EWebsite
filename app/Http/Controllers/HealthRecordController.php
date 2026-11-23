@@ -70,6 +70,12 @@ class HealthRecordController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $this->validateHealthRecord($request);
+        $validated['emergency_contact_name'] = $this->joinEmergencyContactName($validated);
+        unset(
+            $validated['emergency_contact_first_name'],
+            $validated['emergency_contact_middle_name'],
+            $validated['emergency_contact_last_name']
+        );
 
         /*
          * Protect against creating a second health record
@@ -113,14 +119,11 @@ class HealthRecordController extends Controller
     {
         $healthRecord->load('resident');
 
-        $residents = Resident::query()
-            ->orderBy('last_name')
-            ->orderBy('first_name')
-            ->get();
-
         return view('health-records.edit', [
             'healthRecord' => $healthRecord,
-            'residents' => $residents,
+            'emergencyContactNameParts' => $this->splitEmergencyContactName(
+                $healthRecord->emergency_contact_name
+            ),
         ]);
     }
 
@@ -135,10 +138,16 @@ class HealthRecordController extends Controller
             $request,
             $healthRecord
         );
+        $validated['emergency_contact_name'] = $this->joinEmergencyContactName($validated);
+        unset(
+            $validated['emergency_contact_first_name'],
+            $validated['emergency_contact_middle_name'],
+            $validated['emergency_contact_last_name']
+        );
 
         /*
-         * The unique resident_id rule ensures that another
-         * health record cannot be assigned to the same resident.
+         * The resident_id rule keeps this health record assigned
+         * to its original resident.
          */
         $healthRecord->update($validated);
 
@@ -170,7 +179,9 @@ class HealthRecordController extends Controller
             'resident_id' => [
                 'required',
                 'integer',
-                'exists:residents,id',
+                $healthRecord
+                    ? Rule::in([(string) $healthRecord->resident_id])
+                    : 'exists:residents,id',
                 Rule::unique('health_records', 'resident_id')
                     ->ignore($healthRecord?->id),
             ],
@@ -216,18 +227,32 @@ class HealthRecordController extends Controller
                 'max:5000',
             ],
 
-            'emergency_contact_name' => [
+            'emergency_contact_first_name' => [
                 'nullable',
                 'string',
-                'max:255',
-                new PersonName,
+                'max:100',
+                new PersonName($healthRecord !== null),
+            ],
+
+            'emergency_contact_middle_name' => [
+                'nullable',
+                'string',
+                'max:100',
+                new PersonName($healthRecord !== null),
+            ],
+
+            'emergency_contact_last_name' => [
+                'nullable',
+                'string',
+                'max:100',
+                new PersonName($healthRecord !== null),
             ],
 
             'emergency_contact_number' => [
                 'nullable',
                 'string',
                 'max:13',
-                new PhilippineMobileNumber,
+                new PhilippineMobileNumber($healthRecord ? null : $request),
             ],
 
             'emergency_contact_relationship' => [
@@ -242,5 +267,35 @@ class HealthRecordController extends Controller
                 'max:5000',
             ],
         ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     */
+    private function joinEmergencyContactName(array $validated): ?string
+    {
+        $nameParts = array_filter([
+            $validated['emergency_contact_first_name'] ?? null,
+            $validated['emergency_contact_middle_name'] ?? null,
+            $validated['emergency_contact_last_name'] ?? null,
+        ], fn (?string $namePart): bool => filled($namePart));
+
+        return $nameParts === [] ? null : implode(' ', $nameParts);
+    }
+
+    /**
+     * @return array{first_name: string, middle_name: string, last_name: string}
+     */
+    private function splitEmergencyContactName(?string $name): array
+    {
+        $nameParts = preg_split('/\s+/', trim((string) $name), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+        return [
+            'first_name' => $nameParts[0] ?? '',
+            'middle_name' => count($nameParts) > 2
+                ? implode(' ', array_slice($nameParts, 1, -1))
+                : '',
+            'last_name' => count($nameParts) > 1 ? $nameParts[array_key_last($nameParts)] : '',
+        ];
     }
 }

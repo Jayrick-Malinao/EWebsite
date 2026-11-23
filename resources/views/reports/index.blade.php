@@ -407,29 +407,70 @@
 
                         <div class="p-5 sm:p-6">
                             @if ($genderSummary->count() > 0)
-                                <div class="space-y-5">
-                                    @foreach ($genderSummary as $gender)
+                                @php
+                                    $genderChartColors = ['#168B70', '#E87928', '#0F4C3A', '#8AA99C'];
+                                    $genderChartOffset = 0;
+                                @endphp
+
+                                <div class="flex flex-col items-center gap-6 sm:flex-row sm:items-center">
+                                    <svg
+                                        class="h-40 w-40 shrink-0"
+                                        viewBox="0 0 42 42"
+                                        role="img"
+                                        aria-label="Resident gender distribution pie chart"
+                                    >
+                                        <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#E4EFE9" stroke-width="7"></circle>
+                                        <g transform="rotate(-90 21 21)">
+                                            @foreach ($genderSummary as $gender)
+                                                @php
+                                                    $percentage = $totalResidents > 0
+                                                        ? ($gender->total / $totalResidents) * 100
+                                                        : 0;
+                                                    $color = $genderChartColors[$loop->index % count($genderChartColors)];
+                                                @endphp
+                                                <circle
+                                                    cx="21"
+                                                    cy="21"
+                                                    r="15.915"
+                                                    fill="transparent"
+                                                    stroke="{{ $color }}"
+                                                    stroke-width="7"
+                                                    pathLength="100"
+                                                    stroke-dasharray="{{ $percentage }} {{ 100 - $percentage }}"
+                                                    stroke-dashoffset="{{ -$genderChartOffset }}"
+                                                ></circle>
+                                                @php
+                                                    $genderChartOffset += $percentage;
+                                                @endphp
+                                            @endforeach
+                                        </g>
+                                        <text x="21" y="20" text-anchor="middle" class="fill-[#164238] text-[5px] font-bold">
+                                            {{ number_format($totalResidents) }}
+                                        </text>
+                                        <text x="21" y="25" text-anchor="middle" class="fill-[#6D817A] text-[3px]">
+                                            residents
+                                        </text>
+                                    </svg>
+
+                                    <ul class="w-full space-y-3">
+                                        @foreach ($genderSummary as $gender)
                                         @php
                                             $percentage = $totalResidents > 0
                                                 ? round(($gender->total / $totalResidents) * 100, 1)
                                                 : 0;
+                                            $color = $genderChartColors[$loop->index % count($genderChartColors)];
                                         @endphp
-
-                                        <div>
-                                            <div class="mb-2 flex items-center justify-between gap-4">
-                                                <span class="text-sm font-bold text-[#234E43]">
-                                                    {{ $gender->gender ?: 'Not specified' }}
-                                                </span>
-                                                <span class="text-xs font-semibold text-[#6D817A]">
-                                                    {{ number_format($gender->total) }} ({{ $percentage }}%)
-                                                </span>
-                                            </div>
-
-                                            <div class="clay-bar-track h-3 overflow-hidden rounded-full">
-                                                <div class="clay-bar-fill-primary h-full rounded-full" style="width: {{ $percentage }}%"></div>
-                                            </div>
-                                        </div>
-                                    @endforeach
+                                        <li class="flex items-center justify-between gap-4">
+                                            <span class="flex min-w-0 items-center gap-2 text-sm font-bold text-[#234E43]">
+                                                <span class="h-3 w-3 shrink-0 rounded-full" style="background-color: {{ $color }}"></span>
+                                                <span class="truncate">{{ $gender->gender ?: 'Not specified' }}</span>
+                                            </span>
+                                            <span class="shrink-0 text-xs font-semibold text-[#6D817A]">
+                                                {{ number_format($gender->total) }} ({{ $percentage }}%)
+                                            </span>
+                                        </li>
+                                        @endforeach
+                                    </ul>
                                 </div>
                             @else
                                 <div class="flex min-h-32 items-center justify-center text-center">
@@ -448,29 +489,70 @@
 
                         <div class="p-5 sm:p-6">
                             @if ($residentStatusSummary->count() > 0)
-                                <div class="space-y-5">
-                                    @foreach ($residentStatusSummary as $status)
+                                @php
+                                    $statusChartColors = ['#168B70', '#E87928', '#B42323', '#0F4C3A', '#8AA99C'];
+                                    $statusChartOffset = 0;
+                                @endphp
+
+                                <div class="flex flex-col items-center gap-6 sm:flex-row sm:items-center">
+                                    <svg
+                                        class="h-40 w-40 shrink-0"
+                                        viewBox="0 0 42 42"
+                                        role="img"
+                                        aria-label="Resident status pie chart"
+                                    >
+                                        <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#E4EFE9" stroke-width="7"></circle>
+                                        <g transform="rotate(-90 21 21)">
+                                            @foreach ($residentStatusSummary as $status)
+                                                @php
+                                                    $percentage = $totalResidents > 0
+                                                        ? ($status->total / $totalResidents) * 100
+                                                        : 0;
+                                                    $color = $statusChartColors[$loop->index % count($statusChartColors)];
+                                                @endphp
+                                                <circle
+                                                    cx="21"
+                                                    cy="21"
+                                                    r="15.915"
+                                                    fill="transparent"
+                                                    stroke="{{ $color }}"
+                                                    stroke-width="7"
+                                                    pathLength="100"
+                                                    stroke-dasharray="{{ $percentage }} {{ 100 - $percentage }}"
+                                                    stroke-dashoffset="{{ -$statusChartOffset }}"
+                                                ></circle>
+                                                @php
+                                                    $statusChartOffset += $percentage;
+                                                @endphp
+                                            @endforeach
+                                        </g>
+                                        <text x="21" y="20" text-anchor="middle" class="fill-[#164238] text-[5px] font-bold">
+                                            {{ number_format($totalResidents) }}
+                                        </text>
+                                        <text x="21" y="25" text-anchor="middle" class="fill-[#6D817A] text-[3px]">
+                                            residents
+                                        </text>
+                                    </svg>
+
+                                    <ul class="w-full space-y-3">
+                                        @foreach ($residentStatusSummary as $status)
                                         @php
                                             $percentage = $totalResidents > 0
                                                 ? round(($status->total / $totalResidents) * 100, 1)
                                                 : 0;
+                                            $color = $statusChartColors[$loop->index % count($statusChartColors)];
                                         @endphp
-
-                                        <div>
-                                            <div class="mb-2 flex items-center justify-between gap-4">
-                                                <span class="text-sm font-bold text-[#234E43]">
-                                                    {{ $status->status ?: 'Not specified' }}
-                                                </span>
-                                                <span class="text-xs font-semibold text-[#6D817A]">
-                                                    {{ number_format($status->total) }} ({{ $percentage }}%)
-                                                </span>
-                                            </div>
-
-                                            <div class="clay-bar-track h-3 overflow-hidden rounded-full">
-                                                <div class="clay-bar-fill-deep h-full rounded-full" style="width: {{ $percentage }}%"></div>
-                                            </div>
-                                        </div>
-                                    @endforeach
+                                        <li class="flex items-center justify-between gap-4">
+                                            <span class="flex min-w-0 items-center gap-2 text-sm font-bold text-[#234E43]">
+                                                <span class="h-3 w-3 shrink-0 rounded-full" style="background-color: {{ $color }}"></span>
+                                                <span class="truncate">{{ $status->status ?: 'Not specified' }}</span>
+                                            </span>
+                                            <span class="shrink-0 text-xs font-semibold text-[#6D817A]">
+                                                {{ number_format($status->total) }} ({{ $percentage }}%)
+                                            </span>
+                                        </li>
+                                        @endforeach
+                                    </ul>
                                 </div>
                             @else
                                 <div class="flex min-h-32 items-center justify-center text-center">
@@ -594,63 +676,6 @@
                                 <p class="text-sm text-[#6D817A]">No inventory expiry alerts.</p>
                             </div>
                         @endif
-                    </div>
-
-                </div>
-            </section>
-
-            {{-- REPORT CATEGORIES --}}
-            <section class="clay-table">
-                <div class="border-b border-white/70 px-5 py-5 sm:px-6">
-                    <h3 class="text-base font-bold text-[#164238]">Available Report Categories</h3>
-                    <p class="mt-1 text-xs leading-5 text-[#6D817A]">System data currently available for reporting</p>
-                </div>
-
-                <div class="grid gap-3 p-4 sm:grid-cols-2 sm:p-5 lg:grid-cols-3">
-
-                    <div class="clay-inset rounded-2xl p-5">
-                        <p class="text-sm font-bold text-[#164238]">Resident Reports</p>
-                        <p class="mt-1.5 text-xs leading-5 text-[#6D817A]">Demographics, household membership, resident status, and registered population.</p>
-                    </div>
-
-                    <div class="clay-inset rounded-2xl p-5">
-                        <p class="text-sm font-bold text-[#164238]">Household Reports</p>
-                        <p class="mt-1.5 text-xs leading-5 text-[#6D817A]">Household counts, household heads, addresses, and family composition.</p>
-                    </div>
-
-                    <div class="clay-inset rounded-2xl p-5">
-                        <p class="text-sm font-bold text-[#164238]">Health Records</p>
-                        <p class="mt-1.5 text-xs leading-5 text-[#6D817A]">Health profiles, medical history, allergies, conditions, and medications.</p>
-                    </div>
-
-                    <div class="clay-inset rounded-2xl p-5">
-                        <p class="text-sm font-bold text-[#164238]">Immunization Reports</p>
-                        <p class="mt-1.5 text-xs leading-5 text-[#6D817A]">Vaccine administration, doses, schedules, and immunization activity.</p>
-                    </div>
-
-                    <div class="clay-inset rounded-2xl p-5">
-                        <p class="text-sm font-bold text-[#164238]">Maternal Care</p>
-                        <p class="mt-1.5 text-xs leading-5 text-[#6D817A]">Pregnancy records, prenatal visits, delivery information, and risk factors.</p>
-                    </div>
-
-                    <div class="clay-inset rounded-2xl p-5">
-                        <p class="text-sm font-bold text-[#164238]">Child Health</p>
-                        <p class="mt-1.5 text-xs leading-5 text-[#6D817A]">Child assessments, nutrition, developmental milestones, and monitoring.</p>
-                    </div>
-
-                    <div class="clay-inset rounded-2xl p-5">
-                        <p class="text-sm font-bold text-[#164238]">Senior Citizen Reports</p>
-                        <p class="mt-1.5 text-xs leading-5 text-[#6D817A]">OSCA registration, benefits, living arrangements, and health information.</p>
-                    </div>
-
-                    <div class="clay-inset rounded-2xl p-5">
-                        <p class="text-sm font-bold text-[#164238]">Medical Inventory</p>
-                        <p class="mt-1.5 text-xs leading-5 text-[#6D817A]">Medicine quantities, expiry monitoring, and inventory status.</p>
-                    </div>
-
-                    <div class="clay-inset rounded-2xl p-5">
-                        <p class="text-sm font-bold text-[#164238]">Schedule Reports</p>
-                        <p class="mt-1.5 text-xs leading-5 text-[#6D817A]">Health center events, activities, dates, locations, and schedules.</p>
                     </div>
 
                 </div>

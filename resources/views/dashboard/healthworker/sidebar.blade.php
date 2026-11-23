@@ -5,7 +5,7 @@
 <aside
     id="healthworkerSidebar"
     data-sidebar
-    class="claymorphism-sidebar fixed inset-y-0 left-0 z-50 flex w-72 -translate-x-full flex-col border-r border-slate-200 bg-white transition-transform duration-300 ease-in-out lg:translate-x-0"
+    class="claymorphism-sidebar fixed inset-y-0 left-0 z-50 flex w-72 max-w-[calc(100vw-3rem)] -translate-x-full flex-col border-r border-slate-200 bg-white transition-transform duration-300 ease-in-out lg:translate-x-0"
 >
     {{-- =========================================================
          BRAND
@@ -359,6 +359,29 @@
                     <span>Medical Inventory</span>
                 </a>
 
+                {{-- Announcements --}}
+                <a
+                    href="{{ route('announcements.index') }}"
+                    class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition
+                        {{ request()->routeIs('announcements.*')
+                            ? 'bg-emerald-50 text-emerald-700'
+                            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}"
+                >
+                    <svg
+                        class="h-5 w-5 shrink-0"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                    >
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 11.5a2.5 2.5 0 0 1 2.5-2.5H9l6-4v13l-6-4H5.5A2.5 2.5 0 0 1 3 11.5Z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9a4 4 0 0 1 0 5" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M20.5 6.5a7.5 7.5 0 0 1 0 10" />
+                    </svg>
+
+                    <span>Announcements</span>
+                </a>
+
                 {{-- Notifications --}}
                 <a
                     href="{{ route('notifications.index') }}"
@@ -389,9 +412,9 @@
     {{-- =========================================================
          SIGN OUT
     ========================================================== --}}
-    <div class="shrink-0 border-t border-slate-100 p-4">
+    <div class="flex shrink-0 items-center gap-2 border-t border-slate-100 p-4" data-assistant-slot>
 
-        <form method="POST" action="{{ route('logout') }}">
+        <form method="POST" action="{{ route('logout') }}" class="min-w-0 flex-1">
             @csrf
 
             <button

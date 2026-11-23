@@ -60,6 +60,17 @@ class FormInputValidationTest extends TestCase
         $this->assertFalse($validator->passes());
     }
 
+    public function test_new_person_names_accept_letters_spaces_and_hyphens_only(): void
+    {
+        foreach (['Anne-Marie', 'José Dela Cruz'] as $name) {
+            $this->assertTrue(Validator::make(['name' => $name], ['name' => [new PersonName(false)]])->passes());
+        }
+
+        foreach (['Anne2', "O'Connor", 'Maria_Clara'] as $name) {
+            $this->assertFalse(Validator::make(['name' => $name], ['name' => [new PersonName(false)]])->passes());
+        }
+    }
+
     public function test_mobile_number_rule_accepts_only_the_international_format(): void
     {
         $valid = Validator::make(
@@ -98,8 +109,8 @@ class FormInputValidationTest extends TestCase
             ->assertDontSee('House Number / Street')
             ->assertDontSee("Choose the household's Purok if known.")
             ->assertSee('Select Purok')
-            ->assertSee('value="+63"', false)
-            ->assertSee('title="Only Globe and DITO SIM numbers are supported."', false);
+            ->assertSee('placeholder="09XX-XXXX-XXX"', false)
+            ->assertSee('title="Enter an 11-digit mobile number starting with 09."', false);
 
         $payload = $this->validHouseholdPayload();
         $payload['members'] = [[
@@ -110,7 +121,7 @@ class FormInputValidationTest extends TestCase
             'relationship_to_head' => 'Daughter',
             'birth_date' => '2010-06-15',
             'gender' => 'Female',
-            'contact_number' => '+63 917 123 4567',
+            'contact_number' => '0917-1234-567',
             'email' => '',
             'civil_status' => 'Single',
             'philhealth_number' => '',
@@ -124,20 +135,20 @@ class FormInputValidationTest extends TestCase
         $this->assertDatabaseHas('households', [
             'address' => 'Purok 2, Esperanza, Pilar, Sorsogon',
             'contact_number' => '639187113445',
-            'household_head_name' => 'Anne-Marie De La O’Connor',
+            'household_head_name' => 'Anne-Marie De La Santos',
         ]);
 
         $this->assertDatabaseHas('residents', [
             'first_name' => 'Anne-Marie',
             'middle_name' => 'De La',
-            'last_name' => 'O’Connor',
+            'last_name' => 'Santos',
             'contact_number' => '639187113445',
             'household_address' => 'Purok 2, Esperanza, Pilar, Sorsogon',
         ]);
 
         $this->assertDatabaseHas('residents', [
             'first_name' => 'Maria',
-            'contact_number' => '639171234567',
+            'contact_number' => '639187113445',
         ]);
 
         $this->get(route('households.edit', Household::query()->firstOrFail()))
@@ -178,7 +189,7 @@ class FormInputValidationTest extends TestCase
         ]);
     }
 
-    public function test_country_code_only_is_cleared_before_optional_contact_validation(): void
+    public function test_household_create_rejects_country_code_only_and_international_mobile_numbers(): void
     {
         $this->actingAs(User::factory()->create([
             'role' => 'System Administrator',
@@ -193,16 +204,13 @@ class FormInputValidationTest extends TestCase
         ]);
 
         $this->post(route('households.store'), $payload)
-            ->assertRedirect(route('households.index'));
+            ->assertSessionHasErrors(['household_head.contact_number']);
 
-        $this->assertDatabaseHas('households', [
-            'contact_number' => '',
-        ]);
-
-        $this->assertDatabaseHas('residents', [
-            'is_household_head' => true,
-            'contact_number' => '',
-        ]);
+        $payload['contact_number'] = '639187113445';
+        $payload['household_head']['contact_number'] = '+639187113445';
+        $this->post(route('households.store'), $payload)
+            ->assertSessionHasErrors(['household_head.contact_number']);
+        $this->assertDatabaseCount('households', 0);
     }
 
     public function test_household_form_rejects_invalid_names_phone_numbers_and_dropdown_values(): void
@@ -227,7 +235,7 @@ class FormInputValidationTest extends TestCase
         ]));
 
         $response->assertSessionHasErrors([
-            'contact_number',
+            'household_head.contact_number',
             'purok',
             'household_head.first_name',
             'household_head.gender',
@@ -325,6 +333,182 @@ class FormInputValidationTest extends TestCase
         ]);
     }
 
+    public function test_family_member_status_and_details_are_saved_on_household_create_and_edit(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'System Administrator', 'status' => 'active']));
+        $payload = $this->validHouseholdPayload();
+        $payload['members'] = [[
+            'first_name' => 'Maria',
+            'last_name' => 'Santos',
+            'relationship_to_head' => 'Daughter',
+            'birth_date' => '2010-06-15',
+            'gender' => 'Female',
+            'civil_status' => 'Single',
+            'purok' => 'Purok 5',
+            'status' => 'Inactive',
+        ]];
+
+        $this->post(route('households.store'), $payload)
+            ->assertRedirect(route('households.index'));
+
+        $household = Household::query()->firstOrFail();
+        $member = $household->residents()->where('is_household_head', false)->firstOrFail();
+        $this->assertSame('Inactive', $member->status);
+
+        $payload['household_code'] = $household->household_code;
+        $payload['household_head']['id'] = $household->residents()->where('is_household_head', true)->value('id');
+        $payload['household_head']['contact_number'] = '0917-9876-543';
+        $payload['members'][0]['id'] = $member->id;
+        $payload['members'][0]['status'] = 'Active';
+        $payload['members'][] = [
+            'first_name' => 'Luis',
+            'last_name' => 'Santos',
+            'suffix' => 'Jr.',
+            'relationship_to_head' => 'Son',
+            'birth_date' => '2012-02-10',
+            'gender' => 'Male',
+            'civil_status' => 'Single',
+            'purok' => 'Purok 6',
+            'contact_number' => '0917-1234-567',
+            'email' => 'luis@example.test',
+            'philhealth_number' => '001234',
+            'status' => 'Inactive',
+        ];
+
+        $this->put(route('households.update', $household), $payload)
+            ->assertRedirect(route('households.show', $household));
+
+        $this->assertDatabaseHas('residents', ['id' => $member->id, 'status' => 'Active', 'contact_number' => '639179876543']);
+        $this->assertDatabaseHas('residents', [
+            'household_id' => $household->id,
+            'first_name' => 'Luis',
+            'suffix' => 'Jr.',
+            'household_address' => 'Purok 6, Esperanza, Pilar, Sorsogon',
+            'contact_number' => '639179876543',
+            'email' => 'luis@example.test',
+            'philhealth_number' => '001234',
+            'status' => 'Inactive',
+        ]);
+    }
+
+    public function test_household_member_status_rejects_invalid_values_and_omission_preserves_existing_status(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'System Administrator', 'status' => 'active']));
+        $payload = $this->validHouseholdPayload();
+        $payload['members'] = [[
+            'first_name' => 'Maria',
+            'last_name' => 'Santos',
+            'relationship_to_head' => 'Daughter',
+            'birth_date' => '2010-06-15',
+            'gender' => 'Female',
+            'civil_status' => 'Single',
+            'purok' => 'Purok 2',
+            'status' => 'Unsupported',
+        ]];
+
+        $this->post(route('households.store'), $payload)->assertSessionHasErrors('members.0.status');
+        $this->assertDatabaseMissing('residents', ['first_name' => 'Maria']);
+
+        $payload['members'][0]['status'] = 'Inactive';
+        $this->post(route('households.store'), $payload)->assertRedirect(route('households.index'));
+        $household = Household::query()->firstOrFail();
+        $member = $household->residents()->where('is_household_head', false)->firstOrFail();
+        $payload['household_code'] = $household->household_code;
+        $payload['household_head']['id'] = $household->residents()->where('is_household_head', true)->value('id');
+        $payload['members'][0]['id'] = $member->id;
+        $payload['members'][0]['status'] = 'Unsupported';
+
+        $this->put(route('households.update', $household), $payload)->assertSessionHasErrors('members.0.status');
+        $this->assertSame('Inactive', $member->fresh()->status);
+
+        unset($payload['members'][0]['status']);
+        $this->put(route('households.update', $household), $payload)
+            ->assertRedirect(route('households.show', $household));
+        $this->assertSame('Inactive', $member->fresh()->status);
+    }
+
+    public function test_household_member_templates_include_resident_address_and_status(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'System Administrator', 'status' => 'active']));
+        $household = Household::create([
+            'household_code' => 'HH-000001',
+            'household_head_name' => 'Maria Santos',
+            'address' => 'Purok 2, Esperanza, Pilar, Sorsogon',
+            'status' => 'Active',
+        ]);
+
+        foreach ([route('households.create'), route('households.edit', $household)] as $url) {
+            $response = $this->get($url)->assertOk();
+            $document = new \DOMDocument;
+            $document->loadHTML('<?xml encoding="UTF-8">'.$response->getContent(), LIBXML_NOERROR | LIBXML_NOWARNING);
+            $xpath = new \DOMXPath($document);
+
+            $this->assertSame(1, $xpath->query("//template[@id='member-template']//select[@data-field='purok' and @required]")->length);
+            $this->assertSame(1, $xpath->query("//template[@id='member-template']//select[@data-field='status' and @required]/option[@value='Inactive']")->length);
+        }
+    }
+
+    public function test_new_members_added_during_edit_follow_create_name_rules_without_rejecting_legacy_members(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'System Administrator', 'status' => 'active']));
+        $payload = $this->validHouseholdPayload();
+        $this->post(route('households.store'), $payload)->assertRedirect(route('households.index'));
+
+        $household = Household::query()->firstOrFail();
+        $existing = $household->residents()->create([
+            'first_name' => "O'Connor",
+            'last_name' => 'Santos',
+            'suffix' => 'III',
+            'birth_date' => '2010-01-01',
+            'gender' => 'Female',
+            'relationship_to_head' => 'Daughter',
+            'civil_status' => 'Single',
+            'household_address' => 'Purok 2, Esperanza, Pilar, Sorsogon',
+            'status' => 'Active',
+        ]);
+        $payload['household_code'] = $household->household_code;
+        $payload['household_head']['id'] = $household->residents()->where('is_household_head', true)->value('id');
+        $payload['members'] = [
+            [
+                'id' => $existing->id,
+                'first_name' => "O'Connor",
+                'last_name' => 'Santos',
+                'suffix' => 'III',
+                'relationship_to_head' => 'Daughter',
+                'birth_date' => '2010-01-01',
+                'gender' => 'Female',
+                'civil_status' => 'Single',
+                'purok' => 'Purok 2',
+            ],
+            [
+                'first_name' => "O'Brien",
+                'last_name' => 'Santos',
+                'relationship_to_head' => 'Son',
+                'birth_date' => '2012-01-01',
+                'gender' => 'Male',
+                'civil_status' => 'Single',
+                'purok' => 'Purok 2',
+            ],
+        ];
+
+        $this->put(route('households.update', $household), $payload)
+            ->assertSessionHasErrors('members.1.first_name')
+            ->assertSessionDoesntHaveErrors('members.0.first_name');
+        $this->assertDatabaseMissing('residents', ['first_name' => "O'Brien"]);
+
+        $payload['members'][1]['first_name'] = 'Brian';
+        $payload['members'][1]['suffix'] = 'III';
+        $this->put(route('households.update', $household), $payload)
+            ->assertSessionHasErrors('members.1.suffix')
+            ->assertSessionDoesntHaveErrors('members.0.suffix');
+
+        $payload['members'][1]['suffix'] = 'Jr.';
+        $this->put(route('households.update', $household), $payload)
+            ->assertRedirect(route('households.show', $household));
+        $this->assertDatabaseHas('residents', ['id' => $existing->id, 'first_name' => "O'Connor", 'suffix' => 'III']);
+        $this->assertDatabaseHas('residents', ['household_id' => $household->id, 'first_name' => 'Brian', 'suffix' => 'Jr.']);
+    }
+
     public function test_family_member_form_rejects_an_unsupported_purok(): void
     {
         $this->actingAs(User::factory()->create([
@@ -351,6 +535,215 @@ class FormInputValidationTest extends TestCase
         $this->assertSame(0, Resident::query()->count());
     }
 
+    public function test_household_creation_rejects_invalid_names_suffixes_birthdates_and_contacts(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'System Administrator', 'status' => 'active']));
+
+        $payload = $this->validHouseholdPayload([
+            'contact_number' => '0818-7111-344',
+            'household_head' => [
+                'first_name' => "Anne's",
+                'suffix' => 'III',
+                'birth_date' => now()->addDay()->toDateString(),
+                'contact_number' => '0918-7111-34',
+                'email' => 'not-an-email',
+            ],
+        ]);
+        $payload['members'] = [[
+            'first_name' => 'Maria2',
+            'last_name' => 'Santos',
+            'suffix' => 'IV',
+            'relationship_to_head' => 'Daughter',
+            'birth_date' => now()->addDay()->toDateString(),
+            'gender' => 'Female',
+            'contact_number' => '639171234567',
+            'civil_status' => 'Single',
+            'purok' => 'Purok 2',
+        ]];
+
+        $this->post(route('households.store'), $payload)->assertSessionHasErrors([
+            'household_head.first_name',
+            'household_head.suffix',
+            'household_head.birth_date',
+            'household_head.contact_number',
+            'household_head.email',
+            'members.0.first_name',
+            'members.0.suffix',
+            'members.0.birth_date',
+        ]);
+
+        $this->assertDatabaseCount('households', 0);
+    }
+
+    public function test_household_birthdates_and_formatted_numbers_are_saved_and_ages_change_with_time(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'System Administrator', 'status' => 'active']));
+        $this->travelTo(new \DateTimeImmutable('2026-03-09 12:00:00', new \DateTimeZone(config('app.timezone'))));
+        $payload = $this->validHouseholdPayload([
+            'contact_number' => '0918-7111-344',
+            'household_head' => [
+                'birth_date' => '2000-02-29',
+                'contact_number' => '0918-7111-344',
+                'suffix' => 'Jr.',
+            ],
+        ]);
+        $payload['members'] = [[
+            'first_name' => 'Maria',
+            'last_name' => 'Santos',
+            'suffix' => 'Sr.',
+            'relationship_to_head' => 'Daughter',
+            'birth_date' => '2010-03-10',
+            'gender' => 'Female',
+            'civil_status' => 'Single',
+            'purok' => 'Purok 2',
+        ]];
+
+        $this->post(route('households.store'), $payload)->assertRedirect(route('households.index'));
+
+        $household = Household::query()->firstOrFail();
+        $member = $household->residents()->where('is_household_head', false)->firstOrFail();
+        $this->assertDatabaseHas('households', ['id' => $household->id, 'contact_number' => '639187111344']);
+        $this->assertSame('2010-03-10', $member->birth_date->toDateString());
+        $this->assertDatabaseHas('residents', ['id' => $member->id, 'suffix' => 'Sr.']);
+        $this->get(route('households.show', $household))
+            ->assertOk()->assertSee('Age: 26 years')->assertSee('Age: 15 years');
+        $this->get(route('residents.show', $member))
+            ->assertOk()->assertSee('March 10, 2010')->assertSee('15 years old');
+
+        $this->travel(1)->days();
+        $this->get(route('households.show', $household))->assertOk()->assertSee('Age: 16 years');
+        $this->get(route('residents.show', $member))->assertOk()->assertSee('16 years old');
+
+        $household->load('residents');
+        foreach ($household->residents as $resident) {
+            $resident->birth_date = null;
+        }
+        $this->view('households.show', ['household' => $household])->assertSee('Age: N/A');
+        $member->birth_date = null;
+        $this->view('residents.show', ['resident' => $member])->assertSeeInOrder(['Date of Birth', '—', 'Age', '—']);
+    }
+
+    public function test_resident_create_validates_names_suffix_birthdate_and_optional_contact_fields(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'System Administrator', 'status' => 'active']));
+        $this->travelTo(new \DateTimeImmutable('2026-03-09 12:00:00', new \DateTimeZone(config('app.timezone'))));
+
+        $payload = [
+            'is_household_head' => '1',
+            'first_name' => 'Ana2',
+            'last_name' => 'Dela Cruz',
+            'suffix' => 'III',
+            'birth_date' => '2026-03-10',
+            'gender' => 'Female',
+            'purok' => 'Purok 4',
+            'civil_status' => 'Single',
+            'status' => 'Active',
+            'contact_number' => '0918-7111-34',
+            'email' => 'invalid',
+            'philhealth_number' => 'AB123',
+        ];
+
+        $this->post(route('residents.store'), $payload)
+            ->assertSessionHasErrors([
+                'first_name',
+                'suffix',
+                'birth_date',
+                'contact_number',
+                'email',
+                'philhealth_number' => 'The PhilHealth number must contain digits only.',
+            ]);
+
+        $payload['first_name'] = 'Ana-Maria';
+        $payload['suffix'] = 'Jr.';
+        $payload['birth_date'] = '2000-03-10';
+        $payload['contact_number'] = '0918-7111-344';
+        $payload['email'] = '';
+        $payload['philhealth_number'] = '001234567890';
+        $this->post(route('residents.store'), $payload)->assertRedirect(route('residents.index'));
+
+        $resident = Resident::query()->where('first_name', 'Ana-Maria')->firstOrFail();
+        $this->assertSame('639187111344', $resident->contact_number);
+        $this->assertSame('2000-03-10', $resident->birth_date->toDateString());
+        $this->assertSame('001234567890', $resident->philhealth_number);
+        $this->get(route('residents.show', $resident))->assertOk()->assertSee('25 years old');
+
+        $payload['philhealth_number'] = '12-345';
+        $this->put(route('residents.update', $resident), $payload)
+            ->assertSessionHasErrors(['philhealth_number' => 'The PhilHealth number must contain digits only.']);
+        $this->assertSame('001234567890', $resident->fresh()->philhealth_number);
+
+        $payload['philhealth_number'] = '009876543210';
+        $this->put(route('residents.update', $resident), $payload)->assertRedirect(route('residents.index'));
+        $this->assertSame('009876543210', $resident->fresh()->philhealth_number);
+    }
+
+    public function test_household_create_and_update_validate_head_and_member_philhealth_numbers(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'System Administrator', 'status' => 'active']));
+        $payload = $this->validHouseholdPayload([
+            'household_head' => ['philhealth_number' => 'AB123'],
+        ]);
+        $payload['members'] = [[
+            'first_name' => 'Maria',
+            'last_name' => 'Santos',
+            'relationship_to_head' => 'Daughter',
+            'birth_date' => '2010-03-10',
+            'gender' => 'Female',
+            'civil_status' => 'Single',
+            'purok' => 'Purok 2',
+            'philhealth_number' => '12-345',
+        ]];
+
+        $this->post(route('households.store'), $payload)->assertSessionHasErrors([
+            'household_head.philhealth_number' => 'The household head PhilHealth number must contain digits only.',
+            'members.0.philhealth_number' => 'The family member PhilHealth number must contain digits only.',
+        ]);
+        $this->assertDatabaseCount('households', 0);
+
+        $payload['household_head']['philhealth_number'] = '001234';
+        $payload['members'][0]['philhealth_number'] = '005678';
+        $this->post(route('households.store'), $payload)->assertRedirect(route('households.index'));
+
+        $household = Household::query()->firstOrFail();
+        $head = $household->residents()->where('is_household_head', true)->firstOrFail();
+        $member = $household->residents()->where('is_household_head', false)->firstOrFail();
+        $this->assertSame('001234', $head->philhealth_number);
+        $this->assertSame('005678', $member->philhealth_number);
+
+        $payload['household_code'] = $household->household_code;
+        $payload['household_head']['id'] = $head->id;
+        $payload['members'][0]['id'] = $member->id;
+        $payload['household_head']['philhealth_number'] = 'ABC';
+        $payload['members'][0]['philhealth_number'] = '12-345';
+        $this->put(route('households.update', $household), $payload)->assertSessionHasErrors([
+            'household_head.philhealth_number',
+            'members.0.philhealth_number',
+        ]);
+        $this->assertSame('001234', $head->fresh()->philhealth_number);
+        $this->assertSame('005678', $member->fresh()->philhealth_number);
+
+        $payload['household_head']['philhealth_number'] = '000987';
+        $payload['members'][0]['philhealth_number'] = '000654';
+        $this->put(route('households.update', $household), $payload)
+            ->assertRedirect(route('households.show', $household));
+        $this->assertSame('000987', $head->fresh()->philhealth_number);
+        $this->assertSame('000654', $member->fresh()->philhealth_number);
+    }
+
+    public function test_staff_account_creation_rejects_invalid_name_characters_and_requires_email(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'System Administrator', 'status' => 'active']));
+
+        $this->post(route('users.store'), [
+            'first_name' => 'Maria2',
+            'last_name' => 'Santos',
+            'email' => '',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'role' => 'Health Worker',
+        ])->assertSessionHasErrors(['first_name', 'email']);
+    }
+
     public function test_resident_form_serializes_purok_and_locality_into_existing_address_fields(): void
     {
         $this->actingAs(User::factory()->create([
@@ -370,6 +763,7 @@ class FormInputValidationTest extends TestCase
             'last_name' => 'Dela Cruz',
             'birth_date' => '1980-05-10',
             'gender' => 'Male',
+            'contact_number' => '09171234567',
             'household_address' => '45 Mabini Street',
             'purok' => 'Purok 4',
             'civil_status' => 'Married',
@@ -388,7 +782,7 @@ class FormInputValidationTest extends TestCase
 
         $resident = Resident::query()->firstOrFail();
 
-        $this->get(route('residents.edit', $resident))
+        $editResponse = $this->get(route('residents.edit', $resident))
             ->assertOk()
             ->assertDontSee('45 Mabini Street')
             ->assertDontSee('House Number / Street')
@@ -398,6 +792,8 @@ class FormInputValidationTest extends TestCase
             ->assertSee('Pilar')
             ->assertSee('Sorsogon');
 
+        $this->assertMatchesRegularExpression('/<option\s+value="Purok 4"\s+selected\s*>/', $editResponse->getContent());
+
         $this->put(route('residents.update', $resident), [
             'household_id' => $resident->household_id,
             'is_household_head' => '1',
@@ -405,6 +801,7 @@ class FormInputValidationTest extends TestCase
             'last_name' => 'Dela Cruz',
             'birth_date' => '1980-05-10',
             'gender' => 'Male',
+            'contact_number' => '09171234567',
             'household_address' => '46 Mabini Street',
             'purok' => 'Purok 5',
             'civil_status' => 'Married',
@@ -420,6 +817,35 @@ class FormInputValidationTest extends TestCase
             'id' => $resident->id,
             'household_address' => 'Purok 5, Esperanza, Pilar, Sorsogon',
         ]);
+    }
+
+    public function test_user_filters_keep_search_and_combined_role_and_status_selection(): void
+    {
+        $this->actingAs(User::factory()->create([
+            'role' => 'System Administrator',
+            'status' => 'active',
+        ]));
+        User::factory()->create(['name' => 'Matching Worker', 'role' => 'Health Worker', 'status' => 'inactive']);
+        User::factory()->create(['name' => 'Active Worker', 'role' => 'Health Worker', 'status' => 'active']);
+        User::factory()->create(['name' => 'Inactive Official', 'role' => 'Official', 'status' => 'inactive']);
+
+        $response = $this->get(route('users.index', [
+            'search' => 'Worker',
+            'role' => 'Health Worker',
+            'status' => 'inactive',
+        ]));
+
+        $response->assertOk()
+            ->assertSee('Matching Worker')
+            ->assertDontSee('Active Worker')
+            ->assertDontSee('Inactive Official');
+
+        $document = new \DOMDocument;
+        $document->loadHTML($response->getContent(), LIBXML_NOERROR | LIBXML_NOWARNING);
+        $xpath = new \DOMXPath($document);
+        $this->assertSame(1, $xpath->query("//input[@name='search' and @value='Worker']")->length);
+        $this->assertSame(1, $xpath->query("//select[@name='role']/option[@value='Health Worker' and @selected]")->length);
+        $this->assertSame(1, $xpath->query("//select[@name='status']/option[@value='inactive' and @selected]")->length);
     }
 
     public function test_user_filters_reject_unsupported_role_and_status_values(): void
@@ -451,11 +877,11 @@ class FormInputValidationTest extends TestCase
             'household_head' => [
                 'first_name' => 'anne-marie',
                 'middle_name' => 'de la',
-                'last_name' => 'o’connor',
+                'last_name' => 'santos',
                 'suffix' => '',
                 'birth_date' => '1980-05-10',
                 'gender' => 'Female',
-                'contact_number' => '+63 (918) 711-3445',
+                'contact_number' => '0918-7113-445',
                 'email' => '',
                 'civil_status' => 'Married',
                 'philhealth_number' => '',

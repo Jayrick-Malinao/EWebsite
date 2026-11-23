@@ -21,46 +21,107 @@
             box-sizing: border-box;
         }
 
+        #database-assistant-help {
+            display: grid;
+            width: 36px;
+            height: 36px;
+            flex: 0 0 auto;
+            place-items: center;
+            border: 1px solid #b9d8cb;
+            border-radius: 50%;
+            color: #0f6f5a;
+            background: #f5faf7;
+            font: 700 18px/1 Arial, sans-serif;
+            cursor: pointer;
+        }
+
+        #database-assistant-help:hover {
+            background: #e1f2e9;
+        }
+
+        #database-assistant-help:focus-visible,
+        #database-assistant-close:focus-visible {
+            outline: 3px solid #e87928;
+            outline-offset: 3px;
+        }
+
         #database-assistant-toggle {
             position: fixed;
-            right: 24px;
-            bottom: 24px;
+            right: 8px;
+            bottom: 0;
             z-index: 9998;
             display: grid;
-            width: 54px;
-            height: 54px;
             place-items: center;
-            border: 1px solid rgba(255, 255, 255, .42);
+            padding: 8px;
+            border: 0;
             border-radius: 50%;
             color: #fff;
-            background: linear-gradient(145deg, var(--assistant-light), var(--assistant-dark));
-            box-shadow: 0 8px 22px rgba(15, 111, 90, .3), inset 1px 1px 2px rgba(255, 255, 255, .28);
+            background: transparent;
             cursor: pointer;
-            transition: transform 150ms ease, box-shadow 150ms ease;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            transition: left .35s ease, top .35s ease, width .3s ease, height .3s ease, transform 150ms ease;
+        }
+
+        #database-assistant-toggle[hidden] {
+            display: none;
         }
 
         #database-assistant-toggle:hover {
             transform: translateY(-2px);
-            box-shadow: 0 11px 25px rgba(15, 111, 90, .34), inset 1px 1px 2px rgba(255, 255, 255, .28);
+        }
+
+        /* Shown while the button is being held, before dragging starts. */
+        #database-assistant-toggle.is-holding {
+            transform: scale(.94);
+            transition: transform 350ms ease;
+        }
+
+        #database-assistant-toggle.is-dragging {
+            cursor: grabbing;
+            transition: none;
+            transform: none;
+        }
+
+        #database-assistant-toggle .assistant-lottie {
+            display: block;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        #database-assistant-toggle .assistant-lottie-fallback {
+            display: none;
+            width: 100%;
+            height: 100%;
+            padding: 24px;
+            border-radius: 50%;
+            color: #fff;
+            background: linear-gradient(145deg, var(--assistant-light), var(--assistant-dark));
+            box-shadow: 0 8px 22px rgba(15, 111, 90, .3), inset 1px 1px 2px rgba(255, 255, 255, .28);
         }
 
         #database-assistant-toggle:focus-visible,
-        #database-assistant-close:focus-visible,
         #database-assistant-send:focus-visible,
         .database-assistant-suggestion:focus-visible {
             outline: 3px solid var(--assistant-accent);
             outline-offset: 3px;
         }
 
+        /* Panel is always centered in the viewport when open. */
         #database-assistant-panel {
             position: fixed;
-            right: 24px;
-            bottom: 92px;
+            left: 50%;
+            top: 50%;
+            right: auto;
+            bottom: auto;
             z-index: 9999;
             display: flex;
             flex-direction: column;
-            width: min(410px, calc(100vw - 32px));
-            height: min(600px, calc(100dvh - 116px));
+            width: min(480px, calc(100vw - 32px));
+            height: min(720px, calc(100dvh - 40px));
             overflow: hidden;
             border: 1px solid #d3e2d9;
             border-radius: 24px;
@@ -68,8 +129,8 @@
             box-shadow: 10px 12px 32px rgba(22, 66, 56, .16), -5px -5px 18px rgba(255, 255, 255, .72);
             opacity: 0;
             pointer-events: none;
-            transform: translateY(10px) scale(.985);
-            transform-origin: bottom right;
+            transform: translate(-50%, -48%) scale(.985);
+            transform-origin: center;
             visibility: hidden;
             transition: opacity 180ms ease, transform 180ms ease, visibility 0s linear 180ms;
         }
@@ -77,7 +138,7 @@
         #database-assistant-panel.is-open {
             opacity: 1;
             pointer-events: auto;
-            transform: translateY(0) scale(1);
+            transform: translate(-50%, -50%) scale(1);
             visibility: visible;
             transition-delay: 0s;
         }
@@ -87,10 +148,27 @@
             align-items: center;
             justify-content: space-between;
             gap: 14px;
-            min-height: 78px;
-            padding: 16px 18px;
+            min-height: 84px;
+            padding: 18px 20px;
             color: #fff;
             background: linear-gradient(135deg, var(--assistant-primary), var(--assistant-dark));
+        }
+
+        #database-assistant-close {
+            display: grid;
+            width: 40px;
+            height: 40px;
+            flex: 0 0 auto;
+            place-items: center;
+            border: 0;
+            border-radius: 50%;
+            color: #fff;
+            background: rgba(15, 76, 58, .35);
+            cursor: pointer;
+        }
+
+        #database-assistant-close:hover {
+            background: rgba(15, 76, 58, .55);
         }
 
         .database-assistant-heading {
@@ -102,19 +180,27 @@
 
         .database-assistant-avatar {
             display: grid;
-            width: 42px;
-            height: 42px;
+            width: 44px;
+            height: 44px;
             flex: 0 0 auto;
             place-items: center;
+            overflow: hidden;
             border: 1px solid rgba(255, 255, 255, .38);
-            border-radius: 15px;
-            background: rgba(255, 255, 255, .15);
+            border-radius: 50%;
+            background: #fff;
             box-shadow: inset 1px 1px 2px rgba(255, 255, 255, .24);
+        }
+
+        .database-assistant-avatar img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .database-assistant-heading strong {
             display: block;
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 750;
             letter-spacing: .01em;
         }
@@ -123,58 +209,45 @@
             display: block;
             margin-top: 4px;
             color: #e8f6ef;
-            font-size: 11px;
+            font-size: 12px;
             line-height: 1.35;
         }
 
-        #database-assistant-close {
-            display: grid;
-            width: 36px;
-            height: 36px;
-            flex: 0 0 auto;
-            place-items: center;
-            border: 1px solid rgba(255, 255, 255, .3);
-            border-radius: 12px;
-            color: #fff;
-            background: rgba(255, 255, 255, .12);
-            cursor: pointer;
-            font-size: 22px;
-            line-height: 1;
-            transition: background-color 140ms ease;
-        }
-
-        #database-assistant-close:hover {
-            background: rgba(255, 255, 255, .22);
-        }
-
+        /* Scrolling still works, but the scrollbar is hidden. */
         #database-assistant-messages {
             display: flex;
             flex: 1;
             flex-direction: column;
-            gap: 13px;
+            gap: 14px;
             overflow-x: hidden;
             overflow-y: auto;
             overscroll-behavior: contain;
-            padding: 20px 17px;
+            padding: 22px 20px;
             scroll-behavior: smooth;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        #database-assistant-messages::-webkit-scrollbar {
+            display: none;
         }
 
         .database-assistant-empty {
-            margin: auto 0;
-            padding: 8px 2px;
+            margin: 0;
+            padding: 4px 2px 0;
         }
 
         .database-assistant-empty h2 {
-            margin: 0 0 7px;
+            margin: 0 0 8px;
             color: var(--assistant-text);
-            font-size: 17px;
+            font-size: 18px;
             line-height: 1.35;
         }
 
         .database-assistant-empty p {
             margin: 0;
             color: var(--assistant-secondary);
-            font-size: 13px;
+            font-size: 14px;
             line-height: 1.55;
         }
 
@@ -182,12 +255,12 @@
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            margin-top: 16px;
+            margin-top: 18px;
         }
 
         .database-assistant-suggestion {
             max-width: 100%;
-            padding: 8px 11px;
+            padding: 9px 12px;
             border: 1px solid #c8ddd2;
             border-radius: 14px;
             color: var(--assistant-dark);
@@ -195,7 +268,7 @@
             box-shadow: 2px 3px 7px rgba(22, 66, 56, .07);
             cursor: pointer;
             font: inherit;
-            font-size: 12px;
+            font-size: 13px;
             line-height: 1.35;
             text-align: left;
             transition: border-color 140ms ease, background-color 140ms ease, transform 140ms ease;
@@ -208,8 +281,8 @@
         }
 
         .database-assistant-message {
-            max-width: 91%;
-            padding: 11px 14px;
+            max-width: 90%;
+            padding: 12px 15px;
             border: 1px solid transparent;
             border-radius: 17px;
             overflow-wrap: anywhere;
@@ -228,7 +301,7 @@
 
         .database-assistant-message-copy {
             white-space: pre-wrap;
-            font-size: 13px;
+            font-size: 14px;
             line-height: 1.55;
         }
 
@@ -297,19 +370,19 @@
         }
 
         #database-assistant-status {
-            padding: 8px 16px 9px;
+            padding: 9px 18px 10px;
             border-top: 1px solid #e2ece6;
             color: var(--assistant-muted-contrast);
             background: var(--assistant-surface);
-            font-size: 11px;
+            font-size: 12px;
             line-height: 1.4;
         }
 
         #database-assistant-form {
             display: flex;
             align-items: flex-end;
-            gap: 9px;
-            padding: 12px;
+            gap: 10px;
+            padding: 14px;
             border-top: 1px solid #dce9e1;
             background: #fff;
         }
@@ -317,19 +390,19 @@
         #database-assistant-input {
             display: block;
             min-width: 0;
-            min-height: 44px;
+            min-height: 46px;
             max-height: 120px;
             flex: 1;
             resize: none;
             overflow-y: auto;
-            padding: 11px 13px;
+            padding: 12px 14px;
             border: 1px solid #c8d9cf;
             border-radius: 15px;
             outline: none;
             color: var(--assistant-text);
             background: var(--assistant-surface);
             font: inherit;
-            font-size: 13px;
+            font-size: 14px;
             line-height: 1.45;
             transition: border-color 140ms ease, box-shadow 140ms ease;
         }
@@ -346,12 +419,12 @@
 
         #database-assistant-send {
             display: inline-flex;
-            min-width: 46px;
-            height: 44px;
+            min-width: 48px;
+            height: 46px;
             align-items: center;
             justify-content: center;
             gap: 7px;
-            padding: 0 14px;
+            padding: 0 15px;
             border: 1px solid var(--assistant-dark);
             border-radius: 14px;
             color: #fff;
@@ -359,7 +432,7 @@
             box-shadow: 2px 3px 7px rgba(15, 111, 90, .16);
             cursor: pointer;
             font: inherit;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 700;
             transition: background-color 140ms ease, transform 140ms ease;
         }
@@ -396,16 +469,9 @@
         }
 
         @media (max-width: 480px) {
-            #database-assistant-toggle {
-                right: 16px;
-                bottom: 16px;
-            }
-
             #database-assistant-panel {
-                right: 12px;
-                bottom: 82px;
                 width: calc(100vw - 24px);
-                height: min(620px, calc(100dvh - 98px));
+                height: min(640px, calc(100dvh - 32px));
                 border-radius: 21px;
             }
         }
@@ -424,13 +490,40 @@
 
     <button
         type="button"
+        id="database-assistant-help"
+        aria-label="Show Barangay Health Assistant"
+        aria-controls="database-assistant-toggle"
+        aria-expanded="false"
+        title="Show Barangay Health Assistant"
+    >?</button>
+
+    <button
+        type="button"
         id="database-assistant-toggle"
         aria-label="Open Barangay Health Assistant"
         aria-controls="database-assistant-panel"
         aria-expanded="false"
-        title="Open Barangay Health Assistant"
+        title="Click to open or close. Press and hold to move."
+        hidden
     >
-        <svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none">
+        <lottie-player
+            id="assistantLottie"
+            class="assistant-lottie"
+            src="{{ asset('images/Live chatbot.json') }}"
+            background="transparent"
+            speed="1"
+            loop
+            autoplay
+            aria-hidden="true">
+        </lottie-player>
+
+        <svg
+            id="assistantLottieFallback"
+            class="assistant-lottie-fallback"
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            fill="none"
+        >
             <path d="M12 3.5 14.15 9.85 20.5 12l-6.35 2.15L12 20.5l-2.15-6.35L3.5 12l6.35-2.15L12 3.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
             <path d="m19 3 .65 1.85L21.5 5.5l-1.85.65L19 8l-.65-1.85L16.5 5.5l1.85-.65L19 3Z" fill="currentColor"/>
         </svg>
@@ -445,21 +538,18 @@
         <header id="database-assistant-header">
             <div class="database-assistant-heading">
                 <span class="database-assistant-avatar" aria-hidden="true">
-                    <svg width="23" height="23" viewBox="0 0 24 24" fill="none">
-                        <path d="M12 3.5 14.15 9.85 20.5 12l-6.35 2.15L12 20.5l-2.15-6.35L3.5 12l6.35-2.15L12 3.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-                    </svg>
+                    <img src="{{ asset('images/esperanza-health-center-logo.jpg') }}" alt="" onerror="this.style.display='none'">
                 </span>
                 <div>
                     <strong>Barangay Health Assistant</strong>
                     <small>Current records · General health education</small>
                 </div>
             </div>
-            <button
-                type="button"
-                id="database-assistant-close"
-                aria-label="Close assistant"
-                title="Close assistant"
-            >×</button>
+            <button type="button" id="database-assistant-close" aria-label="Close Barangay Health Assistant">
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
         </header>
 
         <div id="database-assistant-messages" role="log" aria-live="polite" aria-relevant="additions">
@@ -514,6 +604,14 @@
 
             root.dataset.initialized = 'true';
 
+            const help = root.querySelector('#database-assistant-help');
+            const helpSlot = document.querySelector('[data-assistant-slot]');
+            if (helpSlot) {
+                helpSlot.appendChild(help);
+            }
+
+            document.body.appendChild(root);
+
             const toggle = root.querySelector('#database-assistant-toggle');
             const panel = root.querySelector('#database-assistant-panel');
             const close = root.querySelector('#database-assistant-close');
@@ -521,14 +619,200 @@
             const form = root.querySelector('#database-assistant-form');
             const input = root.querySelector('#database-assistant-input');
             const send = root.querySelector('#database-assistant-send');
+            const assistantLottie = root.querySelector('#assistantLottie');
+            const assistantFallback = root.querySelector('#assistantLottieFallback');
             let requestInProgress = false;
 
+            // Keep the starting content so the conversation can be reset when the chat closes.
+            const welcomeHTML = messages.innerHTML;
+
+            // ===== Lottie animation =====
+            const LOTTIE_SRC = 'https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js';
+
+            const ensureLottiePlayer = () => {
+                if (customElements.get('lottie-player')) {
+                    return Promise.resolve();
+                }
+
+                if (!document.querySelector(`script[src="${LOTTIE_SRC}"]`)) {
+                    const script = document.createElement('script');
+                    script.src = LOTTIE_SRC;
+                    script.async = true;
+                    document.head.appendChild(script);
+                }
+
+                const timeout = new Promise((_, reject) => {
+                    window.setTimeout(() => reject(new Error('Lottie timed out')), 8000);
+                });
+
+                return Promise.race([customElements.whenDefined('lottie-player'), timeout]);
+            };
+
+            if (assistantLottie) {
+                const showAnimation = () => {
+                    assistantLottie.style.display = 'block';
+                    if (assistantFallback) assistantFallback.style.display = 'none';
+                };
+
+                const showFallback = () => {
+                    assistantLottie.style.display = 'none';
+                    if (assistantFallback) assistantFallback.style.display = 'block';
+                };
+
+                assistantLottie.addEventListener('error', showFallback);
+
+                ensureLottiePlayer().then(showAnimation).catch(showFallback);
+            }
+
+            // ===== Movable toggle =====
+            const EDGE = 8;               // distance from the side and top edges
+            const BOTTOM_EDGE = 0;
+            const FLOAT_SIZE = 135;       // size while being moved
+            const DOCK_SIZE = 180;        // size once docked on desktop
+            const MOBILE_DOCK_SIZE = 144; // size once docked on phones
+            const HOLD_DELAY = 350;       // milliseconds the button must be held before it can move
+            const MOVE_TOLERANCE = 6;     // pixels the pointer can move before a press is no longer a hold or click
+
+            const isMobile = () => window.matchMedia('(max-width: 480px)').matches;
+            const fitSize = size => Math.max(0, Math.min(size, window.innerWidth - 2 * EDGE, window.innerHeight - 2 * EDGE));
+            const dockSize = () => fitSize(isMobile() ? MOBILE_DOCK_SIZE : DOCK_SIZE);
+            const clampTop = (top, size) => Math.max(EDGE, Math.min(top, window.innerHeight - size - BOTTOM_EDGE));
+
+            let position = { side: 'right', top: window.innerHeight - BOTTOM_EDGE - dockSize() };
+            let hasDragged = false;
+            let suppressClick = false;
+            let pointer = null;
+
+            // Snap the toggle to its side at the docked size.
+            const applyDockedPosition = () => {
+                const size = dockSize();
+                position.top = clampTop(position.top, size);
+
+                toggle.style.width = `${size}px`;
+                toggle.style.height = `${size}px`;
+                toggle.style.top = `${position.top}px`;
+                toggle.style.bottom = 'auto';
+                toggle.style.right = 'auto';
+                toggle.style.left = position.side === 'left'
+                    ? `${EDGE}px`
+                    : `${Math.max(8, window.innerWidth - size - EDGE)}px`;
+            };
+
+            // Decide the side from where the button was released, then snap to it.
+            const finishDrag = () => {
+                const rect = toggle.getBoundingClientRect();
+                const side = rect.left + rect.width / 2 < window.innerWidth / 2 ? 'left' : 'right';
+
+                position = { side, top: rect.top };
+                hasDragged = true;
+                toggle.classList.remove('is-dragging');
+                applyDockedPosition();
+            };
+
+            const cancelHold = () => {
+                if (!pointer) return;
+                window.clearTimeout(pointer.timer);
+                toggle.classList.remove('is-holding');
+            };
+
+            toggle.addEventListener('pointerdown', event => {
+                if (event.button !== 0) return;
+
+                suppressClick = false;
+                const rect = toggle.getBoundingClientRect();
+                pointer = {
+                    id: event.pointerId,
+                    x: event.clientX,
+                    y: event.clientY,
+                    left: rect.left,
+                    top: rect.top,
+                    dragging: false,
+                    timer: null
+                };
+
+                // Visual feedback that holding has started.
+                toggle.classList.add('is-holding');
+
+                // Only after the button has been held long enough does it become movable.
+                pointer.timer = window.setTimeout(() => {
+                    if (!pointer) return;
+
+                    pointer.dragging = true;
+                    toggle.setPointerCapture(pointer.id);
+                    toggle.classList.remove('is-holding');
+                    toggle.classList.add('is-dragging');
+                }, HOLD_DELAY);
+            });
+
+            toggle.addEventListener('pointermove', event => {
+                if (!pointer || event.pointerId !== pointer.id) return;
+
+                const dx = event.clientX - pointer.x;
+                const dy = event.clientY - pointer.y;
+
+                // Moving before the hold completes cancels the hold, so a quick swipe does not move the button.
+                if (!pointer.dragging) {
+                    if (Math.hypot(dx, dy) > MOVE_TOLERANCE) {
+                        cancelHold();
+                    }
+                    return;
+                }
+
+                const size = fitSize(FLOAT_SIZE);
+                const left = Math.max(EDGE, Math.min(pointer.left + dx, window.innerWidth - size - EDGE));
+                const top = clampTop(pointer.top + dy, size);
+
+                toggle.style.width = `${size}px`;
+                toggle.style.height = `${size}px`;
+                toggle.style.left = `${left}px`;
+                toggle.style.top = `${top}px`;
+                toggle.style.right = 'auto';
+                toggle.style.bottom = 'auto';
+            });
+
+            const endPointer = event => {
+                if (!pointer || event.pointerId !== pointer.id) return;
+
+                const wasDragging = pointer.dragging;
+                cancelHold();
+                pointer = null;
+
+                if (wasDragging) {
+                    suppressClick = true;
+                    finishDrag();
+                }
+            };
+
+            toggle.addEventListener('pointerup', endPointer);
+            toggle.addEventListener('pointercancel', endPointer);
+
+            // Stop the long-press menu on phones from appearing over the button.
+            toggle.addEventListener('contextmenu', event => event.preventDefault());
+
+            window.addEventListener('resize', () => {
+                if (toggle.classList.contains('is-dragging')) return;
+
+                if (!hasDragged) {
+                    position.top = window.innerHeight - BOTTOM_EDGE - dockSize();
+                }
+                applyDockedPosition();
+            });
+
+            // ===== Panel: opens centered on click, closes on the next click =====
             const scrollMessagesToBottom = () => {
                 messages.scrollTop = messages.scrollHeight;
             };
 
             const focusInput = () => {
                 input.focus({ preventScroll: true });
+            };
+
+            // Clears the conversation so the next open starts from the welcome screen.
+            const resetConversation = () => {
+                messages.innerHTML = welcomeHTML;
+                messages.scrollTop = 0;
+                input.value = '';
+                input.style.height = 'auto';
             };
 
             const openPanel = () => {
@@ -538,18 +822,67 @@
                 focusInput();
             };
 
-            const closePanel = () => {
+            const closePanel = (restoreFocus = true) => {
                 panel.classList.remove('is-open');
                 panel.setAttribute('aria-hidden', 'true');
                 toggle.setAttribute('aria-expanded', 'false');
-                toggle.focus({ preventScroll: true });
+                resetConversation();
+                if (restoreFocus) {
+                    toggle.focus({ preventScroll: true });
+                }
             };
 
-            toggle.addEventListener('click', () => {
-                panel.classList.contains('is-open') ? closePanel() : openPanel();
+            const visibilityKey = 'database-assistant-visible';
+
+            const setAssistantVisible = visible => {
+                if (!visible && panel.classList.contains('is-open')) {
+                    closePanel(false);
+                }
+
+                toggle.hidden = !visible;
+                if (visible) {
+                    applyDockedPosition();
+                }
+                const label = `${visible ? 'Hide' : 'Show'} Barangay Health Assistant`;
+                help.setAttribute('aria-expanded', String(visible));
+                help.setAttribute('aria-label', label);
+                help.title = label;
+            };
+
+            try {
+                setAssistantVisible(localStorage.getItem(visibilityKey) === 'true');
+            } catch (error) {
+                console.error('Unable to restore assistant visibility:', error);
+                help.title = 'Assistant visibility could not be restored in this browser.';
+            }
+
+            help.addEventListener('click', () => {
+                const visible = toggle.hidden;
+                setAssistantVisible(visible);
+                try {
+                    localStorage.setItem(visibilityKey, String(visible));
+                } catch (error) {
+                    console.error('Unable to save assistant visibility:', error);
+                    help.title = 'Assistant visibility could not be saved in this browser.';
+                }
             });
 
-            close.addEventListener('click', closePanel);
+            window.addEventListener('storage', event => {
+                if (event.key === visibilityKey) {
+                    setAssistantVisible(event.newValue === 'true');
+                }
+            });
+
+            close.addEventListener('click', () => closePanel());
+
+            toggle.addEventListener('click', () => {
+                if (suppressClick) {
+                    suppressClick = false;
+                    return;
+                }
+
+                panel.classList.contains('is-open') ? closePanel() : openPanel();
+            });
 
             document.addEventListener('keydown', event => {
                 if (event.key === 'Escape' && panel.classList.contains('is-open')) {
@@ -557,6 +890,10 @@
                 }
             });
 
+            // Start at the bottom-right on each page.
+            applyDockedPosition();
+
+            // ===== Messages =====
             const addMessage = (text, type = 'bot') => {
                 const bubble = document.createElement('div');
                 const label = document.createElement('span');
@@ -613,16 +950,17 @@
                 }
             });
 
-            root.querySelectorAll('.database-assistant-suggestion').forEach(button => {
-                button.addEventListener('click', () => {
-                    if (requestInProgress) {
-                        return;
-                    }
+            // Suggestion buttons are re-created on reset, so use event delegation.
+            messages.addEventListener('click', event => {
+                const button = event.target.closest('.database-assistant-suggestion');
 
-                    input.value = button.dataset.question || '';
-                    resizeInput();
-                    form.requestSubmit();
-                });
+                if (!button || requestInProgress) {
+                    return;
+                }
+
+                input.value = button.dataset.question || '';
+                resizeInput();
+                form.requestSubmit();
             });
 
             form.addEventListener('submit', async event => {
@@ -641,6 +979,11 @@
                 send.disabled = true;
                 input.disabled = true;
                 messages.setAttribute('aria-busy', 'true');
+
+                // Remove the welcome content on the first message.
+                const welcome = messages.querySelector('.database-assistant-empty');
+                if (welcome) welcome.remove();
+
                 addMessage(message, 'user');
                 input.value = '';
                 resizeInput();

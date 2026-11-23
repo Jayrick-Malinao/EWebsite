@@ -8,11 +8,11 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Add Medical Inventory | Barangay Esperanza Health Center</title>
+    <title>Stock In | Barangay Esperanza Health Center</title>
 
     <meta
         name="description"
-        content="Add a medicine, vaccine, or medical supply to the Barangay Esperanza Health Center inventory."
+        content="Stock in a medicine, vaccine, or medical supply at Barangay Esperanza Health Center."
     >
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -144,11 +144,11 @@
                             </p>
 
                             <h1 class="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
-                                Add Inventory Item
+                                Stock In
                             </h1>
 
                             <p class="mt-0.5 text-sm text-slate-500">
-                                Register a medicine, vaccine, or medical supply.
+                                Record incoming medicine, vaccine, or medical supply stock.
                             </p>
 
                         </div>
@@ -433,7 +433,7 @@
                                     />
                                 </svg>
 
-                                Save Inventory Item
+                                Confirm Stock In
 
                             </button>
 

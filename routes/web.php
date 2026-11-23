@@ -7,7 +7,6 @@ use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\BackupController;
-use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\ChildHealthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DatabaseAssistantController;
@@ -24,9 +23,16 @@ use App\Http\Controllers\ResidentController;
 use App\Http\Controllers\SeniorCitizenController;
 use App\Http\Controllers\SystemSettingController;
 use App\Http\Controllers\UserController;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'welcome')->name('home');
+Route::post('/webhooks/unisms', [AnnouncementController::class, 'smsWebhook'])
+    ->withoutMiddleware(PreventRequestForgery::class)
+    ->name('announcements.sms.webhook');
+
+Route::view('/', 'welcome')
+    ->middleware('cache.headers:private;no_store')
+    ->name('home');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])
@@ -39,6 +45,10 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [LoginController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
+
+Route::get('/dashboard', [LoginController::class, 'redirectByRole'])
+    ->middleware('auth')
+    ->name('dashboard');
 
 /*
 |--------------------------------------------------------------------------
@@ -203,30 +213,6 @@ Route::middleware('auth')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Certificates
-|--------------------------------------------------------------------------
-*/
-
-Route::middleware('auth')->group(function () {
-    Route::middleware('role:System Administrator|Official|Health Worker')
-        ->group(function () {
-            Route::resource('certificates', CertificateController::class)
-                ->except(['destroy']);
-
-            Route::delete('/certificates/{certificate}', [
-                CertificateController::class,
-                'destroy',
-            ])->name('certificates.destroy');
-
-            Route::get('/certificates/{certificate}/print', [
-                CertificateController::class,
-                'print',
-            ])->name('certificates.print');
-        });
-});
-
-/*
-|--------------------------------------------------------------------------
 | Announcements and SMS Delivery
 |--------------------------------------------------------------------------
 */
@@ -254,6 +240,11 @@ Route::middleware('auth')->group(function () {
                 'store',
             ])->name('announcements.store');
 
+            Route::delete('/announcements/{announcement}', [
+                AnnouncementController::class,
+                'destroy',
+            ])->name('announcements.destroy');
+
             /*
              * Manually send pending SMS messages for an announcement.
              */
@@ -261,6 +252,16 @@ Route::middleware('auth')->group(function () {
                 AnnouncementController::class,
                 'sendPendingSms',
             ])->name('announcements.sms.send');
+
+            Route::post('/announcements/{announcement}/refresh-sms-status', [
+                AnnouncementController::class,
+                'refreshSmsStatus',
+            ])->name('announcements.sms.refresh');
+
+            Route::post('/announcements/{announcement}/sms/{deliveryId}/prepare-retry', [
+                AnnouncementController::class,
+                'prepareSmsRetry',
+            ])->whereNumber('deliveryId')->name('announcements.sms.prepare-retry');
 
             Route::get('/announcements/{announcement}', [
                 AnnouncementController::class,
@@ -290,6 +291,16 @@ Route::middleware(['auth', 'role:System Administrator|Health Worker'])->group(fu
         MedicalInventoryController::class,
         'store',
     ])->name('medical-inventories.store');
+
+    Route::get('/medical-inventories/stock-out', [
+        MedicalInventoryController::class,
+        'stockOut',
+    ])->name('medical-inventories.stock-out');
+
+    Route::post('/medical-inventories/stock-out', [
+        MedicalInventoryController::class,
+        'storeStockOut',
+    ])->name('medical-inventories.stock-out.store');
 
     Route::get('/medical-inventories/{medicalInventory}/edit', [
         MedicalInventoryController::class,

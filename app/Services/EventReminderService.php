@@ -59,7 +59,7 @@ class EventReminderService
 
             $eventDateTime = Carbon::parse(
                 $event->event_date->format('Y-m-d')
-                    . ' ' . $event->start_time,
+                    .' '.$event->start_time,
                 'Asia/Manila'
             );
 

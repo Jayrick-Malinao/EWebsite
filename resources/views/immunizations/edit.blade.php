@@ -514,36 +514,14 @@
 
                         <div class="p-5">
 
-                            <label
-                                for="resident_id"
-                                class="clay-label block text-sm font-semibold"
-                            >
+                            <label class="clay-label block text-sm font-semibold">
                                 Resident
                                 <span class="text-red-500">*</span>
                             </label>
-
-                            <select
-                                id="resident_id"
-                                name="resident_id"
-                                required
-                                class="clay-select mt-2 w-full rounded-xl px-4 py-2.5 text-sm outline-none transition"
-                            >
-
-                                @foreach ($residents as $resident)
-
-                                    <option
-                                        value="{{ $resident->id }}"
-                                        @selected(old('resident_id', $immunization->resident_id) == $resident->id)
-                                    >
-                                        {{ $resident->full_name }}
-                                        @if ($resident->birth_date)
-                                            — {{ $resident->birth_date->format('M d, Y') }}
-                                        @endif
-                                    </option>
-
-                                @endforeach
-
-                            </select>
+                            <div class="clay-select mt-2 w-full rounded-xl px-4 py-2.5 text-sm">
+                                {{ $immunization->resident?->full_name }} — Resident #{{ $immunization->resident_id }}
+                            </div>
+                            <input type="hidden" id="resident_id" name="resident_id" value="{{ $immunization->resident_id }}">
 
                             @error('resident_id')
                                 <p class="mt-1.5 text-xs font-medium text-red-600">
@@ -853,38 +831,12 @@
                     </div>
 
                     {{-- Form Actions --}}
-                    <div class="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-
-                        {{-- Delete --}}
-                        <button
-                            type="button"
-                            id="deleteImmunizationButton"
-                            data-confirm-form="#deleteImmunizationForm"
-                            data-confirm-title="Delete this immunization record?"
-                            class="clay-action clay-action-delete inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition"
-                        >
-                            <svg
-                                class="h-5 w-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                aria-hidden="true"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="1.8"
-                                    d="M6 7h12m-9 0V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7m-7 0 .7 12.2A1.5 1.5 0 0 0 10.2 20.5h3.6a1.5 1.5 0 0 0 1.5-1.3L16 7M10 11v5m4-5v5"
-                                />
-                            </svg>
-
-                            Delete
-                        </button>
+                    <div class="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
 
                         <div class="flex flex-col gap-3 sm:flex-row">
 
                             <a
-                                href="{{ route('immunizations.show', $immunization) }}"
+                                href="{{ route('immunizations.index') }}"
                                 class="clay-action clay-action-view inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-semibold transition"
                             >
                                 Cancel
@@ -916,18 +868,6 @@
 
                     </div>
 
-                </form>
-
-                {{-- Hidden Delete Form --}}
-                <form
-                    id="deleteImmunizationForm"
-                    method="POST"
-                    action="{{ route('immunizations.destroy', $immunization) }}"
-                    class="hidden"
-                    data-confirm-item="{{ $immunization->vaccine_name }}"
-                >
-                    @csrf
-                    @method('DELETE')
                 </form>
 
                 {{-- Footer Information --}}

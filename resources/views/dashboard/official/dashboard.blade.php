@@ -20,12 +20,6 @@
     {{-- Sidebar --}}
     @include('dashboard.sidebar')
 
-    {{-- Mobile Overlay --}}
-    <div
-        id="sidebarOverlay"
-        class="fixed inset-0 z-40 hidden bg-slate-900/50 lg:hidden"
-    ></div>
-
     {{-- Main Content --}}
     <div class="min-h-screen lg:pl-72">
 
@@ -36,23 +30,7 @@
 
                 <div class="flex min-w-0 items-center gap-3">
 
-                    <button
-                        id="sidebarOpen"
-                        type="button"
-                        class="dashboard-menu-button inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#dce9e2] bg-[#f9fcfa] text-[#0f6f5a] shadow-sm transition hover:border-[#b8d8ca] hover:bg-[#eaf5ef] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#168b70] lg:hidden"
-                        aria-label="Open navigation"
-                    >
-                        <svg
-                            class="h-5 w-5"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.8"
-                            aria-hidden="true"
-                        >
-                            <path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
-                    </button>
+                    @include('dashboard.mobile-menu-button', ['sidebarId' => 'officialSidebar'])
 
                     <div class="min-w-0">
                         <p class="text-xs font-medium uppercase tracking-wide text-[#168B70]">
@@ -98,116 +76,72 @@
             </div>
 
             {{-- Summary Cards --}}
-            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
 
                 {{-- Residents --}}
-                <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <div class="flex items-start justify-between">
-
-                        <div>
-                            <p class="text-sm font-medium text-slate-500">
-                                Total Residents
-                            </p>
-
-                            <p class="mt-2 text-3xl font-bold text-slate-900">
-                                {{ number_format($totalResidents ?? 0) }}
-                            </p>
-
-                            <p class="mt-2 text-xs text-slate-500">
-                                Registered community residents
-                            </p>
-                        </div>
-
-                        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
+                <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
                                 <circle cx="9" cy="7" r="4"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
                             </svg>
                         </div>
+                        <span class="text-[10px] font-medium uppercase tracking-wide text-[#9AA9A4]">Total</span>
                     </div>
+                    <p class="mt-3 text-2xl font-bold text-[#164238]">{{ number_format($totalResidents ?? 0) }}</p>
+                    <p class="mt-0.5 text-xs font-medium text-[#6D817A]">Residents</p>
+                    <p class="mt-3 text-xs text-slate-500">Registered community residents</p>
                 </div>
 
                 {{-- Households --}}
-                <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <div class="flex items-start justify-between">
-
-                        <div>
-                            <p class="text-sm font-medium text-slate-500">
-                                Total Households
-                            </p>
-
-                            <p class="mt-2 text-3xl font-bold text-slate-900">
-                                {{ number_format($totalHouseholds ?? 0) }}
-                            </p>
-
-                            <p class="mt-2 text-xs text-slate-500">
-                                Registered households
-                            </p>
-                        </div>
-
-                        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+                <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-700">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 21V8l7-4 7 4v13"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 21v-5h6v5"/>
                             </svg>
                         </div>
+                        <span class="text-[10px] font-medium uppercase tracking-wide text-[#9AA9A4]">Total</span>
                     </div>
+                    <p class="mt-3 text-2xl font-bold text-[#164238]">{{ number_format($totalHouseholds ?? 0) }}</p>
+                    <p class="mt-0.5 text-xs font-medium text-[#6D817A]">Households</p>
+                    <p class="mt-3 text-xs text-slate-500">Registered households</p>
                 </div>
 
                 {{-- Upcoming Events --}}
-                <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <div class="flex items-start justify-between">
-
-                        <div>
-                            <p class="text-sm font-medium text-slate-500">
-                                Upcoming Events
-                            </p>
-
-                            <p class="mt-2 text-3xl font-bold text-slate-900">
-                                {{ number_format($upcomingEventsCount ?? 0) }}
-                            </p>
-
-                            <p class="mt-2 text-xs text-slate-500">
-                                Scheduled activities
-                            </p>
-                        </div>
-
-                        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-50 text-orange-600">
+                <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-orange-600">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <rect width="18" height="18" x="3" y="4" rx="2"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M16 2v4M8 2v4M3 10h18"/>
                             </svg>
                         </div>
+                        <span class="text-[10px] font-medium uppercase tracking-wide text-[#9AA9A4]">Upcoming</span>
                     </div>
+                    <p class="mt-3 text-2xl font-bold text-[#164238]">{{ number_format($upcomingEventsCount ?? 0) }}</p>
+                    <p class="mt-0.5 text-xs font-medium text-[#6D817A]">Upcoming Events</p>
+                    <p class="mt-3 text-xs text-slate-500">Scheduled activities</p>
                 </div>
 
                 {{-- Announcements --}}
-                <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <div class="flex items-start justify-between">
-
-                        <div>
-                            <p class="text-sm font-medium text-slate-500">
-                                Announcements
-                            </p>
-
-                            <p class="mt-2 text-3xl font-bold text-slate-900">
-                                {{ number_format($announcementCount ?? 0) }}
-                            </p>
-
-                            <p class="mt-2 text-xs text-slate-500">
-                                Published announcements
-                            </p>
-                        </div>
-
-                        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-purple-50 text-purple-700">
+                <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-purple-50 text-purple-700">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 11.5a2.5 2.5 0 0 1 2.5-2.5H9l6-4v13l-6-4H5.5A2.5 2.5 0 0 1 3 11.5Z"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9a4 4 0 0 1 0 5"/>
                             </svg>
                         </div>
+                        <span class="text-[10px] font-medium uppercase tracking-wide text-[#9AA9A4]">Total</span>
                     </div>
+                    <p class="mt-3 text-2xl font-bold text-[#164238]">{{ number_format($announcementCount ?? 0) }}</p>
+                    <p class="mt-0.5 text-xs font-medium text-[#6D817A]">Announcements</p>
+                    <p class="mt-3 text-xs text-slate-500">Published announcements</p>
                 </div>
             </div>
 
@@ -464,40 +398,6 @@
 
         </main>
     </div>
-
-    {{-- Mobile Sidebar Script --}}
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const sidebar = document.getElementById('officialSidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            const openButton = document.getElementById('sidebarOpen');
-
-            if (!sidebar || !overlay || !openButton) {
-                return;
-            }
-
-            function openSidebar() {
-                sidebar.classList.remove('-translate-x-full');
-                overlay.classList.remove('hidden');
-                document.body.classList.add('overflow-hidden');
-            }
-
-            function closeSidebar() {
-                sidebar.classList.add('-translate-x-full');
-                overlay.classList.add('hidden');
-                document.body.classList.remove('overflow-hidden');
-            }
-
-            openButton.addEventListener('click', openSidebar);
-            overlay.addEventListener('click', closeSidebar);
-
-            window.addEventListener('resize', function () {
-                if (window.innerWidth >= 1024) {
-                    closeSidebar();
-                }
-            });
-        });
-    </script>
 
 </body>
 

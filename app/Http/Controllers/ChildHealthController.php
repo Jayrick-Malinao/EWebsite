@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\ChildHealth;
 use App\Models\Resident;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ChildHealthController extends Controller
@@ -52,12 +54,7 @@ class ChildHealthController extends Controller
      */
     public function create(): View
     {
-        $residents = Resident::query()
-            ->where(function ($query) {
-                $query
-                    ->whereRaw('TIMESTAMPDIFF(YEAR, birth_date, CURDATE()) < 19')
-                    ->orWhere('birth_date', '>=', now()->subYears(19)->startOfDay());
-            })
+        $residents = $this->eligibleResidents()
             ->orderBy('last_name')
             ->orderBy('first_name')
             ->get();
@@ -74,7 +71,12 @@ class ChildHealthController extends Controller
             'resident_id' => [
                 'required',
                 'integer',
-                'exists:residents,id',
+                Rule::exists('residents', 'id')
+                    ->where(function ($query) {
+                        $query
+                            ->whereDate('birth_date', '>=', today()->subYears(5)->toDateString())
+                            ->whereDate('birth_date', '<=', today()->toDateString());
+                    }),
             ],
 
             'assessment_date' => [
@@ -170,21 +172,9 @@ class ChildHealthController extends Controller
      */
     public function edit(ChildHealth $childHealth): View
     {
-        $residents = Resident::query()
-            ->where(function ($query) use ($childHealth) {
-                $query
-                    ->whereRaw('TIMESTAMPDIFF(YEAR, birth_date, CURDATE()) < 19')
-                    ->orWhere('birth_date', '>=', now()->subYears(19)->startOfDay())
-                    ->orWhere('id', $childHealth->resident_id);
-            })
-            ->orderBy('last_name')
-            ->orderBy('first_name')
-            ->get();
+        $childHealth->load('resident');
 
-        return view('child-health.edit', compact(
-            'childHealth',
-            'residents'
-        ));
+        return view('child-health.edit', compact('childHealth'));
     }
 
     /**
@@ -198,7 +188,7 @@ class ChildHealthController extends Controller
             'resident_id' => [
                 'required',
                 'integer',
-                'exists:residents,id',
+                Rule::in([(string) $childHealth->resident_id]),
             ],
 
             'assessment_date' => [
@@ -275,7 +265,7 @@ class ChildHealthController extends Controller
         $childHealth->update($validated);
 
         return redirect()
-            ->route('child-health.show', $childHealth)
+            ->route('child-health.index')
             ->with('success', 'Child health record updated successfully.');
     }
 
@@ -289,5 +279,12 @@ class ChildHealthController extends Controller
         return redirect()
             ->route('child-health.index')
             ->with('success', 'Child health record deleted successfully.');
+    }
+
+    private function eligibleResidents(): Builder
+    {
+        return Resident::query()
+            ->whereDate('birth_date', '>=', today()->subYears(5)->toDateString())
+            ->whereDate('birth_date', '<=', today()->toDateString());
     }
 }

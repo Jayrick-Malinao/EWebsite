@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MedicalInventory extends Model
 {
@@ -31,5 +32,10 @@ class MedicalInventory extends Model
             'alert_expiry_sent' => 'boolean',
             'alert_low_stock_sent' => 'boolean',
         ];
+    }
+
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(MedicalInventoryTransaction::class);
     }
 }

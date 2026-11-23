@@ -350,22 +350,33 @@
                     </div>
 
                     <div>
-                        <label for="resident_id" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">
-                            Resident <span class="text-[#DC2626]">*</span>
-                        </label>
-                        <select id="resident_id" name="resident_id" required class="clay-input cursor-pointer">
-                            <option value="">Select eligible resident</option>
-                            @forelse ($residents as $resident)
-                                @if ($resident->birth_date && $resident->birth_date->age >= 60)
-                                    <option value="{{ $resident->id }}" @selected((string) old('resident_id') === (string) $resident->id)>
-                                        {{ $resident->full_name }} — {{ $resident->birth_date->format('M d, Y') }} ({{ $resident->birth_date->age }} yrs old)
-                                    </option>
-                                @endif
-                            @empty
-                                <option value="" disabled>No eligible residents available</option>
-                            @endforelse
-                        </select>
-                        <p class="mt-2 text-[11px] text-[#6D817A]">Only residents 60+ without an existing record are listed.</p>
+                        @php
+                            $selectedResident = $residents->firstWhere('id', old('resident_id'));
+                            $residentSearchValue = old(
+                                'resident_search',
+                                $selectedResident
+                                    ? "{$selectedResident->full_name} — Resident #{$selectedResident->id}"
+                                    : ''
+                            );
+                        @endphp
+                        <input
+                            id="resident_search"
+                            type="text"
+                            list="resident_options"
+                            value="{{ $residentSearchValue }}"
+                            required
+                            autocomplete="off"
+                            placeholder="Type a senior resident name"
+                            class="clay-input"
+                            data-resident-search
+                        >
+                        <input type="hidden" id="resident_id" name="resident_id" value="{{ old('resident_id') }}">
+                        <datalist id="resident_options">
+                            @foreach ($residents as $resident)
+                                <option value="{{ $resident->full_name }} — Resident #{{ $resident->id }}" data-resident-id="{{ $resident->id }}"></option>
+                            @endforeach
+                        </datalist>
+                        <p class="mt-2 text-[11px] text-[#6D817A]">Only residents aged 60 or older without an existing record are listed.</p>
                     </div>
                 </section>
 
@@ -413,20 +424,20 @@
                             </svg>
                         </div>
                         <div>
-                            <h3 class="text-base font-bold text-[#164238]">OSCA Information</h3>
-                            <p class="text-xs text-[#6D817A]">Identification and OSCA registration details.</p>
+                            <h3 class="text-base font-bold text-[#164238]">Senior Citizen Registration</h3>
+                            <p class="text-xs text-[#6D817A]">Senior identification and registration date.</p>
                         </div>
                     </div>
 
                     <div class="grid gap-6 sm:grid-cols-2">
                         <div>
-                            <label for="osca_id_number" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">OSCA ID Number</label>
-                            <input type="text" id="osca_id_number" name="osca_id_number" value="{{ old('osca_id_number') }}" placeholder="Enter OSCA ID" class="clay-input">
+                            <label for="osca_id_number" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">Senior ID</label>
+                            <input type="text" id="osca_id_number" name="osca_id_number" value="{{ old('osca_id_number') }}" placeholder="Enter Senior ID" class="clay-input">
                         </div>
 
                         <div>
                             <label for="osca_registration_date" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">Registration Date</label>
-                            <input type="date" id="osca_registration_date" name="osca_registration_date" value="{{ old('osca_registration_date') }}" class="clay-input">
+                            <input type="date" id="osca_registration_date" value="{{ today()->format('Y-m-d') }}" readonly aria-readonly="true" class="clay-input">
                         </div>
 
                         <div class="sm:col-span-2">
@@ -514,6 +525,27 @@
     {{-- SCRIPTS --}}
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const residentSearch = document.querySelector('[data-resident-search]');
+            const residentId = document.getElementById('resident_id');
+            const residentOptions = document.getElementById('resident_options');
+
+            if (residentSearch && residentId && residentOptions) {
+                const options = Array.from(residentOptions.options);
+                const syncResidentId = () => {
+                    const match = options.find((option) => option.value === residentSearch.value.trim());
+                    residentId.value = match ? match.dataset.residentId : '';
+                    residentSearch.setCustomValidity(
+                        residentSearch.value.trim() && !match
+                            ? 'Select an eligible resident from the suggestions.'
+                            : ''
+                    );
+                };
+
+                residentSearch.addEventListener('input', syncResidentId);
+                residentSearch.addEventListener('change', syncResidentId);
+                syncResidentId();
+            }
+
             const menuButton = document.getElementById('mobileMenuButton');
             const overlay = document.getElementById('sidebar-overlay');
             const sidebar = document.querySelector('[data-sidebar]');

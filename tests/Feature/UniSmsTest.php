@@ -94,6 +94,7 @@ class UniSmsTest extends TestCase
 
         Http::fake([
             'unismsapi.com/api/sms' => Http::response([
+                'password' => 'provider-private-secret',
                 'errors' => [
                     'recipient' => ['Recipient is invalid: +639171234567'],
                     'content' => ['Invalid content: Test secret announcement'],
@@ -128,6 +129,7 @@ class UniSmsTest extends TestCase
                         && $context['http_status'] === 422
                         && is_string($loggedContext)
                         && ! str_contains($loggedContext, 'test-unisms-secret')
+                        && ! str_contains($loggedContext, 'provider-private-secret')
                         && ! str_contains($loggedContext, '639171234567')
                         && ! str_contains($loggedContext, 'Test secret announcement');
                 })
@@ -216,6 +218,23 @@ class UniSmsTest extends TestCase
         Http::assertSentCount(1);
     }
 
+    public function test_http_request_timeout_is_an_uncertain_outcome(): void
+    {
+        Http::preventStrayRequests();
+        config([
+            'services.unisms.secret_key' => 'test-unisms-secret',
+            'services.unisms.sender_id' => 'TEST-SENDER',
+        ]);
+        Http::fake(['unismsapi.com/api/sms' => Http::response(['error' => 'Request timeout'], 408)]);
+
+        $result = app(UniSmsService::class)->send('09171234567', 'Test message');
+
+        $this->assertFalse($result['success']);
+        $this->assertTrue($result['outcome_uncertain']);
+        $this->assertStringContainsString('acceptance is uncertain', $result['message']);
+        Http::assertSentCount(1);
+    }
+
     public function test_sms_service_rejects_missing_sender_id_without_sending(): void
     {
         Http::preventStrayRequests();
@@ -274,6 +293,21 @@ class UniSmsTest extends TestCase
         $this->assertFalse($result['success']);
         $this->assertStringContainsString('valid Philippine mobile', $result['message']);
 
+        Http::assertNothingSent();
+    }
+
+    public function test_sms_service_rejects_content_over_the_provider_limit(): void
+    {
+        Http::preventStrayRequests();
+        config([
+            'services.unisms.secret_key' => 'test-unisms-secret',
+            'services.unisms.sender_id' => 'TEST-SENDER',
+        ]);
+
+        $result = app(UniSmsService::class)->send('09171234567', str_repeat('a', 671));
+
+        $this->assertFalse($result['success']);
+        $this->assertStringContainsString('670', $result['message']);
         Http::assertNothingSent();
     }
 }

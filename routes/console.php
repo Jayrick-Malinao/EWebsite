@@ -57,3 +57,7 @@ Schedule::command('medical-inventory:check-low-stock')
     ->everyThirtyMinutes()
     ->timezone('Asia/Manila')
     ->withoutOverlapping();
+
+Schedule::command('announcements:sync-sms-status')
+    ->everyFiveMinutes()
+    ->withoutOverlapping(15);

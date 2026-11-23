@@ -548,7 +548,14 @@
 
                     </div>
 
-                    <div class="flex w-full sm:w-auto">
+                    <div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+
+                        <a
+                            href="{{ route('health-visits.index') }}"
+                            class="clay-back-button inline-flex w-full items-center justify-center px-5 py-3 text-sm font-semibold transition sm:w-auto"
+                        >
+                            Back to Health Visits
+                        </a>
 
                         <a
                             href="{{ route('health-visits.edit', $healthVisit) }}"
@@ -966,41 +973,6 @@
                     </div>
 
                 </section>
-
-                {{-- =====================================================
-                    BOTTOM ACTIONS
-                ====================================================== --}}
-                <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-
-                    <a
-                        href="{{ route('health-visits.index') }}"
-                        class="clay-back-button inline-flex items-center justify-center px-6 py-3 text-sm font-semibold transition"
-                    >
-                        Back to Health Visits
-                    </a>
-
-                    <a
-                        href="{{ route('health-visits.edit', $healthVisit) }}"
-                        class="clay-edit-button inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold transition"
-                    >
-                        <svg
-                            class="h-4 w-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="1.8"
-                                d="m16.5 3.5 4 4M5 19l3.5-.7L19.8 7a1.4 1.4 0 0 0 0-2l-.8-.8a1.4 1.4 0 0 0-2 0L5.7 14.3 5 19Z"
-                            />
-                        </svg>
-
-                        Edit Visit
-                    </a>
-
-                </div>
 
             </div>
 

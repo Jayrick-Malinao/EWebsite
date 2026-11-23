@@ -4,8 +4,8 @@ Barangay Esperanza Health Center Records Management System is a Laravel-based we
 
 ## Project Status
 
-- **Implemented:** role-based authentication and authorization; System Administrator, Official, and Health Worker dashboards; user management; residents and households; health records and health visits; immunization, maternal care, child health, and senior citizen modules; medical inventory with expiry and low-stock alerts; certificates with printing; schedules and event reminders; announcements and recipient targeting; announcement SMS delivery preparation and manual sending; in-app notifications; reports; analytics; audit logs; backups; system settings; account profile and password updates; and a read-only database assistant endpoint.
-- **Partially implemented:** Semaphore SMS delivery. Announcement publishing creates pending SMS delivery records, but real sending is disabled unless `SEMAPHORE_SMS_ENABLED=true` and a valid API key is configured.
+- **Implemented:** role-based authentication and authorization; System Administrator, Official, and Health Worker dashboards; user management; residents and households; health records and health visits; immunization, maternal care, child health, and senior citizen modules; medical inventory with expiry and low-stock alerts; schedules and event reminders; announcements and recipient targeting; announcement SMS delivery preparation and manual sending; in-app notifications; reports; analytics; audit logs; backups; system settings; account profile and password updates; and a read-only database assistant endpoint.
+- **Partially implemented:** UniSMS delivery tracking. The provider reports sending status, but its documented API does not explicitly confirm handset delivery.
 - **Not implemented or not verified:** Barangay Map; backup restore; PDF/Excel export; automated report generation beyond the reports dashboard; and any feature not present in the inspected routes, controllers, models, migrations, views, services, or tests.
 
 ## Technology Stack
@@ -30,7 +30,7 @@ flowchart LR
     Controllers --> Models["Eloquent Models"]
     Models --> Database[("Configured Database")]
     Controllers --> Notifications["In-App Notifications"]
-    Controllers --> Semaphore["Semaphore SMS API"]
+    Controllers --> UniSMS["UniSMS API"]
     Controllers --> Reports["Reports and Analytics"]
     Laravel --> Scheduler["Scheduled Console Commands"]
 ```
@@ -57,8 +57,8 @@ flowchart TD
 | Role | Verified Access |
 | --- | --- |
 | System Administrator | Admin dashboard, users, settings, audit logs, backups, reports, analytics, records, programs, operations, medical inventory, announcements, schedule, and notifications. |
-| Official | Official dashboard, residents, households, health records and visits, health programs, certificates, schedule, announcements, notifications, reports, and analytics. |
-| Health Worker | Health Worker dashboard, residents, households, health records and visits, health programs, certificates, schedule, announcements, notifications, reports, analytics, and medical inventory. |
+| Official | Official dashboard, residents, households, health records and visits, health programs, schedule, announcements, notifications, reports, and analytics. |
+| Health Worker | Health Worker dashboard, residents, households, health records and visits, health programs, schedule, announcements, notifications, reports, analytics, and medical inventory. |
 
 Medical inventory management is restricted to System Administrator and Health Worker. User management, settings, audit logs, and backups are restricted to System Administrator.
 
@@ -121,7 +121,6 @@ Do not run database-changing commands against production data without a verified
 - Child Health
 - Senior Citizens
 - Medical Inventory
-- Certificates
 - Announcements
 - Schedule
 - Notifications
@@ -231,18 +230,6 @@ flowchart TD
     LowStockService --> LowStockNotifications["In-App Low-Stock Notifications"]
 ```
 
-## Certificate Workflow
-
-```mermaid
-flowchart TD
-    Staff["Authorized Staff"] --> Certificates["Certificates"]
-    Certificates --> CreateCertificate["Create Certificate"]
-    Certificates --> ViewCertificate["View Certificate"]
-    Certificates --> EditCertificate["Edit Certificate"]
-    Certificates --> DeleteCertificate["Delete Certificate"]
-    Certificates --> PrintCertificate["Print Certificate"]
-```
-
 ## Schedule and Event Notification Workflow
 
 ```mermaid
@@ -263,22 +250,59 @@ sequenceDiagram
     participant User
     participant Controller as AnnouncementController
     participant DB as Database
-    participant SMS as SemaphoreSmsService
+    participant SMS as UniSmsService
 
     User->>Controller: Publish announcement
     Controller->>DB: Create announcement
     Controller->>DB: Create recipients
-    Controller->>DB: Create pending SMS deliveries
+    Controller->>DB: Create prepared SMS deliveries
     Controller-->>User: Announcement published
-    User->>Controller: Send pending SMS
-    Controller->>DB: Load pending deliveries
+    User->>Controller: Send prepared SMS
+    Controller->>DB: Claim prepared deliveries
     Controller->>SMS: Send one message per delivery
-    SMS-->>Controller: Accepted or failed
-    Controller->>DB: Update delivery status
+    SMS-->>Controller: Queued, rejected, or unknown
+    Controller->>DB: Save status and provider reference
     Controller-->>User: Processing summary
+    User->>Controller: Check UniSMS status
+    Controller->>SMS: Look up message by reference
+    SMS-->>Controller: pending, retrying, sent, or failed
 ```
 
-SMS sending requires `SEMAPHORE_SMS_ENABLED=true` and a configured `SEMAPHORE_API_KEY`. Delivery records without a contact number are marked as failed without calling the SMS provider.
+SMS sending requires `UNISMS_SMS_ENABLED=true`, `UNISMS_SECRET_KEY`, and `UNISMS_SENDER_ID`. Publishing only prepares messages; sending is a separate action. A queued response remains Pending, and an ambiguous submission is Unknown and is not automatically resent. The UniSMS `sent` status remains Unknown in the database because the documented API does not explicitly guarantee handset delivery; the page displays it separately as Sent (unconfirmed). Older records previously marked Sent are also Unknown because their provider references were not stored in the database.
+
+To receive provider updates, set `UNISMS_WEBHOOK_SECRET` to the webhook secret configured in UniSMS and configure the provider's HTTPS webhook URL to the application's `/webhooks/unisms` path. Without a webhook, use **Check UniSMS status** for records with a provider reference. A webhook that arrives before its reference is saved may need a later status check. Verify any unknown outcome with UniSMS before sending another message.
+
+Webhooks match the documented message reference, not a unique event ID. Webhook updates to the same delivery use a transaction and row lock on MySQL; repeated sent or retrying states and protected final states are acknowledged without rewriting the delivery. A failed update returns an error so it can be retried. Failed and Delivered cannot be overwritten, retrying cannot replace a provider-sent status, and a failed notification can replace sent/Unknown. UniSMS does not document webhook event ordering or retry identifier stability, so this is not event deduplication and arrival order cannot establish the latest provider event.
+
+Status checks use the provider's status API directly and work on localhost when the server can reach UniSMS; they only look up existing messages and never send SMS. A check already in progress blocks another check for the same announcement. Missing or invalid references are reported, and temporary lookup errors leave the last known status unchanged. Sanitized provider reasons and error codes are retained in status-check history when available. Manual checks bypass per-message intervals but respect the provider-error cooldown.
+
+The Laravel scheduler checks up to 25 due Pending or Unknown messages with valid references every five minutes, including sent-but-unconfirmed messages, and checks messages older than a day at most hourly. The command reports updated, skipped, not-yet-due, unavailable, missing-reference, invalid-reference and locked counts. Eligibility counts reflect the start of the run; the next eligibility time is recalculated afterward and does not guarantee when the scheduler or provider cooldown will allow a check. Run the Laravel scheduler on the host for automatic checks; on a local development machine, `php artisan schedule:work` runs it while the command remains active. Failed lookups are recorded without changing the last valid provider status. An explicit rejection with HTTP 401 or 422 and no provider reference can be prepared for retry; its earlier attempt is retained and a separate send confirmation is required. Pending, accepted, and uncertain submissions cannot be retried through this action.
+
+### Enable scheduled checks
+
+The SMS status command only performs provider lookups; it does not send SMS. Laravel's scheduler also runs the other configured inventory and event-reminder tasks. Use **one** scheduler method per host and check for an existing scheduler before starting another.
+
+For local Laragon development, open PowerShell in the application directory and keep it open:
+
+```powershell
+php artisan schedule:work --no-interaction
+```
+
+For automatic execution while Windows and the configured user account are available:
+
+1. Check Windows Task Scheduler for an existing task running this application's `artisan schedule:run`; do not create a duplicate.
+2. Create a task that repeats every minute indefinitely. Set its action to **Start a program**. Use the PHP executable path from `Get-Command php` as the program, `artisan schedule:run --no-interaction` as its arguments, and the application root (for this installation, `C:\laragon\www\EWebsite`) as **Start in**.
+3. Configure the task not to start another instance while one is already running. Verify its last run result and the announcement's last status-check time. The machine and database must be available; task execution also depends on the selected Windows account and login settings.
+
+For a Unix production host, configure the application directory and PHP executable for the cron user, then add one per-minute scheduler entry (replace both placeholders with absolute paths):
+
+```cron
+LARAVEL_APP_DIR="REPLACE_WITH_ABSOLUTE_APPLICATION_DIRECTORY"
+PHP_EXECUTABLE="REPLACE_WITH_ABSOLUTE_PHP_EXECUTABLE"
+* * * * * cd "$LARAVEL_APP_DIR" && "$PHP_EXECUTABLE" artisan schedule:run --no-interaction
+```
+
+Check `php artisan schedule:list --no-interaction` for registered tasks. A listed task alone does not mean the host scheduler is running. If UniSMS still reports Pending, the application retains Pending; provider acceptance or `sent` does not confirm handset delivery.
 
 ## In-App Notification Workflow
 
@@ -354,7 +378,6 @@ The assistant is implemented as a read-only, role-protected endpoint. It blocks 
 erDiagram
     USER ||--o{ ANNOUNCEMENT : creates
     USER ||--o{ EVENT : creates
-    USER ||--o{ CERTIFICATE : issues
     USER ||--o{ AUDIT_LOG : performs
     HOUSEHOLD ||--o{ RESIDENT : contains
     HOUSEHOLD ||--o{ ANNOUNCEMENT_SMS_DELIVERY : receives
@@ -370,7 +393,7 @@ erDiagram
     ANNOUNCEMENT ||--o{ ANNOUNCEMENT_SMS_DELIVERY : has
 ```
 
-Additional relationships for medical inventory, certificates, events, notifications, and settings are defined in their migrations and models.
+Additional relationships for medical inventory, events, notifications, and settings are defined in their migrations and models. The retired certificates table and its historical records are retained.
 
 ## Workflow Coverage Table
 
@@ -389,11 +412,10 @@ Additional relationships for medical inventory, certificates, events, notificati
 | Senior Citizens | CRUD and view | `senior-citizens.*` | `SeniorCitizenController` | `senior_citizens` table | Implemented |
 | Medical Inventory | CRUD | `medical-inventories.*` | `MedicalInventoryController` | `medical_inventories` table | Implemented |
 | Medical Inventory Alerts | Expiry and low-stock notifications | `medical-inventory:check-expiry`, `medical-inventory:check-low-stock` | Console commands and services | `MedicalInventoryExpiryService`, `MedicalInventoryLowStockService` | Implemented |
-| Certificates | CRUD, view, print | `certificates.*`, `certificates.print` | `CertificateController` | `certificates` table | Implemented |
 | Schedule | CRUD | `schedule.*` | `EventController` | `events` table | Implemented |
 | Event Reminders | Scheduled event notifications | `schedule:check-reminders` | Console command and service | `EventReminderService` | Implemented |
 | Announcements | Create, preview, publish, view | `announcements.*` | `AnnouncementController` | `announcements`, `announcement_recipients` tables | Implemented |
-| Announcement SMS | Prepare and manually send pending SMS | `announcements.sms.send` | `AnnouncementController`, `SemaphoreSmsService` | `announcement_sms_deliveries` table | Partially Implemented |
+| Announcement SMS | Prepare, manually send, and check provider status | `announcements.sms.send`, `announcements.sms.refresh` | `AnnouncementController`, `UniSmsService` | `announcement_sms_deliveries` table | Partially Implemented |
 | Notifications | View, mark read, mark all read | `notifications.*` | `NotificationController` | `notifications` table | Implemented |
 | Reports | Reports dashboard | `reports.index` | `ReportController` | Multiple models | Implemented |
 | Analytics | Analytics dashboard | `analytics.index` | `AnalyticsController` | Multiple models | Implemented |
@@ -412,9 +434,11 @@ Copy `.env.example` to `.env` and configure application, database, mail, and thi
 SMS-related environment variables:
 
 ```env
-SEMAPHORE_SMS_ENABLED=false
-SEMAPHORE_API_KEY=
-SEMAPHORE_SENDER_NAME=
+UNISMS_SMS_ENABLED=false
+UNISMS_SECRET_KEY=
+UNISMS_SENDER_ID=
+UNISMS_WEBHOOK_SECRET=
+UNISMS_BASE_URL=https://unismsapi.com/api
 ```
 
 ## Scheduled Tasks
@@ -444,13 +468,13 @@ php artisan test
 Focused SMS tests:
 
 ```bash
-php artisan test --filter SemaphoreSmsTest
+php artisan test --filter UniSmsTest
 php artisan test --filter AnnouncementSmsSafetyTest
 ```
 
 ## Audit Notes
 
-This README was corrected against the inspected project files. Features are documented only when supported by routes, controllers, models, migrations, services, views, commands, or tests. Browser-level verification, real Semaphore SMS delivery, backup restore, export features, and any unimplemented features remain outside the current verified scope.
+This README was corrected against the inspected project files. Features are documented only when supported by routes, controllers, models, migrations, services, views, commands, or tests. Browser-level verification, independent handset delivery confirmation, backup restore, export features, and any unimplemented features remain outside the current verified scope.
 
 ## About Laravel
 

@@ -575,38 +575,43 @@
                             <div class="sm:col-span-2">
 
                                 <label
-                                    for="household_id"
+                                    for="household_search"
                                     class="clay-label mb-2 block text-sm font-semibold"
                                 >
                                     Household
                                     <span class="clay-required">*</span>
                                 </label>
 
-                                <select
-                                    id="household_id"
-                                    name="household_id"
-                                    required
-                                    class="clay-input px-4 py-3 text-sm outline-none"
-                                >
-                                    <option value="">
-                                        Select household
-                                    </option>
+                                @php
+                                    $selectedHousehold = $households->firstWhere('id', (int) old('household_id'));
+                                @endphp
 
-                                    @forelse ($households as $household)
+                                <input
+                                    id="household_search"
+                                    type="text"
+                                    list="household-options"
+                                    value="{{ old('household_search', $selectedHousehold ? $selectedHousehold->household_code.' — '.($selectedHousehold->household_head_name ?: 'No household head assigned') : '') }}"
+                                    placeholder="Search or type a household"
+                                    autocomplete="off"
+                                    class="clay-input px-4 py-3 text-sm outline-none"
+                                    @required(old('is_household_head', '0') == '0')
+                                >
+
+                                <datalist id="household-options">
+                                    @foreach ($households as $household)
                                         <option
-                                            value="{{ $household->id }}"
-                                            @selected((string) old('household_id') === (string) $household->id)
-                                        >
-                                            {{ $household->household_code }}
-                                            —
-                                            {{ $household->household_head_name ?: 'No household head assigned' }}
-                                        </option>
-                                    @empty
-                                        <option value="" disabled>
-                                            No households available
-                                        </option>
-                                    @endforelse
-                                </select>
+                                            value="{{ $household->household_code }} — {{ $household->household_head_name ?: 'No household head assigned' }}"
+                                            data-household-id="{{ $household->id }}"
+                                        ></option>
+                                    @endforeach
+                                </datalist>
+
+                                <input
+                                    id="household_id"
+                                    type="hidden"
+                                    name="household_id"
+                                    value="{{ old('household_id') }}"
+                                >
 
                                 @if ($households->isEmpty())
                                     <p class="mt-1.5 text-xs font-medium text-amber-600">
@@ -787,6 +792,7 @@
                                     id="first_name"
                                     type="text"
                                     name="first_name"
+                                    data-person-name-strict
                                     value="{{ old('first_name') }}"
                                     required
                                     maxlength="100"
@@ -818,6 +824,7 @@
                                     id="middle_name"
                                     type="text"
                                     name="middle_name"
+                                    data-person-name-strict
                                     value="{{ old('middle_name') }}"
                                     maxlength="100"
                                     autocomplete="additional-name"
@@ -849,6 +856,7 @@
                                     id="last_name"
                                     type="text"
                                     name="last_name"
+                                    data-person-name-strict
                                     value="{{ old('last_name') }}"
                                     required
                                     maxlength="100"
@@ -873,7 +881,7 @@
                                     for="suffix"
                                     class="clay-label mb-2 block text-sm font-semibold"
                                 >
-                                    Suffix
+                                    Suffix (Optional)
                                 </label>
 
                                 <select
@@ -885,7 +893,7 @@
                                         None
                                     </option>
 
-                                    @foreach (['Jr.', 'Sr.', 'II', 'III', 'IV', 'V'] as $suffix)
+                                    @foreach (['Jr.', 'Sr.'] as $suffix)
                                         <option
                                             value="{{ $suffix }}"
                                             @selected(old('suffix') === $suffix)
@@ -921,6 +929,8 @@
                                     name="birth_date"
                                     value="{{ old('birth_date') }}"
                                     max="{{ now()->format('Y-m-d') }}"
+                                    data-age-source
+                                    data-today="{{ now()->format('Y-m-d') }}"
                                     required
                                     class="clay-input px-4 py-3 text-sm outline-none"
                                 >
@@ -931,6 +941,11 @@
                                     </p>
                                 @enderror
 
+                            </div>
+
+                            <div>
+                                <label for="age" class="clay-label mb-2 block text-sm font-semibold">Age</label>
+                                <input id="age" type="text" readonly data-age-display class="clay-input px-4 py-3 text-sm outline-none">
                             </div>
 
 
@@ -1087,12 +1102,13 @@
                                     id="contact_number"
                                     type="tel"
                                     name="contact_number"
-                                    value="{{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay(old('contact_number')) ?: '+63' }}"
+                                    value="{{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay(old('contact_number')) }}"
+                                    data-local-mobile
                                     inputmode="numeric"
-                                    maxlength="24"
+                                    maxlength="13"
                                     autocomplete="tel"
-                                    placeholder="+6391 7123 4567"
-                                    title="Only Globe and DITO SIM numbers are supported."
+                                    placeholder="09XX-XXXX-XXX"
+                                    title="Enter an 11-digit mobile number starting with 09."
                                     class="clay-input px-4 py-3 text-sm outline-none"
                                 >
 
@@ -1101,6 +1117,7 @@
                                         {{ $message }}
                                     </p>
                                 @enderror
+                                <p class="mt-1.5 text-xs text-[#6D817A]">Family members use the household head's contact number.</p>
 
                             </div>
 
@@ -1112,7 +1129,7 @@
                                     for="email"
                                     class="clay-label mb-2 block text-sm font-semibold"
                                 >
-                                    Email Address
+                                    Email Address (Optional)
                                 </label>
 
                                 <input
@@ -1142,13 +1159,16 @@
                                     for="philhealth_number"
                                     class="clay-label mb-2 block text-sm font-semibold"
                                 >
-                                    PhilHealth Number
+                                    PhilHealth Number (Optional)
                                 </label>
 
                                 <input
                                     id="philhealth_number"
                                     type="text"
                                     name="philhealth_number"
+                                    inputmode="numeric"
+                                    pattern="[0-9]*"
+                                    title="Use digits only."
                                     value="{{ old('philhealth_number') }}"
                                     maxlength="50"
                                     placeholder="Enter PhilHealth number"
@@ -1381,15 +1401,39 @@
             }
 
             const householdRole = document.getElementById('is_household_head');
+            const householdSearch = document.getElementById('household_search');
+            const householdId = document.getElementById('household_id');
+            const householdOptions = document.getElementById('household-options');
             const relationship = document.getElementById('relationship_to_head');
             const relationshipHelp = document.getElementById('relationship-help');
+            const contactNumber = document.getElementById('contact_number');
 
-            if (!householdRole || !relationship) {
+            if (!householdRole || !householdSearch || !householdId || !householdOptions || !relationship) {
                 return;
+            }
+
+            function updateHouseholdId() {
+                const matchedOption = Array.from(householdOptions.options)
+                    .find(option => option.value === householdSearch.value);
+
+                householdId.value = matchedOption
+                    ? matchedOption.dataset.householdId
+                    : '';
             }
 
             function updateRelationshipField() {
                 const isHouseholdHead = householdRole.value === '1';
+                contactNumber.required = isHouseholdHead;
+                contactNumber.disabled = !isHouseholdHead;
+
+                householdSearch.required = !isHouseholdHead;
+
+                if (isHouseholdHead) {
+                    householdSearch.value = '';
+                    householdId.value = '';
+                } else {
+                    updateHouseholdId();
+                }
 
                 relationship.disabled = isHouseholdHead;
 
@@ -1424,6 +1468,8 @@
                 'change',
                 updateRelationshipField
             );
+
+            householdSearch.addEventListener('input', updateHouseholdId);
 
             updateRelationshipField();
         });

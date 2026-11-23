@@ -20,6 +20,19 @@ class UserSeeder extends Seeder
                 'name' => 'System Administrator',
                 'password' => 'Admin@12345',
                 'role' => 'System Administrator',
+                'status' => 'active',
+            ]
+        );
+
+        User::updateOrCreate(
+            [
+                'email' => 'admin@gmail.com',
+            ],
+            [
+                'name' => 'System Administrator',
+                'password' => 'Admin@123',
+                'role' => 'System Administrator',
+                'status' => 'active',
             ]
         );
     }

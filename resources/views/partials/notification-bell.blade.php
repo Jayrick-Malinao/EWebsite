@@ -40,8 +40,6 @@
             'maternal_prenatal_reminder' => 'Prenatal Appointment Reminder',
             'maternal_follow_up' => 'Maternal Care Follow-up',
             'senior_citizen_registered' => 'Senior Citizen Registered',
-            'certificate_submitted' => 'Certificate Request Submitted',
-            'certificate_status_changed' => 'Certificate Status Updated',
             'staff_account_created' => 'New Staff Account Created',
             'staff_status_changed' => 'Staff Account Status Changed',
             'security_access_alert' => 'Security or Access Alert',
@@ -49,9 +47,19 @@
     @endphp
 
     <div
-        x-data="{ notificationOpen: false }"
+        x-data="{
+            notificationOpen: false,
+            currentNotification: 0,
+            notificationCount: {{ $notifications->count() }},
+            isMobile: window.matchMedia('(max-width: 639px)').matches,
+            moveNotification(direction) {
+                this.currentNotification = Math.max(0, Math.min(this.notificationCount - 1, this.currentNotification + direction));
+                this.$refs.notificationList.scrollTop = 0;
+            }
+        }"
         @click.outside="notificationOpen = false"
         @keydown.escape.window="notificationOpen = false"
+        @resize.window="isMobile = window.matchMedia('(max-width: 639px)').matches"
         class="notification-bell relative"
     >
         <button
@@ -77,13 +85,13 @@
             x-cloak
             x-show="notificationOpen"
             x-transition
-            class="notification-bell-panel absolute right-0 top-12 z-[100] w-[min(92vw,400px)] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
+            class="notification-bell-panel absolute right-0 top-12 z-[100] flex w-[min(92vw,400px)] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
             style="display: none;"
         >
-            <div class="flex items-center justify-between border-b border-slate-100 bg-[#F5FAF7] px-4 py-4">
+            <div class="flex shrink-0 items-center justify-between gap-3 border-b border-emerald-700 bg-[#0F6F5A] px-4 py-4">
                 <div>
-                    <h3 class="text-sm font-bold text-[#164238]">Notifications</h3>
-                    <p class="mt-1 text-xs text-[#6D817A]">
+                    <h3 class="text-sm font-bold text-white">Notifications</h3>
+                    <p class="mt-1 text-xs text-emerald-50">
                         @if ($unreadNotificationCount > 0)
                             {{ $unreadNotificationCount }}
                             unread notification{{ $unreadNotificationCount === 1 ? '' : 's' }}
@@ -96,14 +104,14 @@
                 @if ($unreadNotificationCount > 0 && \Illuminate\Support\Facades\Route::has('notifications.read-all'))
                     <form method="POST" action="{{ route('notifications.read-all') }}">
                         @csrf
-                        <button type="submit" class="rounded-lg px-2.5 py-2 text-xs font-semibold text-[#0F6F5A] transition hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <button type="submit" class="rounded-lg border border-white/40 px-2.5 py-2 text-xs font-semibold text-white transition hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-white">
                             Mark all read
                         </button>
                     </form>
                 @endif
             </div>
 
-            <div class="max-h-[min(70vh,500px)] overflow-y-auto">
+            <div x-ref="notificationList" class="min-h-0 flex-1 overflow-y-auto">
                 @forelse ($notifications as $notification)
                     @php
                         $data = $notification->data ?? [];
@@ -125,7 +133,6 @@
                             str_starts_with($notificationType, 'resident') => 'Resident Management',
                             str_starts_with($notificationType, 'maternal') => 'Maternal Care',
                             str_starts_with($notificationType, 'senior_citizen') => 'Senior Citizens',
-                            str_starts_with($notificationType, 'certificate') => 'Certificates',
                             str_starts_with($notificationType, 'staff') => 'User Management',
                             str_starts_with($notificationType, 'security') => 'System Administration',
                             default => $data['module'] ?? 'System Notification',
@@ -174,7 +181,6 @@
                             'household_code' => 'Household Code',
                             'resident_name' => 'Resident',
                             'appointment_date' => 'Appointment Date',
-                            'certificate_type' => 'Certificate',
                             'status' => 'Status',
                         ] as $key => $label) {
                             if (
@@ -188,6 +194,7 @@
                     @endphp
 
                     <article
+                        x-show="!isMobile || currentNotification === {{ $loop->index }}"
                         class="border-b border-slate-100 px-4 py-4 last:border-b-0 {{ $isUnread ? 'bg-emerald-50/40' : 'bg-white' }}"
                     >
                         <div class="flex gap-3">
@@ -222,7 +229,7 @@
                             <div class="min-w-0 flex-1">
                                 <div class="flex items-start justify-between gap-2">
                                     <div class="min-w-0">
-                                        <p class="text-sm {{ $isUnread ? 'font-bold text-[#164238]' : 'font-semibold text-slate-600' }}">
+                                        <p class="break-words text-sm {{ $isUnread ? 'font-bold text-[#164238]' : 'font-semibold text-slate-600' }}">
                                             {{ $notificationTitle }}
                                         </p>
                                         <p class="mt-1 text-[10px] font-semibold uppercase tracking-wide text-[#6D817A]">
@@ -244,7 +251,7 @@
                                     @endif
                                 </div>
 
-                                <p class="mt-2 text-sm leading-5 text-slate-600">
+                                <p class="mt-2 break-words text-sm leading-5 text-slate-600">
                                     {{ $data['message'] ?? 'A notification requires your attention.' }}
                                 </p>
 
@@ -265,11 +272,11 @@
                                 @endif
 
                                 @if (!empty($metadata))
-                                    <div class="mt-3 space-y-2 rounded-xl border border-slate-100 bg-slate-50 px-3 py-3">
+                                    <div class="mt-3 space-y-2 rounded-xl border border-emerald-100 bg-[#F5FAF7] px-3 py-3">
                                         @foreach ($metadata as $label => $value)
-                                            <div class="flex items-start justify-between gap-3">
-                                                <span class="shrink-0 text-xs text-slate-500">{{ $label }}</span>
-                                                <span class="max-w-[65%] break-words text-right text-xs font-semibold text-slate-700">{{ $value }}</span>
+                                            <div class="grid grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] gap-3">
+                                                <span class="break-words text-xs text-slate-500">{{ $label }}</span>
+                                                <span class="break-words text-right text-xs font-semibold text-slate-700">{{ $value }}</span>
                                             </div>
                                         @endforeach
                                     </div>
@@ -296,6 +303,34 @@
                     </div>
                 @endforelse
             </div>
+
+            @if ($notifications->isNotEmpty())
+                <div class="flex shrink-0 items-center justify-between gap-3 border-t border-emerald-100 bg-[#F5FAF7] px-4 py-2 sm:hidden">
+                    <button
+                        type="button"
+                        @click="moveNotification(-1)"
+                        :disabled="currentNotification === 0"
+                        aria-label="Previous notification"
+                        class="flex h-11 w-11 items-center justify-center rounded-xl border border-emerald-100 bg-white text-[#0F6F5A] transition hover:bg-emerald-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#168B70] disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6" />
+                        </svg>
+                    </button>
+                    <span class="text-xs font-semibold text-[#536A63]" aria-live="polite" x-text="`${currentNotification + 1} of ${notificationCount}`"></span>
+                    <button
+                        type="button"
+                        @click="moveNotification(1)"
+                        :disabled="currentNotification >= notificationCount - 1"
+                        aria-label="Next notification"
+                        class="flex h-11 w-11 items-center justify-center rounded-xl border border-emerald-100 bg-white text-[#0F6F5A] transition hover:bg-emerald-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#168B70] disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6" />
+                        </svg>
+                    </button>
+                </div>
+            @endif
         </div>
     </div>
 @endauth

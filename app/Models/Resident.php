@@ -89,11 +89,10 @@ class Resident extends Model
     public function getFullNameAttribute(): string
     {
         return trim(
-            $this->first_name . ' ' .
-            ($this->middle_name ? $this->middle_name . ' ' : '') .
-            $this->last_name .
-            ($this->suffix ? ', ' . $this->suffix : '')
+            $this->first_name.' '.
+            ($this->middle_name ? $this->middle_name.' ' : '').
+            $this->last_name.
+            ($this->suffix ? ', '.$this->suffix : '')
         );
     }
 }
-

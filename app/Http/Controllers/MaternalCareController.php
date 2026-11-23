@@ -6,6 +6,7 @@ use App\Models\MaternalCare;
 use App\Models\Resident;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class MaternalCareController extends Controller
@@ -193,20 +194,9 @@ class MaternalCareController extends Controller
      */
     public function edit(MaternalCare $maternalCare): View
     {
-        $residents = Resident::query()
-            ->where(function ($query) use ($maternalCare) {
-                $query
-                    ->where('gender', 'Female')
-                    ->orWhere('id', $maternalCare->resident_id);
-            })
-            ->orderBy('last_name')
-            ->orderBy('first_name')
-            ->get();
+        $maternalCare->load('resident');
 
-        return view('maternal-care.edit', compact(
-            'maternalCare',
-            'residents'
-        ));
+        return view('maternal-care.edit', compact('maternalCare'));
     }
 
     /**
@@ -220,7 +210,7 @@ class MaternalCareController extends Controller
             'resident_id' => [
                 'required',
                 'integer',
-                'exists:residents,id',
+                Rule::in([(string) $maternalCare->resident_id]),
             ],
 
             'last_menstrual_period' => [

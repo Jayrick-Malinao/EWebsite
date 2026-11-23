@@ -357,7 +357,7 @@
                     <p class="mt-1 text-xs text-[#6D817A]">Distribution of residents by age, gender, and registration status.</p>
                 </div>
 
-                <div class="grid gap-6 xl:grid-cols-2">
+                <div class="grid gap-6 xl:grid-cols-3">
 
                     {{-- Age Distribution --}}
                     <div class="clay-table">
@@ -366,31 +366,69 @@
                             <p class="mt-1 text-xs text-[#6D817A]">Resident population grouped by age.</p>
                         </div>
 
-                        <div class="space-y-5 p-6">
+                        <div class="flex flex-col items-center gap-6 p-6">
                             @php
-                                $ageMax = max($ageGroups ?: [1]);
+                                $ageChartColors = ['#168B70', '#E87928', '#0F4C3A', '#8AA99C', '#B42323'];
+                                $ageChartOffset = 0;
                             @endphp
 
-                            @foreach ($ageGroups as $group => $total)
-                                @php
-                                    $percentage = $totalResidents > 0 ? ($total / $totalResidents) * 100 : 0;
-                                    $width = $ageMax > 0 ? ($total / $ageMax) * 100 : 0;
-                                @endphp
-
-                                <div>
-                                    <div class="mb-2 flex items-center justify-between gap-4">
-                                        <span class="text-sm font-bold text-[#234E43]">{{ $group }} years</span>
-                                        <span class="text-sm font-bold text-[#164238]">
-                                            {{ number_format($total) }}
-                                            <span class="font-normal text-[#9AA9A4]">({{ number_format($percentage, 1) }}%)</span>
-                                        </span>
-                                    </div>
-
-                                    <div class="clay-bar-track h-3 overflow-hidden rounded-full">
-                                        <div class="clay-bar-fill-primary h-full rounded-full transition-all" style="width: {{ $width }}%"></div>
-                                    </div>
+                            @if ($totalResidents > 0)
+                                <svg class="h-40 w-40 shrink-0" viewBox="0 0 42 42" role="img" aria-label="Resident age group distribution pie chart">
+                                    <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#E4EFE9" stroke-width="7"></circle>
+                                    <g transform="rotate(-90 21 21)">
+                                        @foreach ($ageGroups as $group => $total)
+                                            @php
+                                                $percentage = ($total / $totalResidents) * 100;
+                                                $color = $ageChartColors[$loop->index % count($ageChartColors)];
+                                            @endphp
+                                            <circle
+                                                cx="21"
+                                                cy="21"
+                                                r="15.915"
+                                                fill="transparent"
+                                                stroke="{{ $color }}"
+                                                stroke-width="7"
+                                                pathLength="100"
+                                                stroke-dasharray="{{ $percentage }} {{ 100 - $percentage }}"
+                                                stroke-dashoffset="{{ -$ageChartOffset }}"
+                                            ></circle>
+                                            @php
+                                                $ageChartOffset += $percentage;
+                                            @endphp
+                                        @endforeach
+                                    </g>
+                                    <text x="21" y="20" text-anchor="middle" class="fill-[#164238] text-[5px] font-bold">
+                                        {{ number_format($totalResidents) }}
+                                    </text>
+                                    <text x="21" y="25" text-anchor="middle" class="fill-[#6D817A] text-[3px]">
+                                        residents
+                                    </text>
+                                </svg>
+                            @else
+                                <div class="clay-inset flex h-40 w-40 items-center justify-center rounded-full text-center text-xs text-[#6D817A]">
+                                    No resident data
                                 </div>
-                            @endforeach
+                            @endif
+
+                            <ul class="w-full space-y-3">
+                                @foreach ($ageGroups as $group => $total)
+                                    @php
+                                        $percentage = $totalResidents > 0
+                                            ? ($total / $totalResidents) * 100
+                                            : 0;
+                                        $color = $ageChartColors[$loop->index % count($ageChartColors)];
+                                    @endphp
+                                    <li class="flex items-center justify-between gap-3">
+                                        <span class="flex min-w-0 items-center gap-2 text-sm font-bold text-[#234E43]">
+                                            <span class="h-3 w-3 shrink-0 rounded-full" style="background-color: {{ $color }}"></span>
+                                            <span class="truncate">{{ $group === 'Unknown' ? 'Unknown age' : $group.' years' }}</span>
+                                        </span>
+                                        <span class="shrink-0 text-xs text-[#6D817A]">
+                                            {{ number_format($total) }} ({{ number_format($percentage, 1) }}%)
+                                        </span>
+                                    </li>
+                                @endforeach
+                            </ul>
                         </div>
                     </div>
 
@@ -401,23 +439,142 @@
                             <p class="mt-1 text-xs text-[#6D817A]">Current resident population by gender.</p>
                         </div>
 
-                        <div class="space-y-5 p-6">
-                            @foreach ($genderSummary as $gender)
-                                @php
-                                    $percentage = $totalResidents > 0 ? ($gender->total / $totalResidents) * 100 : 0;
-                                @endphp
+                        <div class="flex flex-col items-center gap-6 p-6">
+                            @php
+                                $genderChartColors = ['#168B70', '#E87928', '#0F4C3A'];
+                                $genderChartOffset = 0;
+                            @endphp
 
-                                <div>
-                                    <div class="mb-2 flex items-center justify-between">
-                                        <span class="text-sm font-bold text-[#234E43]">{{ $gender->gender }}</span>
-                                        <span class="text-sm font-bold text-[#164238]">{{ number_format($gender->total) }}</span>
-                                    </div>
-
-                                    <div class="clay-bar-track h-3 overflow-hidden rounded-full">
-                                        <div class="clay-bar-fill-primary h-full rounded-full" style="width: {{ $percentage }}%"></div>
-                                    </div>
+                            @if ($totalResidents > 0)
+                                <svg class="h-40 w-40 shrink-0" viewBox="0 0 42 42" role="img" aria-label="Resident gender distribution pie chart">
+                                    <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#E4EFE9" stroke-width="7"></circle>
+                                    <g transform="rotate(-90 21 21)">
+                                        @foreach ($genderSummary as $gender)
+                                            @php
+                                                $percentage = ($gender->total / $totalResidents) * 100;
+                                                $color = $genderChartColors[$loop->index % count($genderChartColors)];
+                                            @endphp
+                                            <circle
+                                                cx="21"
+                                                cy="21"
+                                                r="15.915"
+                                                fill="transparent"
+                                                stroke="{{ $color }}"
+                                                stroke-width="7"
+                                                pathLength="100"
+                                                stroke-dasharray="{{ $percentage }} {{ 100 - $percentage }}"
+                                                stroke-dashoffset="{{ -$genderChartOffset }}"
+                                            ></circle>
+                                            @php
+                                                $genderChartOffset += $percentage;
+                                            @endphp
+                                        @endforeach
+                                    </g>
+                                    <text x="21" y="20" text-anchor="middle" class="fill-[#164238] text-[5px] font-bold">
+                                        {{ number_format($totalResidents) }}
+                                    </text>
+                                    <text x="21" y="25" text-anchor="middle" class="fill-[#6D817A] text-[3px]">
+                                        residents
+                                    </text>
+                                </svg>
+                            @else
+                                <div class="clay-inset flex h-40 w-40 items-center justify-center rounded-full text-center text-xs text-[#6D817A]">
+                                    No resident data
                                 </div>
-                            @endforeach
+                            @endif
+
+                            <ul class="w-full space-y-3">
+                                @foreach ($genderSummary as $gender)
+                                    @php
+                                        $percentage = $totalResidents > 0
+                                            ? ($gender->total / $totalResidents) * 100
+                                            : 0;
+                                        $color = $genderChartColors[$loop->index % count($genderChartColors)];
+                                    @endphp
+                                    <li class="flex items-center justify-between gap-3">
+                                        <span class="flex min-w-0 items-center gap-2 text-sm font-bold text-[#234E43]">
+                                            <span class="h-3 w-3 shrink-0 rounded-full" style="background-color: {{ $color }}"></span>
+                                            <span class="truncate">{{ $gender->gender }}</span>
+                                        </span>
+                                        <span class="shrink-0 text-xs text-[#6D817A]">
+                                            {{ number_format($gender->total) }} ({{ number_format($percentage, 1) }}%)
+                                        </span>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+
+                    {{-- Resident Status --}}
+                    <div class="clay-table">
+                        <div class="border-b border-white/70 px-6 py-5">
+                            <h4 class="text-base font-bold text-[#164238]">Resident Status</h4>
+                            <p class="mt-1 text-xs text-[#6D817A]">Current resident registration status.</p>
+                        </div>
+
+                        <div class="flex flex-col items-center gap-6 p-6">
+                            @php
+                                $statusChartColors = ['#168B70', '#E87928', '#B42323', '#0F4C3A', '#8AA99C'];
+                                $statusChartOffset = 0;
+                            @endphp
+
+                            @if ($totalResidents > 0)
+                                <svg class="h-40 w-40 shrink-0" viewBox="0 0 42 42" role="img" aria-label="Resident status pie chart">
+                                    <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#E4EFE9" stroke-width="7"></circle>
+                                    <g transform="rotate(-90 21 21)">
+                                        @foreach ($residentStatusSummary as $status)
+                                            @php
+                                                $percentage = ($status->total / $totalResidents) * 100;
+                                                $color = $statusChartColors[$loop->index % count($statusChartColors)];
+                                            @endphp
+                                            <circle
+                                                cx="21"
+                                                cy="21"
+                                                r="15.915"
+                                                fill="transparent"
+                                                stroke="{{ $color }}"
+                                                stroke-width="7"
+                                                pathLength="100"
+                                                stroke-dasharray="{{ $percentage }} {{ 100 - $percentage }}"
+                                                stroke-dashoffset="{{ -$statusChartOffset }}"
+                                            ></circle>
+                                            @php
+                                                $statusChartOffset += $percentage;
+                                            @endphp
+                                        @endforeach
+                                    </g>
+                                    <text x="21" y="20" text-anchor="middle" class="fill-[#164238] text-[5px] font-bold">
+                                        {{ number_format($totalResidents) }}
+                                    </text>
+                                    <text x="21" y="25" text-anchor="middle" class="fill-[#6D817A] text-[3px]">
+                                        residents
+                                    </text>
+                                </svg>
+                            @else
+                                <div class="clay-inset flex h-40 w-40 items-center justify-center rounded-full text-center text-xs text-[#6D817A]">
+                                    No resident data
+                                </div>
+                            @endif
+
+                            <ul class="w-full space-y-3">
+                                @foreach ($residentStatusSummary as $status)
+                                    @php
+                                        $percentage = $totalResidents > 0
+                                            ? ($status->total / $totalResidents) * 100
+                                            : 0;
+                                        $color = $statusChartColors[$loop->index % count($statusChartColors)];
+                                    @endphp
+                                    <li class="flex items-center justify-between gap-3">
+                                        <span class="flex min-w-0 items-center gap-2 text-sm font-bold text-[#234E43]">
+                                            <span class="h-3 w-3 shrink-0 rounded-full" style="background-color: {{ $color }}"></span>
+                                            <span class="truncate">{{ $status->status ?: 'Unknown' }}</span>
+                                        </span>
+                                        <span class="shrink-0 text-xs text-[#6D817A]">
+                                            {{ number_format($status->total) }} ({{ number_format($percentage, 1) }}%)
+                                        </span>
+                                    </li>
+                                @endforeach
+                            </ul>
                         </div>
                     </div>
 

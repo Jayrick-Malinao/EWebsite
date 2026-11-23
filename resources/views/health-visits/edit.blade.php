@@ -648,7 +648,7 @@
                         </div>
 
                         <a
-                            href="{{ route('health-visits.show', $healthVisit) }}"
+                            href="{{ route('health-visits.index') }}"
                             class="clay-view-record inline-flex shrink-0 items-center justify-center px-4 py-2.5 text-sm font-semibold transition"
                         >
                             View Record
@@ -1087,7 +1087,7 @@
                     <div class="clay-form-actions flex flex-col-reverse gap-3 border-t pt-6 sm:flex-row sm:justify-end">
 
                         <a
-                            href="{{ route('health-visits.show', $healthVisit) }}"
+                            href="{{ route('health-visits.index') }}"
                             class="clay-cancel-button inline-flex items-center justify-center px-6 py-3 text-sm font-semibold transition"
                         >
                             Cancel

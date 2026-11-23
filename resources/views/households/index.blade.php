@@ -981,6 +981,12 @@
 
             @endif
 
+            @if (session('error'))
+                <div role="alert" class="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3.5 text-sm font-semibold text-red-700">
+                    {{ session('error') }}
+                </div>
+            @endif
+
             {{-- =================================================
                  SEARCH PANEL
             ================================================== --}}
@@ -1140,16 +1146,25 @@
 
                 </div>
 
-                <div class="overflow-x-auto">
+                <div class="relative overflow-x-auto">
 
-                    <table class="w-full min-w-[1000px]">
+                    <table class="w-full min-w-[950px] table-fixed">
 
-                        <thead class="clay-table-head">
+                        <colgroup>
+                            <col class="w-[20%]">
+                            <col class="w-[28%]">
+                            <col class="w-[17%]">
+                            <col class="w-[14%]">
+                            <col class="w-[12%]">
+                            <col class="w-[9%]">
+                        </colgroup>
 
-                            <tr>
+                        <thead class="clay-table-head sticky top-0 z-20">
+
+                            <tr class="bg-[#F5FAF7] shadow-sm border-b border-white/90">
 
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6D817A]">
-                                    Household
+                                    Household ID
                                 </th>
 
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6D817A]">
@@ -1157,20 +1172,16 @@
                                 </th>
 
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6D817A]">
-                                    Address
-                                </th>
-
-                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6D817A]">
-                                    Contact
+                                    Purok
                                 </th>
 
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6D817A]">
                                     Status
                                 </th>
-
-                                <th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-[#6D817A]">
-                                    Actions
+                                <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider text-[#6D817A]">
+                                    Members
                                 </th>
+                                <th scope="col" class="px-6 py-4"><span class="sr-only">Actions</span></th>
 
                             </tr>
 
@@ -1186,7 +1197,7 @@
 
                                         <div class="flex items-center gap-3">
 
-                                            <div class="clay-icon clay-icon-green h-10 w-10 rounded-xl">
+                                            <div class="clay-icon clay-icon-green h-10 w-10 shrink-0 rounded-xl">
 
                                                 <svg
                                                     class="h-5 w-5"
@@ -1207,7 +1218,7 @@
 
                                             <div>
 
-                                                <p class="text-sm font-bold text-[#164238]">
+                                                <p class="whitespace-nowrap text-sm font-bold text-[#164238]">
                                                     {{ $household->household_code }}
                                                 </p>
 
@@ -1223,19 +1234,8 @@
 
                                     <td class="px-6 py-4">
 
-                                        <p class="text-sm font-bold text-[#234E43]">
+                                        <p class="break-words text-sm font-bold text-[#234E43]">
                                             {{ $household->household_head_name }}
-                                        </p>
-
-                                    </td>
-
-                                    <td class="max-w-xs px-6 py-4">
-
-                                        <p
-                                            class="truncate text-sm font-medium text-[#6D817A]"
-                                            title="{{ $household->address }}"
-                                        >
-                                            {{ $household->address }}
                                         </p>
 
                                     </td>
@@ -1243,7 +1243,7 @@
                                     <td class="px-6 py-4">
 
                                         <p class="text-sm font-medium text-[#6D817A]">
-                                            {{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay($household->contact_number) ?: '—' }}
+                                            {{ $household->address ? Str::before($household->address, ',') : '—' }}
                                         </p>
 
                                     </td>
@@ -1274,49 +1274,39 @@
 
                                     </td>
 
-                                    <td class="px-6 py-4">
+                                    <td class="px-6 py-4 text-center text-sm font-medium text-[#6D817A]">
+                                        {{ $household->residents_count }}
+                                    </td>
 
-                                        <div class="flex items-center justify-end gap-2">
+                                    <td class="px-4 py-4">
 
-                                            {{-- View --}}
-                                            <a
-                                                href="{{ route('households.show', $household) }}"
-                                                class="clay-action clay-view"
-                                            >
-                                                View
-                                            </a>
+                                        <div class="relative flex items-center justify-end">
+                                            <button type="button" class="clay-action-menu-trigger flex h-10 w-10 items-center justify-center rounded-full text-[#6D817A] transition hover:text-[#164238]" aria-label="More actions for {{ $household->household_code }}" aria-expanded="false" data-menu-trigger>
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                                                    <circle cx="10" cy="5" r="1.5"/>
+                                                    <circle cx="10" cy="10" r="1.5"/>
+                                                    <circle cx="10" cy="15" r="1.5"/>
+                                                </svg>
+                                            </button>
 
-                                            {{-- Edit --}}
-                                            <a
-                                                href="{{ route('households.edit', $household) }}"
-                                                class="clay-action clay-edit"
-                                            >
-                                                Edit
-                                            </a>
-
-                                            {{-- Delete --}}
-                                            <form
-                                                id="delete-household-form-{{ $household->id }}"
-                                                action="{{ route('households.destroy', $household) }}"
-                                                method="POST"
-                                            >
-                                                @csrf
-                                                @method('DELETE')
-
-                                                <button
-                                                    type="button"
-                                                    class="clay-action clay-delete"
-                                                    data-delete-household
-                                                    data-form-id="delete-household-form-{{ $household->id }}"
-                                                    data-household-code="{{ $household->household_code }}"
-                                                    data-household-head="{{ $household->household_head_name }}"
-                                                    data-confirm-title="Delete this household?"
-                                                >
-                                                    Delete
-                                                </button>
-
-                                            </form>
-
+                                            <div class="clay-action-menu absolute right-0 top-full z-20 mt-2 hidden min-w-[180px] rounded-2xl border border-white/80 bg-[#F5FAF7] p-2 shadow-[0_12px_35px_rgba(107,134,124,0.18)]" data-menu-panel>
+                                                <a href="{{ route('households.show', $household) }}" class="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-[#164238] transition hover:bg-[#EDF5F0]">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12s3.75-6.75 9.75-6.75S21.75 12 21.75 12 18 18.75 12 18.75 2.25 12 2.25 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                                                    View
+                                                </a>
+                                                <a href="{{ route('households.edit', $household) }}" class="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-[#164238] transition hover:bg-[#EDF5F0]">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.5-7.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 7.5-7.5z"/></svg>
+                                                    Edit
+                                                </a>
+                                                <form id="delete-household-form-{{ $household->id }}" action="{{ route('households.destroy', $household) }}" method="POST">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="button" class="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-semibold text-[#B42323] transition hover:bg-[#FDF1F1]" data-delete-household data-form-id="delete-household-form-{{ $household->id }}" data-household-code="{{ $household->household_code }}" data-household-head="{{ $household->household_head_name }}" data-confirm-title="Delete this household?">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-8 0h10"/></svg>
+                                                        Delete
+                                                    </button>
+                                                </form>
+                                            </div>
                                         </div>
 
                                     </td>
@@ -1515,6 +1505,18 @@
                             <div>
 
                                 <p class="text-[11px] font-bold uppercase tracking-wider text-[#6D817A]">
+                                    Members
+                                </p>
+
+                                <p class="mt-1 text-sm font-medium text-[#6D817A]">
+                                    {{ $household->residents_count }}
+                                </p>
+
+                            </div>
+
+                            <div>
+
+                                <p class="text-[11px] font-bold uppercase tracking-wider text-[#6D817A]">
                                     Contact Number
                                 </p>
 
@@ -1527,19 +1529,20 @@
                         </div>
 
                         {{-- Card Actions --}}
-                        <div class="mt-5 grid grid-cols-3 gap-2 border-t border-white/70 pt-4">
+                        <div class="mt-5 border-t border-white/70 pt-4">
+                            @component('partials.record-actions', ['label' => 'More actions for '.$household->household_code])
 
                             <a
                                 href="{{ route('households.show', $household) }}"
-                                class="clay-action clay-view w-full"
                             >
+                                @include('partials.record-action-icon', ['icon' => 'view'])
                                 View
                             </a>
 
                             <a
                                 href="{{ route('households.edit', $household) }}"
-                                class="clay-action clay-edit w-full"
                             >
+                                @include('partials.record-action-icon', ['icon' => 'edit'])
                                 Edit
                             </a>
 
@@ -1547,25 +1550,26 @@
                                 id="delete-household-mobile-form-{{ $household->id }}"
                                 action="{{ route('households.destroy', $household) }}"
                                 method="POST"
-                                class="w-full"
                             >
                                 @csrf
                                 @method('DELETE')
 
                                 <button
                                     type="button"
-                                    class="clay-action clay-delete w-full"
+                                    class="record-action-danger"
                                     data-delete-household
                                     data-form-id="delete-household-mobile-form-{{ $household->id }}"
                                     data-household-code="{{ $household->household_code }}"
                                     data-household-head="{{ $household->household_head_name }}"
                                     data-confirm-title="Delete this household?"
                                 >
+                                    @include('partials.record-action-icon', ['icon' => 'delete'])
                                     Delete
                                 </button>
 
                             </form>
 
+                            @endcomponent
                         </div>
 
                     </article>
@@ -1743,8 +1747,8 @@
                 </h2>
 
                 <p class="mt-2 text-sm leading-6 text-[#6D817A]">
-                    This action will permanently remove the selected household
-                    record. Please confirm that you want to continue.
+                    This will permanently remove the household, its residents and their related records,
+                    and the household's SMS delivery records. Please confirm that you want to continue.
                 </p>
 
             </div>
@@ -1906,6 +1910,7 @@
                 }
 
             });
+
 
         });
     </script>

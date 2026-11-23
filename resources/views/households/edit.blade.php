@@ -792,197 +792,6 @@
 
 
                 {{-- =================================================
-                     HOUSEHOLD INFORMATION
-                ================================================== --}}
-                <section class="clay-card">
-
-                    <div class="clay-card-header px-5 py-5 sm:px-6">
-
-                        <div class="flex items-center gap-3">
-
-                            <div class="clay-section-icon flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
-
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    class="h-5 w-5"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M3 21h18M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16M9 7h1m4 0h1M9 11h1m4 0h1M9 15h1m4 0h1"
-                                    />
-                                </svg>
-
-                            </div>
-
-                            <div class="min-w-0">
-
-                                <h2 class="clay-section-title text-base font-bold">
-                                    Household Information
-                                </h2>
-
-                                <p class="clay-section-description text-sm">
-                                    Basic information about the household.
-                                </p>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="grid gap-5 px-5 py-6 sm:px-6 md:grid-cols-2">
-
-                        {{-- Household Head Name --}}
-                        <div>
-
-                            <label class="clay-label block text-sm font-semibold">
-                                Household Head Name
-                                <span class="clay-required">*</span>
-                            </label>
-
-                            <input
-                                type="text"
-                                name="household_head_name"
-                                value="{{ old('household_head_name', $household->household_head_name) }}"
-                                required
-                                placeholder="Enter household head name"
-                                class="clay-input mt-2 px-4 py-2.5 text-sm"
-                            >
-
-                        </div>
-
-
-                        {{-- Contact --}}
-                        <div>
-
-                            <label class="clay-label block text-sm font-semibold">
-                                Contact Number
-                            </label>
-
-                            <input
-                                type="tel"
-                                name="contact_number"
-                                value="{{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay(old('contact_number', $household->contact_number)) ?: '+63' }}"
-                                inputmode="numeric"
-                                maxlength="24"
-                                placeholder="+6391 7123 4567"
-                                title="Only Globe and DITO SIM numbers are supported."
-                                class="clay-input mt-2 px-4 py-2.5 text-sm"
-                            >
-
-                        </div>
-
-
-                        {{-- Address --}}
-                        <div class="space-y-5 md:col-span-2">
-
-                            <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-
-                                <div>
-                                    <label
-                                        for="purok"
-                                        class="clay-label block text-sm font-semibold"
-                                    >
-                                        Purok
-                                    </label>
-
-                                    <select
-                                        id="purok"
-                                        name="purok"
-                                        class="clay-select mt-2 px-4 py-2.5 text-sm"
-                                        required
-                                        aria-describedby="{{ $errors->has('purok') ? 'purok-error' : '' }}"
-                                        aria-invalid="{{ $errors->has('purok') ? 'true' : 'false' }}"
-                                    >
-                                        <option value="">Select Purok</option>
-
-                                        @foreach ($puroks as $purok)
-                                            <option
-                                                value="{{ $purok }}"
-                                                @selected(old('purok', $addressParts['purok']) === $purok)
-                                            >
-                                                {{ $purok }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-
-                                    @error('purok')
-                                        <p id="purok-error" class="clay-field-error mt-1.5 text-xs font-medium">
-                                            {{ $message }}
-                                        </p>
-                                    @enderror
-                                </div>
-
-                                @foreach ($localityParts as $label => $value)
-                                    <div>
-                                        <label
-                                            for="household-locality-{{ strtolower($label) }}"
-                                            class="clay-label block text-sm font-semibold"
-                                        >
-                                            {{ $label }}
-                                        </label>
-
-                                        <input
-                                            id="household-locality-{{ strtolower($label) }}"
-                                            type="text"
-                                            value="{{ $value }}"
-                                            readonly
-                                            class="clay-input mt-2 px-4 py-2.5 text-sm"
-                                            aria-label="{{ $label }}: {{ $value }} (fixed locality)"
-                                        >
-                                    </div>
-                                @endforeach
-
-                                <input type="hidden" name="address" value="">
-                            </div>
-
-                        </div>
-
-
-                        {{-- Status --}}
-                        <div>
-
-                            <label class="clay-label block text-sm font-semibold">
-                                Status
-                                <span class="clay-required">*</span>
-                            </label>
-
-                            <select
-                                name="status"
-                                required
-                                class="clay-select mt-2 px-4 py-2.5 text-sm"
-                            >
-
-                                <option
-                                    value="Active"
-                                    @selected(old('status', $household->status) === 'Active')
-                                >
-                                    Active
-                                </option>
-
-                                <option
-                                    value="Inactive"
-                                    @selected(old('status', $household->status) === 'Inactive')
-                                >
-                                    Inactive
-                                </option>
-
-                            </select>
-
-                        </div>
-
-                    </div>
-
-                </section>
-
-
-                {{-- =================================================
                      HOUSEHOLD HEAD
                 ================================================== --}}
                 <section class="clay-card">
@@ -1010,14 +819,14 @@
 
                             </div>
 
-                            <div>
+                            <div class="min-w-0">
 
                                 <h2 class="clay-section-title text-base font-bold">
                                     Household Head
                                 </h2>
 
                                 <p class="clay-section-description text-sm">
-                                    Personal information of the household head.
+                                    Household and household head information.
                                 </p>
 
                             </div>
@@ -1106,20 +915,31 @@
                         {{-- Personal --}}
                         <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
 
-                            <div>
+                            <div class="grid grid-cols-2 gap-5 sm:col-span-2">
 
-                                <label class="clay-label block text-sm font-semibold">
-                                    Birth Date
-                                    <span class="clay-required">*</span>
-                                </label>
+                                <div>
+                                    <label class="clay-label block text-sm font-semibold">
+                                        Birth Date
+                                        <span class="clay-required">*</span>
+                                    </label>
 
-                                <input
-                                    type="date"
-                                    name="household_head[birth_date]"
-                                    value="{{ old('household_head.birth_date', optional($head?->birth_date)->format('Y-m-d')) }}"
-                                    required
-                                    class="clay-input mt-2 px-4 py-2.5 text-sm"
-                                >
+                                    <input
+                                        type="date"
+                                        name="household_head[birth_date]"
+                                        value="{{ old('household_head.birth_date', optional($head?->birth_date)->format('Y-m-d')) }}"
+                                        max="{{ now()->format('Y-m-d') }}"
+                                        data-age-source
+                                        data-today="{{ now()->format('Y-m-d') }}"
+                                        required
+                                        class="clay-input mt-2 px-4 py-2.5 text-sm"
+                                    >
+                                </div>
+
+                                <div>
+                                    <label class="clay-label block text-sm font-semibold">Age
+                                        <input type="text" readonly data-age-display class="clay-input mt-2 px-4 py-2.5 text-sm">
+                                    </label>
+                                </div>
 
                             </div>
 
@@ -1217,37 +1037,86 @@
                             </div>
 
 
-                            <div>
-
-                                <label class="clay-label block text-sm font-semibold">
-                                    PhilHealth Number
-                                </label>
-
-                                <input
-                                    type="text"
-                                    name="household_head[philhealth_number]"
-                                    value="{{ old('household_head.philhealth_number', $head?->philhealth_number) }}"
-                                    placeholder="PhilHealth number"
-                                    class="clay-input mt-2 px-4 py-2.5 text-sm"
-                                >
-
-                            </div>
-
                         </div>
 
+                        {{-- Address --}}
+                        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                            <div>
+                                <label for="purok" class="clay-label block text-sm font-semibold">
+                                    Purok <span class="clay-required">*</span>
+                                </label>
+
+                                <select
+                                    id="purok"
+                                    name="purok"
+                                    class="clay-select mt-2 px-4 py-2.5 text-sm"
+                                    required
+                                    aria-describedby="{{ $errors->has('purok') ? 'purok-error' : '' }}"
+                                    aria-invalid="{{ $errors->has('purok') ? 'true' : 'false' }}"
+                                >
+                                    <option value="">Select Purok</option>
+                                    @foreach ($puroks as $purok)
+                                        <option value="{{ $purok }}" @selected(old('purok', $addressParts['purok']) === $purok)>
+                                            {{ $purok }}
+                                        </option>
+                                    @endforeach
+                                </select>
+
+                                @error('purok')
+                                    <p id="purok-error" class="clay-field-error mt-1.5 text-xs font-medium">
+                                        {{ $message }}
+                                    </p>
+                                @enderror
+                            </div>
+
+                            @foreach ($localityParts as $label => $value)
+                                <div>
+                                    <label for="household-locality-{{ strtolower($label) }}" class="clay-label block text-sm font-semibold">
+                                        {{ $label }}
+                                    </label>
+                                    <input
+                                        id="household-locality-{{ strtolower($label) }}"
+                                        type="text"
+                                        value="{{ $value }}"
+                                        readonly
+                                        class="clay-input mt-2 px-4 py-2.5 text-sm"
+                                        aria-label="{{ $label }}: {{ $value }} (fixed locality)"
+                                    >
+                                </div>
+                            @endforeach
+
+                            <input type="hidden" name="address" value="">
+                        </div>
+
+                        <div class="grid gap-5 sm:grid-cols-2">
+                            <div>
+                                <label class="clay-label block text-sm font-semibold">
+                                    Household Status <span class="clay-required">*</span>
+                                </label>
+                                <select name="status" required class="clay-select mt-2 px-4 py-2.5 text-sm">
+                                    <option value="Active" @selected(old('status', $household->status) === 'Active')>Active</option>
+                                    <option value="Inactive" @selected(old('status', $household->status) === 'Inactive')>Inactive</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <p class="text-sm text-[#6D817A]">Household members use the household head's contact number.</p>
+                            </div>
+                        </div>
 
                         {{-- Contact --}}
-                        <div class="grid gap-5 sm:grid-cols-2">
+                        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
 
                             <div>
 
                                 <label class="clay-label block text-sm font-semibold">
-                                    Contact Number
+                                    Head Contact Number <span class="clay-required">*</span>
                                 </label>
 
                                 <input
                                     type="tel"
                                     name="household_head[contact_number]"
+                                    required
                                     value="{{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay(old('household_head.contact_number', $head?->contact_number)) ?: '+63' }}"
                                     inputmode="numeric"
                                     maxlength="24"
@@ -1275,6 +1144,19 @@
 
                             </div>
 
+                            <div>
+                                <label class="clay-label block text-sm font-semibold">PhilHealth Number</label>
+                                <input
+                                    type="text"
+                                    name="household_head[philhealth_number]"
+                                    inputmode="numeric"
+                                    pattern="[0-9]*"
+                                    title="Use digits only."
+                                    value="{{ old('household_head.philhealth_number', $head?->philhealth_number) }}"
+                                    placeholder="PhilHealth number"
+                                    class="clay-input mt-2 px-4 py-2.5 text-sm"
+                                >
+                            </div>
 
                         </div>
 
@@ -1356,9 +1238,22 @@
 
                     <div class="space-y-5 px-5 py-6 sm:px-6">
 
+                        @php
+                            $oldMembers = old('members', []);
+                            $oldMembers = is_array($oldMembers) ? $oldMembers : [];
+                            $displayMembers = session()->hasOldInput()
+                                ? collect($oldMembers)->mapWithKeys(function ($oldMember, $index) use ($members) {
+                                    $member = is_array($oldMember) && ! empty($oldMember['id'])
+                                        ? $members->firstWhere('id', (int) $oldMember['id'])
+                                        : null;
+
+                                    return $member ? [$index => $member] : [];
+                                })
+                                : $members;
+                        @endphp
                         <div
                             id="no-members"
-                            class="{{ $members->count() > 0 ? 'hidden' : '' }} family-empty px-6 py-10 text-center"
+                            class="{{ $displayMembers->count() > 0 ? 'hidden' : '' }} family-empty px-6 py-10 text-center"
                         >
 
                             <div class="family-empty-icon mx-auto flex h-12 w-12 items-center justify-center">
@@ -1396,7 +1291,7 @@
                             class="space-y-5"
                         >
 
-                            @foreach ($members as $index => $member)
+                            @foreach ($displayMembers as $index => $member)
 
                                 <div class="member-card rounded-2xl p-5">
 
@@ -1581,21 +1476,31 @@
                                             </div>
 
 
-                                            {{-- Birth Date --}}
-                                            <div>
+                                            <div class="grid grid-cols-2 gap-5 sm:col-span-2">
 
-                                                <label class="clay-label block text-sm font-semibold">
-                                                    Birth Date
-                                                    <span class="clay-required">*</span>
-                                                </label>
+                                                <div>
+                                                    <label class="clay-label block text-sm font-semibold">
+                                                        Birth Date
+                                                        <span class="clay-required">*</span>
+                                                    </label>
 
-                                                <input
-                                                    type="date"
-                                                    name="members[{{ $index }}][birth_date]"
-                                                    value="{{ old("members.$index.birth_date", optional($member->birth_date)->format('Y-m-d')) }}"
-                                                    required
-                                                    class="clay-input mt-2 px-4 py-2.5 text-sm"
-                                                >
+                                                    <input
+                                                        type="date"
+                                                        name="members[{{ $index }}][birth_date]"
+                                                        value="{{ old("members.$index.birth_date", optional($member->birth_date)->format('Y-m-d')) }}"
+                                                        max="{{ now()->format('Y-m-d') }}"
+                                                        data-age-source
+                                                        data-today="{{ now()->format('Y-m-d') }}"
+                                                        required
+                                                        class="clay-input mt-2 px-4 py-2.5 text-sm"
+                                                    >
+                                                </div>
+
+                                                <div>
+                                                    <label class="clay-label block text-sm font-semibold">Age
+                                                        <input type="text" readonly data-age-display class="clay-input mt-2 px-4 py-2.5 text-sm">
+                                                    </label>
+                                                </div>
 
                                             </div>
 
@@ -1691,6 +1596,9 @@
                                                 <input
                                                     type="text"
                                                     name="members[{{ $index }}][philhealth_number]"
+                                                    inputmode="numeric"
+                                                    pattern="[0-9]*"
+                                                    title="Use digits only."
                                                     value="{{ old("members.$index.philhealth_number", $member->philhealth_number) }}"
                                                     placeholder="PhilHealth number"
                                                     class="clay-input mt-2 px-4 py-2.5 text-sm"
@@ -1701,40 +1609,39 @@
 
                                             <div>
 
-                                                <label class="clay-label block text-sm font-semibold">
-                                                    Contact Number
-                                                </label>
-
-                                                <input
-                                                    type="tel"
-                                                    name="members[{{ $index }}][contact_number]"
-                                                    value="{{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay(old("members.$index.contact_number", $member->contact_number)) ?: '+63' }}"
-                                                    inputmode="numeric"
-                                                    maxlength="24"
-                                                    placeholder="+6391 7123 4567"
-                                                    title="Only Globe and DITO SIM numbers are supported."
-                                                    class="clay-input mt-2 px-4 py-2.5 text-sm"
-                                                >
+                                                <p class="text-sm text-[#6D817A]">Uses the household head's contact number.</p>
 
                                             </div>
 
                                         </div>
 
 
-                                        {{-- Email --}}
-                                        <div>
+                                        {{-- Email and status --}}
+                                        <div class="grid gap-5 sm:grid-cols-2">
 
-                                            <label class="clay-label block text-sm font-semibold">
-                                                Email
-                                            </label>
+                                            <div>
+                                                <label class="clay-label block text-sm font-semibold">
+                                                    Email (Optional)
+                                                </label>
 
-                                            <input
-                                                type="email"
-                                                name="members[{{ $index }}][email]"
-                                                value="{{ old("members.$index.email", $member->email) }}"
-                                                placeholder="name@example.com"
-                                                class="clay-input mt-2 px-4 py-2.5 text-sm"
-                                            >
+                                                <input
+                                                    type="email"
+                                                    name="members[{{ $index }}][email]"
+                                                    value="{{ old("members.$index.email", $member->email) }}"
+                                                    placeholder="name@example.com"
+                                                    class="clay-input mt-2 px-4 py-2.5 text-sm"
+                                                >
+                                            </div>
+
+                                            <div>
+                                                <label class="clay-label block text-sm font-semibold">
+                                                    Status <span class="clay-required">*</span>
+                                                    <select name="members[{{ $index }}][status]" required class="clay-select mt-2 px-4 py-2.5 text-sm">
+                                                        <option value="Active" @selected(old("members.$index.status", $member->status) === 'Active')>Active</option>
+                                                        <option value="Inactive" @selected(old("members.$index.status", $member->status) === 'Inactive')>Inactive</option>
+                                                    </select>
+                                                </label>
+                                            </div>
 
                                         </div>
 
@@ -1766,7 +1673,7 @@
                                                     @foreach ($puroks as $purok)
                                                         <option
                                                             value="{{ $purok }}"
-                                                            @selected(old("members.$index.purok", $memberAddressParts[$index]['purok'] ?? null) === $purok)
+                                                            @selected(old("members.$index.purok", $memberAddressParts[$member->id]['purok'] ?? null) === $purok)
                                                         >
                                                             {{ $purok }}
                                                         </option>
@@ -1946,6 +1853,7 @@
                         <input
                             type="text"
                             data-field="first_name"
+                            data-person-name-strict
                             required
                             class="clay-input mt-2 px-4 py-2.5 text-sm"
                         >
@@ -1959,6 +1867,7 @@
                         <input
                             type="text"
                             data-field="middle_name"
+                            data-person-name-strict
                             class="clay-input mt-2 px-4 py-2.5 text-sm"
                         >
                     </div>
@@ -1972,6 +1881,7 @@
                         <input
                             type="text"
                             data-field="last_name"
+                            data-person-name-strict
                             required
                             class="clay-input mt-2 px-4 py-2.5 text-sm"
                         >
@@ -1979,15 +1889,14 @@
 
                     <div>
                         <label class="clay-label block text-sm font-semibold">
-                            Suffix
+                            Suffix (Optional)
                         </label>
 
-                        <input
-                            type="text"
-                            data-field="suffix"
-                            placeholder="Jr., Sr., III"
-                            class="clay-input mt-2 px-4 py-2.5 text-sm"
-                        >
+                        <select data-field="suffix" class="clay-select mt-2 px-4 py-2.5 text-sm">
+                            <option value="">None</option>
+                            <option value="Jr.">Jr.</option>
+                            <option value="Sr.">Sr.</option>
+                        </select>
                     </div>
 
                 </div>
@@ -2032,19 +1941,30 @@
                     </div>
 
 
-                    <div>
+                    <div class="grid grid-cols-2 gap-5 sm:col-span-2">
 
-                        <label class="clay-label block text-sm font-semibold">
-                            Birth Date
-                            <span class="clay-required">*</span>
-                        </label>
+                        <div>
+                            <label class="clay-label block text-sm font-semibold">
+                                Birth Date
+                                <span class="clay-required">*</span>
+                            </label>
 
-                        <input
-                            type="date"
-                            data-field="birth_date"
-                            required
-                            class="clay-input mt-2 px-4 py-2.5 text-sm"
-                        >
+                            <input
+                                type="date"
+                                data-field="birth_date"
+                                max="{{ now()->format('Y-m-d') }}"
+                                data-age-source
+                                data-today="{{ now()->format('Y-m-d') }}"
+                                required
+                                class="clay-input mt-2 px-4 py-2.5 text-sm"
+                            >
+                        </div>
+
+                        <div>
+                            <label class="clay-label block text-sm font-semibold">Age
+                                <input type="text" readonly data-age-display class="clay-input mt-2 px-4 py-2.5 text-sm">
+                            </label>
+                        </div>
 
                     </div>
 
@@ -2115,12 +2035,15 @@
                     <div>
 
                         <label class="clay-label block text-sm font-semibold">
-                            PhilHealth Number
+                            PhilHealth Number (Optional)
                         </label>
 
                         <input
                             type="text"
                             data-field="philhealth_number"
+                            inputmode="numeric"
+                            pattern="[0-9]*"
+                            title="Use digits only."
                             placeholder="PhilHealth number"
                             class="clay-input mt-2 px-4 py-2.5 text-sm"
                         >
@@ -2130,40 +2053,54 @@
 
                     <div>
 
-                        <label class="clay-label block text-sm font-semibold">
-                            Contact Number
-                        </label>
-
-                        <input
-                            type="tel"
-                            data-field="contact_number"
-                            value="+63"
-                            inputmode="numeric"
-                            maxlength="24"
-                            placeholder="+6391 7123 4567"
-                            title="Only Globe and DITO SIM numbers are supported."
-                            class="clay-input mt-2 px-4 py-2.5 text-sm"
-                        >
+                        <p class="text-sm text-[#6D817A]">Uses the household head's contact number.</p>
 
                     </div>
 
                 </div>
 
 
-                {{-- Email --}}
-                <div>
+                {{-- Email and status --}}
+                <div class="grid gap-5 sm:grid-cols-2">
+                    <div>
+                        <label class="clay-label block text-sm font-semibold">
+                            Email (Optional)
+                            <input type="email" data-field="email" placeholder="name@example.com" class="clay-input mt-2 px-4 py-2.5 text-sm">
+                        </label>
+                    </div>
 
-                    <label class="clay-label block text-sm font-semibold">
-                        Email
-                    </label>
+                    <div>
+                        <label class="clay-label block text-sm font-semibold">
+                            Status <span class="clay-required">*</span>
+                            <select data-field="status" required class="clay-select mt-2 px-4 py-2.5 text-sm">
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
 
-                    <input
-                        type="email"
-                        data-field="email"
-                        placeholder="name@example.com"
-                        class="clay-input mt-2 px-4 py-2.5 text-sm"
-                    >
-
+                <p class="clay-label text-sm font-semibold">Address</p>
+                <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                    <div>
+                        <label class="clay-label block text-sm font-semibold">
+                            Purok <span class="clay-required">*</span>
+                            <select data-field="purok" required class="clay-select mt-2 px-4 py-2.5 text-sm">
+                                <option value="">Select Purok</option>
+                                @foreach ($puroks as $purok)
+                                    <option value="{{ $purok }}">{{ $purok }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+                    </div>
+                    @foreach ($localityParts as $label => $value)
+                        <div>
+                            <label class="clay-label block text-sm font-semibold">
+                                {{ $label }}
+                                <input type="text" value="{{ $value }}" readonly class="clay-input mt-2 px-4 py-2.5 text-sm" aria-label="{{ $label }}: {{ $value }} (fixed locality)">
+                            </label>
+                        </div>
+                    @endforeach
                 </div>
 
             </div>
@@ -2214,11 +2151,12 @@
             }
 
 
-            function addMember() {
+            function addMember(memberData = {}, focusFirstName = true, restoredIndex = null) {
 
                 const fragment = template.content.cloneNode(true);
 
                 const card = fragment.querySelector('.member-card');
+                const index = restoredIndex ?? memberIndex;
 
 
                 card.querySelectorAll('[data-field]').forEach((input) => {
@@ -2226,14 +2164,22 @@
                     const field = input.dataset.field;
 
                     input.name =
-                        `members[${memberIndex}][${field}]`;
+                        `members[${index}][${field}]`;
+
+                    if (Object.prototype.hasOwnProperty.call(memberData, field)) {
+                        input.value = memberData[field] ?? '';
+                    }
 
                 });
 
 
                 container.appendChild(fragment);
 
-                memberIndex++;
+                card.querySelectorAll('[data-age-source], [data-local-mobile]').forEach((input) => {
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                });
+
+                memberIndex = Math.max(memberIndex, index + 1);
 
                 updateMemberNumbers();
 
@@ -2245,16 +2191,18 @@
                     cards[cards.length - 1];
 
 
-                latestCard
-                    ?.querySelector('[data-field="first_name"]')
-                    ?.focus();
+                if (focusFirstName) {
+                    latestCard
+                        ?.querySelector('[data-field="first_name"]')
+                        ?.focus();
+                }
 
             }
 
 
             addButton.addEventListener(
                 'click',
-                addMember
+                () => addMember()
             );
 
 
@@ -2296,6 +2244,15 @@
                 }
             );
 
+            const oldMembers = @js(old('members', []));
+            if (oldMembers && typeof oldMembers === 'object') {
+                Object.entries(oldMembers).forEach(([index, member]) => {
+                    memberIndex = Math.max(memberIndex, Number(index) + 1);
+                    if (member && !member.id) {
+                        addMember(member, false, Number(index));
+                    }
+                });
+            }
 
             updateMemberNumbers();
 

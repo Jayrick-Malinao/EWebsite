@@ -10,8 +10,7 @@ class MedicalInventoryExpiryNotification extends Notification
     public function __construct(
         public MedicalInventory $medicalInventory,
         public string $alertType,
-    ) {
-    }
+    ) {}
 
     /**
      * Determine which channels the notification should use.

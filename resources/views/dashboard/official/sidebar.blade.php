@@ -5,7 +5,7 @@
 <aside
     id="officialSidebar"
     data-sidebar
-    class="claymorphism-sidebar fixed inset-y-0 left-0 z-50 flex w-72 -translate-x-full flex-col border-r border-slate-200 bg-white transition-transform duration-300 ease-in-out lg:translate-x-0"
+    class="claymorphism-sidebar fixed inset-y-0 left-0 z-50 flex w-72 max-w-[calc(100vw-3rem)] -translate-x-full flex-col border-r border-slate-200 bg-white transition-transform duration-300 ease-in-out lg:translate-x-0"
 >
     {{-- Brand --}}
     <div class="flex h-20 shrink-0 items-center border-b border-slate-200 px-6">
@@ -177,8 +177,8 @@
     </nav>
 
     {{-- Sign Out --}}
-    <div class="shrink-0 border-t border-slate-200 p-4">
-        <form method="POST" action="{{ route('logout') }}">
+    <div class="flex shrink-0 items-center gap-2 border-t border-slate-200 p-4" data-assistant-slot>
+        <form method="POST" action="{{ route('logout') }}" class="min-w-0 flex-1">
             @csrf
 
             <button

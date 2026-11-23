@@ -168,6 +168,39 @@
         .clay-action:hover { transform: translateY(-1px); }
 
         .clay-view { background: linear-gradient(145deg, #E8F6EF, #DDEEE6); color: var(--primary-dark) !important; border-color: rgba(22, 139, 112, 0.14); box-shadow: 3px 3px 7px rgba(107, 134, 124, 0.10), -3px -3px 7px rgba(255, 255, 255, 0.88); }
+        .clay-action-menu-wrap { position: relative; display: inline-flex; }
+        .clay-round-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border: 1px solid rgba(255, 255, 255, 0.90);
+            border-radius: 9999px;
+            box-shadow: 3px 3px 7px rgba(107, 134, 124, 0.12), -3px -3px 7px rgba(255, 255, 255, 0.88);
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+        .clay-round-action:hover { transform: translateY(-1px); }
+        .clay-action-menu {
+            position: absolute;
+            z-index: 20;
+            top: calc(100% + 8px);
+            right: 0;
+            display: flex;
+            min-width: 48px;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.95);
+            border-radius: 18px;
+            background: linear-gradient(145deg, #F8FCFA, #EAF2EE);
+            padding: 8px;
+            box-shadow: 6px 6px 14px rgba(107, 134, 124, 0.18), -4px -4px 10px rgba(255, 255, 255, 0.90);
+        }
+        .clay-action-menu[hidden] { display: none; }
+        .clay-round-action { width: 36px; height: 36px; }
+        .clay-round-view { color: #164238; background: linear-gradient(145deg, #E8F6EF, #DDEEE6); }
+        .clay-round-delete { color: #B42323; background: linear-gradient(145deg, #FCF1DF, #FCEFED); }
 
         /* ---------- Buttons ---------- */
         .clay-primary {
@@ -247,7 +280,7 @@
                             </p>
 
                             <p class="text-xs font-medium text-[#6D817A]">
-                                System Administrator
+                                {{ auth()->user()->role ?? 'Staff' }}
                             </p>
                         </div>
 
@@ -364,8 +397,14 @@
                 <div class="clay-card p-5">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-xs font-bold uppercase tracking-wider text-[#6D817A]">SMS Households</p>
-                            <p class="mt-2 text-3xl font-bold text-[#E87928]">{{ $announcements->sum('sms_deliveries_count') }}</p>
+                            <p class="text-xs font-bold uppercase tracking-wider text-[#6D817A]">SMS Credits</p>
+                            @if ($smsBalance['available'])
+                                <p class="mt-2 text-3xl font-bold text-[#E87928]">{{ number_format($smsBalance['sms_credits']) }}</p>
+                                <p class="mt-1 text-[11px] font-semibold text-[#6D817A]">Account: {{ $smsBalance['status'] }}</p>
+                            @else
+                                <p class="mt-2 text-lg font-bold text-[#6D817A]">Unavailable</p>
+                                <p class="mt-1 text-[11px] text-[#6D817A]">{{ $smsBalance['message'] }}</p>
+                            @endif
                         </div>
                         <div class="clay-icon h-12 w-12 rounded-2xl bg-[#FCF7ED] text-[#E87928]">
                             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
@@ -405,10 +444,9 @@
                                 <tr>
                                     <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6D817A]">Announcement</th>
                                     <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6D817A]">Target</th>
-                                    <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6D817A]">Priority</th>
-                                    <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6D817A]">Recipients</th>
-                                    <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6D817A]">Published</th>
-                                    <th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-[#6D817A]">Action</th>
+                                    <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6D817A]">Recipient</th>
+                                    <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6D817A]">Publish</th>
+                                    <th scope="col" class="px-6 py-4"><span class="sr-only">Actions</span></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -419,6 +457,8 @@
                                             'senior' => 'Senior Citizens',
                                             'children' => 'Children',
                                             'pregnant' => 'Pregnant Residents',
+                                            'postnatal' => 'Postnatal Residents',
+                                            'postnatal' => 'Postnatal Residents',
                                             'general' => 'All Active Residents',
                                             'age_bracket' => 'Age Bracket',
                                         ];
@@ -450,30 +490,8 @@
                                         </td>
 
                                         <td class="px-6 py-4">
-                                            @if ($announcement->priority === 'Urgent')
-                                                <span class="inline-flex items-center gap-1.5 rounded-full border border-[#B42323]/20 bg-[#FCEFED] px-3 py-1 text-xs font-bold text-[#B42323]">
-                                                    <span class="h-1.5 w-1.5 rounded-full bg-[#DC2626]"></span>
-                                                    Urgent
-                                                </span>
-                                            @elseif ($announcement->priority === 'Important')
-                                                <span class="inline-flex items-center gap-1.5 rounded-full border border-[#E87928]/20 bg-[#FCF7ED] px-3 py-1 text-xs font-bold text-[#E87928]">
-                                                    <span class="h-1.5 w-1.5 rounded-full bg-[#E87928]"></span>
-                                                    Important
-                                                </span>
-                                            @else
-                                                <span class="inline-flex items-center gap-1.5 rounded-full border border-[#6D817A]/20 bg-[#EDF5F0] px-3 py-1 text-xs font-bold text-[#385C52]">
-                                                    <span class="h-1.5 w-1.5 rounded-full bg-[#6D817A]"></span>
-                                                    Normal
-                                                </span>
-                                            @endif
-                                        </td>
-
-                                        <td class="px-6 py-4">
                                             <p class="text-sm font-bold text-[#234E43]">
                                                 {{ $announcement->recipients_count }} residents
-                                            </p>
-                                            <p class="text-[11px] text-[#6D817A]">
-                                                {{ $announcement->sms_deliveries_count }} SMS households
                                             </p>
                                         </td>
 
@@ -487,9 +505,65 @@
                                         </td>
 
                                         <td class="px-6 py-4 text-right">
-                                            <a href="{{ route('announcements.show', $announcement) }}" class="clay-action clay-view">
-                                                View
-                                            </a>
+                                            <div class="clay-action-menu-wrap" data-action-menu>
+                                                <button
+                                                    type="button"
+                                                    class="clay-action-menu-trigger flex h-10 w-10 items-center justify-center rounded-full text-[#6D817A] transition hover:text-[#164238]"
+                                                    aria-label="More actions for {{ $announcement->title }}"
+                                                    aria-haspopup="menu"
+                                                    aria-expanded="false"
+                                                    aria-controls="announcement-actions-{{ $announcement->id }}"
+                                                    data-action-menu-trigger
+                                                >
+                                                    <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                        <circle cx="10" cy="5" r="1.5" />
+                                                        <circle cx="10" cy="10" r="1.5" />
+                                                        <circle cx="10" cy="15" r="1.5" />
+                                                    </svg>
+                                                </button>
+                                                <div
+                                                    id="announcement-actions-{{ $announcement->id }}"
+                                                    class="clay-action-menu"
+                                                    role="menu"
+                                                    aria-label="Announcement actions"
+                                                    hidden
+                                                >
+                                                    <a
+                                                        href="{{ route('announcements.show', $announcement) }}"
+                                                        class="clay-round-action clay-round-view"
+                                                        role="menuitem"
+                                                        aria-label="View announcement"
+                                                        title="View announcement"
+                                                    >
+                                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12s3.5-6 9.75-6 9.75 6 9.75 6-3.5 6-9.75 6-9.75-6-9.75-6Z" />
+                                                            <circle cx="12" cy="12" r="2.5" />
+                                                        </svg>
+                                                        <span>View</span>
+                                                    </a>
+                                                    <form
+                                                        method="POST"
+                                                        action="{{ route('announcements.destroy', $announcement) }}"
+                                                        onsubmit="return confirm('Delete this announcement and its delivery records?');"
+                                                        role="none"
+                                                    >
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button
+                                                            type="submit"
+                                                            class="clay-round-action clay-round-delete"
+                                                            role="menuitem"
+                                                            aria-label="Delete announcement"
+                                                            title="Delete announcement"
+                                                        >
+                                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M10 11v6m4-6v6M5 7l1 13h12l1-13M9 7V4h6v3" />
+                                                            </svg>
+                                                            <span>Delete</span>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -524,7 +598,7 @@
             </section>
 
             {{-- MOBILE CARDS --}}
-            <section class="space-y-4 lg:hidden">
+            <section class="mt-4 space-y-4 lg:hidden">
                 @forelse ($announcements as $announcement)
                     @php
                         $targetLabels = [
@@ -546,14 +620,6 @@
                                 </a>
                                 <p class="mt-1 line-clamp-2 text-xs text-[#6D817A]">{{ $announcement->message }}</p>
                             </div>
-
-                            @if ($announcement->priority === 'Urgent')
-                                <span class="shrink-0 rounded-full border border-[#B42323]/20 bg-[#FCEFED] px-2.5 py-0.5 text-[11px] font-bold text-[#B42323]">Urgent</span>
-                            @elseif ($announcement->priority === 'Important')
-                                <span class="shrink-0 rounded-full border border-[#E87928]/20 bg-[#FCF7ED] px-2.5 py-0.5 text-[11px] font-bold text-[#E87928]">Important</span>
-                            @else
-                                <span class="shrink-0 rounded-full border border-[#6D817A]/20 bg-[#EDF5F0] px-2.5 py-0.5 text-[11px] font-bold text-[#385C52]">Normal</span>
-                            @endif
                         </div>
 
                         <div class="mt-3 flex items-center gap-2">
@@ -562,7 +628,7 @@
 
                         <div class="mt-4 grid grid-cols-2 gap-3 text-xs">
                             <div class="clay-inset rounded-xl p-3">
-                                <p class="text-[10px] font-bold uppercase tracking-wider text-[#6D817A]">Recipients</p>
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-[#6D817A]">Recipient</p>
                                 <p class="mt-1 font-bold text-[#234E43]">{{ $announcement->recipients_count }} residents</p>
                             </div>
 
@@ -572,8 +638,26 @@
                             </div>
                         </div>
 
-                        <div class="mt-4">
-                            <a href="{{ route('announcements.show', $announcement) }}" class="clay-action clay-view w-full text-center">View Announcement</a>
+                        <div class="mt-5">
+                            @component('partials.record-actions', ['label' => 'More actions for '.$announcement->title])
+                            <a href="{{ route('announcements.show', $announcement) }}">
+                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12s3.5-6 9.75-6 9.75 6 9.75 6-3.5 6-9.75 6-9.75-6-9.75-6Z" />
+                                    <circle cx="12" cy="12" r="2.5" />
+                                </svg>
+                                View
+                            </a>
+                            <form method="POST" action="{{ route('announcements.destroy', $announcement) }}" onsubmit="return confirm('Delete this announcement and its delivery records?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="record-action-danger">
+                                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-8 0h10" />
+                                    </svg>
+                                    Delete
+                                </button>
+                            </form>
+                            @endcomponent
                         </div>
                     </article>
                 @empty
@@ -597,7 +681,6 @@
             const menuButton = document.getElementById('mobileMenuButton');
             const overlay = document.getElementById('sidebar-overlay');
             const sidebar = document.querySelector('[data-sidebar]');
-
             if (menuButton && overlay && sidebar) {
                 menuButton.addEventListener('click', () => {
                     sidebar.classList.remove('-translate-x-full');
@@ -605,7 +688,7 @@
                 });
                 overlay.addEventListener('click', () => {
                     sidebar.classList.add('-translate-x-full');
-                    overlay.classList.add('hidden');Fbread
+                    overlay.classList.add('hidden');
                 });
             }
         });

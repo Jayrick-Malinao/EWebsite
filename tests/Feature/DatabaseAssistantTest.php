@@ -3,16 +3,18 @@
 namespace Tests\Feature;
 
 use App\Models\Announcement;
-use App\Models\Certificate;
 use App\Models\Event;
+use App\Models\HealthVisit;
 use App\Models\Household;
 use App\Models\Immunization;
 use App\Models\MedicalInventory;
 use App\Models\Resident;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Testing\TestResponse;
@@ -27,6 +29,24 @@ class DatabaseAssistantTest extends TestCase
         Carbon::setTestNow();
 
         parent::tearDown();
+    }
+
+    public function test_all_authorized_role_dashboards_render_the_assistant_controls(): void
+    {
+        $dashboards = [
+            ['System Administrator', 'adminSidebar'],
+            ['Health Worker', 'healthworkerSidebar'],
+            ['Official', 'officialSidebar'],
+        ];
+
+        foreach ($dashboards as [$role, $sidebarId]) {
+            $this->actingAs($this->user($role));
+            $sidebar = view('dashboard.sidebar')->render();
+
+            $this->assertStringContainsString('id="'.$sidebarId.'"', $sidebar);
+            $this->assertStringContainsString('id="database-assistant-help"', $sidebar);
+            $this->assertStringContainsString('id="database-assistant-panel"', $sidebar);
+        }
     }
 
     public function test_resident_and_household_counts_use_current_database_fixtures_in_english_and_tagalog(): void
@@ -180,10 +200,9 @@ class DatabaseAssistantTest extends TestCase
         Http::assertNothingSent();
     }
 
-    public function test_published_announcements_and_certificate_statuses_are_read_from_the_database(): void
+    public function test_published_announcements_are_read_from_the_database(): void
     {
         $official = $this->user('Official');
-        $resident = $this->resident();
 
         Announcement::create([
             'title' => 'Published Notice',
@@ -199,30 +218,11 @@ class DatabaseAssistantTest extends TestCase
             'status' => 'Draft',
         ]);
 
-        Certificate::create([
-            'certificate_number' => 'CERT-TEST-001',
-            'resident_id' => $resident->id,
-            'certificate_type' => 'Barangay Certificate',
-            'date_issued' => now()->toDateString(),
-            'status' => 'Issued',
-        ]);
-        Certificate::create([
-            'certificate_number' => 'CERT-TEST-002',
-            'resident_id' => $resident->id,
-            'certificate_type' => 'Barangay Clearance',
-            'date_issued' => now()->toDateString(),
-            'status' => 'Cancelled',
-        ]);
-
         Http::fake();
 
         $announcements = $this->chat($official, 'Show published announcements');
         $this->assertStringContainsString('Published Notice', $announcements->json('reply'));
         $this->assertStringNotContainsString('Draft Notice', $announcements->json('reply'));
-
-        $statuses = $this->chat($official, 'Show certificate statuses');
-        $this->assertStringContainsString('Issued: 1', $statuses->json('reply'));
-        $this->assertStringContainsString('Cancelled: 1', $statuses->json('reply'));
 
         Http::assertNothingSent();
     }
@@ -314,6 +314,10 @@ class DatabaseAssistantTest extends TestCase
         $official = $this->user('Official');
         $this->resident();
         Http::fake();
+        Schema::partialMock()->shouldReceive('hasTable')
+            ->with('health_records')->once()->andReturn(false);
+        Schema::partialMock()->shouldReceive('hasTable')
+            ->with('health_visits')->once()->andReturn(false);
 
         $healthRecord = $this->chat(
             $official,
@@ -334,6 +338,68 @@ class DatabaseAssistantTest extends TestCase
             'There are 0 health visit',
             $response->json('reply')
         );
+        Http::assertNothingSent();
+    }
+
+    public function test_health_visit_count_uses_existing_database_records(): void
+    {
+        $official = $this->user('Official');
+        $resident = $this->resident();
+        HealthVisit::create(['resident_id' => $resident->id, 'visit_date' => now()]);
+        HealthVisit::create(['resident_id' => $resident->id, 'visit_date' => now()]);
+        Http::fake();
+
+        $response = $this->chat($official, 'How many health visits?');
+
+        $response->assertOk();
+        $this->assertStringContainsString('There are 2 health visit record(s)', $response->json('reply'));
+        Http::assertNothingSent();
+    }
+
+    public function test_health_visit_count_reports_a_missing_table_in_an_empty_database(): void
+    {
+        $official = $this->user('Official');
+        Http::fake();
+        $this->actingAs($official);
+        $originalConnection = DB::getDefaultConnection();
+        config(['database.connections.missing_health_schema' => [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+            'prefix' => '',
+        ]]);
+
+        try {
+            DB::setDefaultConnection('missing_health_schema');
+            $response = $this->postJson(route('assistant.chat'), ['message' => 'How many health visits?']);
+        } finally {
+            DB::setDefaultConnection($originalConnection);
+            DB::disconnect('missing_health_schema');
+        }
+
+        $response->assertOk();
+        $this->assertStringContainsString('not available in the current database schema', $response->json('reply'));
+        $this->assertStringNotContainsString('There are 0 health visit', $response->json('reply'));
+        Http::assertNothingSent();
+    }
+
+    public function test_health_visit_count_reports_schema_inspection_failure_without_assuming_a_count(): void
+    {
+        $official = $this->user('Official');
+        Http::fake();
+        Schema::partialMock()->shouldReceive('hasTable')
+            ->with('health_visits')->once()->andThrow(new QueryException(
+                'sqlite',
+                'schema inspection',
+                [],
+                new \PDOException('Database unavailable'),
+            ));
+
+        $response = $this->chat($official, 'How many health visits?');
+
+        $response->assertOk();
+        $this->assertStringContainsString('could not read the requested records', $response->json('reply'));
+        $this->assertStringContainsString('No result was assumed', $response->json('reply'));
+        $this->assertStringNotContainsString('There are 0 health visit', $response->json('reply'));
         Http::assertNothingSent();
     }
 
@@ -407,6 +473,20 @@ class DatabaseAssistantTest extends TestCase
                         'aggregate' => null,
                     ]),
                 ],
+            ])
+            ->push([
+                'message' => [
+                    'content' => json_encode([
+                        'type' => 'database',
+                        'table' => 'certificates',
+                        'select' => ['certificates.certificate_number'],
+                        'joins' => [],
+                        'filters' => [],
+                        'order_by' => [],
+                        'limit' => 10,
+                        'aggregate' => null,
+                    ]),
+                ],
             ]);
         Http::fake(['*api/chat' => $plans]);
 
@@ -422,7 +502,13 @@ class DatabaseAssistantTest extends TestCase
             $unlistedTable->json('reply')
         );
 
-        Http::assertSentCount(2);
+        $retiredTable = $this->chat($admin, 'Query archived registry entries');
+        $this->assertStringContainsString(
+            'could not safely run',
+            $retiredTable->json('reply')
+        );
+
+        Http::assertSentCount(3);
     }
 
     public function test_flexible_results_are_formatted_without_a_second_model_call(): void

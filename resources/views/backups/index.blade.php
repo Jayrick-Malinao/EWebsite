@@ -365,15 +365,16 @@
                 </div>
 
                 <form
+                    id="backupCreateForm"
                     method="POST"
                     action="{{ route('backups.store') }}"
                     class="shrink-0"
-                    onsubmit="return confirm('Create a new database backup now?');"
                 >
                     @csrf
 
                     <button
-                        type="submit"
+                        type="button"
+                        id="openBackupConfirmation"
                         class="clay-primary inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold sm:w-auto"
                     >
                         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -383,6 +384,45 @@
                         Create Backup
                     </button>
                 </form>
+
+                <dialog
+                    id="backupConfirmation"
+                    class="w-[calc(100%-2rem)] max-w-lg rounded-2xl border border-white/90 bg-[#F5FAF7] p-0 text-[#164238] shadow-[14px_14px_30px_rgba(57,85,75,0.24)] backdrop:bg-[#164238]/40"
+                    aria-labelledby="backupConfirmationTitle"
+                >
+                    <div class="p-6">
+                        <div class="flex items-start gap-4">
+                            <div class="clay-icon clay-icon-green flex h-11 w-11 shrink-0 items-center justify-center rounded-xl">
+                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 id="backupConfirmationTitle" class="text-lg font-bold">Create database backup?</h2>
+                                <p class="mt-2 text-sm leading-6 text-[#6D817A]">
+                                    A new database backup will be generated and added to backup history. Existing backups will not be overwritten.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                            <button
+                                type="button"
+                                data-close-backup-confirmation
+                                class="clay-secondary rounded-xl px-4 py-2.5 text-sm font-bold"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                form="backupCreateForm"
+                                class="clay-primary rounded-xl px-4 py-2.5 text-sm font-bold"
+                            >
+                                Confirm and Create
+                            </button>
+                        </div>
+                    </div>
+                </dialog>
             </div>
 
             {{-- FLASH MESSAGES --}}
@@ -508,7 +548,7 @@
                                     <th class="px-6 py-3 text-xs font-bold uppercase tracking-wider text-[#6D817A]">Backup File</th>
                                     <th class="px-6 py-3 text-xs font-bold uppercase tracking-wider text-[#6D817A]">Created</th>
                                     <th class="px-6 py-3 text-xs font-bold uppercase tracking-wider text-[#6D817A]">Size</th>
-                                    <th class="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider text-[#6D817A]">Actions</th>
+                                    <th class="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider text-[#6D817A]"><span class="sr-only">Actions</span></th>
                                 </tr>
                             </thead>
 
@@ -555,11 +595,10 @@
                                         </td>
 
                                         <td class="px-6 py-4">
-                                            <div class="flex justify-end gap-2">
+                                            @component('partials.record-actions', ['label' => 'More actions for '.$backup['filename']])
 
                                                 <a
                                                     href="{{ route('backups.download', ['filename' => $backup['filename']]) }}"
-                                                    class="clay-action clay-view"
                                                 >
                                                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0 4-4m-4 4-4-4" />
@@ -578,7 +617,7 @@
                                                     @csrf
                                                     @method('DELETE')
 
-                                                    <button type="submit" class="clay-action clay-danger-btn">
+                                                    <button type="submit" class="record-action-danger">
                                                         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                                                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M10 11v6M14 11v6M6 7l1 14h10l1-14M9 7V4h6v3" />
                                                         </svg>
@@ -586,7 +625,7 @@
                                                     </button>
                                                 </form>
 
-                                            </div>
+                                            @endcomponent
                                         </td>
 
                                     </tr>
@@ -637,10 +676,10 @@
                                     </div>
                                 </div>
 
-                                <div class="flex flex-col gap-2 sm:flex-row">
+                                <div>
+                                    @component('partials.record-actions', ['label' => 'More actions for '.$backup['filename']])
                                     <a
                                         href="{{ route('backups.download', ['filename' => $backup['filename']]) }}"
-                                        class="clay-action clay-view flex-1 py-2.5"
                                     >
                                         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0 4-4m-4 4-4-4" />
@@ -652,7 +691,6 @@
                                     <form
                                         method="POST"
                                         action="{{ route('backups.destroy', ['filename' => $backup['filename']]) }}"
-                                        class="flex-1"
                                         data-confirm-title="Delete this backup?"
                                         data-confirm-message="This backup file will be permanently removed and cannot be restored."
                                         data-confirm-item="{{ $backup['filename'] }}"
@@ -660,13 +698,14 @@
                                         @csrf
                                         @method('DELETE')
 
-                                        <button type="submit" class="clay-action clay-danger-btn w-full py-2.5">
+                                        <button type="submit" class="record-action-danger">
                                             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M10 11v6M14 11v6M6 7l1 14h10l1-14M9 7V4h6v3" />
                                             </svg>
                                             Delete
                                         </button>
                                     </form>
+                                    @endcomponent
                                 </div>
 
                             </article>
@@ -677,31 +716,24 @@
 
             </section>
 
-            {{-- SECURITY NOTICE --}}
-            <section class="clay-notice rounded-2xl p-4 sm:p-5">
-                <div class="flex items-start gap-3">
-                    <div class="clay-icon clay-icon-orange h-9 w-9 shrink-0 rounded-xl">
-                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3 4 7v5c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z" />
-                            <path stroke-linecap="round" d="M12 8v4" />
-                            <path stroke-linecap="round" d="M12 16h.01" />
-                        </svg>
-                    </div>
-
-                    <div class="min-w-0">
-                        <h3 class="text-sm font-bold text-[#7A4A1E]">Backup Security</h3>
-                        <p class="mt-1 text-sm leading-6 text-[#8A5A2E]">
-                            Database backups contain sensitive health-center records. Access is restricted to System Administrators and backup files are stored outside the public web directory.
-                        </p>
-                    </div>
-                </div>
-            </section>
-
         </div>
     </main>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const backupConfirmation = document.getElementById('backupConfirmation');
+            const openBackupConfirmation = document.getElementById('openBackupConfirmation');
+
+            openBackupConfirmation?.addEventListener('click', () => {
+                backupConfirmation.showModal();
+            });
+
+            document.querySelectorAll('[data-close-backup-confirmation]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    backupConfirmation.close();
+                });
+            });
+
             const menuButton = document.getElementById('mobileMenuButton');
             const overlay = document.getElementById('sidebar-overlay');
             const sidebar = document.querySelector('[data-sidebar]');

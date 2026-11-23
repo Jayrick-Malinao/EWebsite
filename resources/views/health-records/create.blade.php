@@ -751,37 +751,40 @@
 
                         <div class="clay-section-body">
 
+                            @php
+                                $selectedResident = $residents->firstWhere('id', old('resident_id'));
+                                $residentSearchValue = old(
+                                    'resident_search',
+                                    $selectedResident
+                                        ? "{$selectedResident->full_name} — Resident #{$selectedResident->id}"
+                                        : ''
+                                );
+                            @endphp
+
                             <label
-                                for="resident_id"
+                                for="resident_search"
                                 class="clay-label mb-2 block text-sm font-semibold"
                             >
-                                Resident <span class="clay-required">*</span>
+                                Search or select resident <span class="clay-required">*</span>
                             </label>
 
-                            <select
-                                id="resident_id"
-                                name="resident_id"
+                            <input
+                                id="resident_search"
+                                type="text"
+                                list="resident_options"
+                                value="{{ $residentSearchValue }}"
                                 required
+                                autocomplete="off"
+                                placeholder="Type a resident name"
                                 class="clay-input px-4 py-2.5 text-sm"
+                                data-resident-search
                             >
-
-                                <option value="">
-                                    Select a resident
-                                </option>
-
+                            <input type="hidden" id="resident_id" name="resident_id" value="{{ old('resident_id') }}">
+                            <datalist id="resident_options">
                                 @foreach ($residents as $resident)
-
-                                    <option
-                                        value="{{ $resident->id }}"
-                                        @selected(old('resident_id') == $resident->id)
-                                    >
-                                        {{ $resident->full_name }}
-                                        — Resident #{{ $resident->id }}
-                                    </option>
-
+                                    <option value="{{ $resident->full_name }} — Resident #{{ $resident->id }}" data-resident-id="{{ $resident->id }}"></option>
                                 @endforeach
-
-                            </select>
+                            </datalist>
 
                             @error('resident_id')
                                 <p class="clay-field-error mt-1.5 text-xs">
@@ -1147,32 +1150,29 @@
 
                         <div class="grid gap-5 p-5 md:grid-cols-3">
 
-                            {{-- Name --}}
-                            <div>
-
-                                <label
-                                    for="emergency_contact_name"
-                                    class="clay-label mb-2 block text-sm font-semibold"
-                                >
-                                    Contact Name
-                                </label>
-
-                                <input
-                                    type="text"
-                                    id="emergency_contact_name"
-                                    name="emergency_contact_name"
-                                    value="{{ old('emergency_contact_name') }}"
-                                    placeholder="Full name"
-                                    class="clay-input px-4 py-2.5 text-sm"
-                                >
-
-                                @error('emergency_contact_name')
-                                    <p class="clay-field-error mt-1.5 text-xs">
-                                        {{ $message }}
-                                    </p>
-                                @enderror
-
-                            </div>
+                            @foreach ([
+                                'first_name' => 'First Name',
+                                'middle_name' => 'Middle Name',
+                                'last_name' => 'Last Name',
+                            ] as $namePart => $label)
+                                <div>
+                                    <label for="emergency_contact_{{ $namePart }}" class="clay-label mb-2 block text-sm font-semibold">
+                                        {{ $label }}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="emergency_contact_{{ $namePart }}"
+                                        name="emergency_contact_{{ $namePart }}"
+                                        data-person-name-strict
+                                        value="{{ old('emergency_contact_'.$namePart) }}"
+                                        placeholder="{{ $label }}"
+                                        class="clay-input px-4 py-2.5 text-sm"
+                                    >
+                                    @error('emergency_contact_'.$namePart)
+                                        <p class="clay-field-error mt-1.5 text-xs">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            @endforeach
 
                             {{-- Number --}}
                             <div>
@@ -1188,11 +1188,12 @@
                                     type="tel"
                                     id="emergency_contact_number"
                                     name="emergency_contact_number"
-                                    value="{{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay(old('emergency_contact_number')) ?: '+63' }}"
+                                    value="{{ \App\Support\PhilippineMobileNumberFormatter::formatForDisplay(old('emergency_contact_number')) }}"
+                                    data-local-mobile
                                     inputmode="numeric"
-                                    maxlength="24"
-                                    placeholder="+6391 7123 4567"
-                                    title="Only Globe and DITO SIM numbers are supported."
+                                    maxlength="13"
+                                    placeholder="09XX-XXXX-XXX"
+                                    title="Enter an 11-digit mobile number starting with 09."
                                     class="clay-input px-4 py-2.5 text-sm"
                                 >
 
@@ -1207,21 +1208,24 @@
                             {{-- Relationship --}}
                             <div>
 
-                                <label
-                                    for="emergency_contact_relationship"
-                                    class="clay-label mb-2 block text-sm font-semibold"
-                                >
+                                <label for="emergency_contact_relationship" class="clay-label mb-2 block text-sm font-semibold">
                                     Relationship
                                 </label>
-
-                                <input
-                                    type="text"
+                                <select
                                     id="emergency_contact_relationship"
                                     name="emergency_contact_relationship"
-                                    value="{{ old('emergency_contact_relationship') }}"
-                                    placeholder="e.g. Spouse, Parent, Sibling"
                                     class="clay-input px-4 py-2.5 text-sm"
                                 >
+                                    <option value="">Select relationship</option>
+                                    @foreach (['Spouse', 'Parent', 'Child', 'Sibling', 'Relative', 'Guardian', 'Friend', 'Other'] as $relationship)
+                                        <option value="{{ $relationship }}" @selected(old('emergency_contact_relationship') === $relationship)>
+                                            {{ $relationship }}
+                                        </option>
+                                    @endforeach
+                                    @if (old('emergency_contact_relationship') && !in_array(old('emergency_contact_relationship'), ['Spouse', 'Parent', 'Child', 'Sibling', 'Relative', 'Guardian', 'Friend', 'Other'], true))
+                                        <option value="{{ old('emergency_contact_relationship') }}" selected>{{ old('emergency_contact_relationship') }}</option>
+                                    @endif
+                                </select>
 
                                 @error('emergency_contact_relationship')
                                     <p class="clay-field-error mt-1.5 text-xs">
@@ -1351,6 +1355,27 @@
 ============================================================== --}}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+
+        const residentSearch = document.querySelector('[data-resident-search]');
+        const residentId = document.getElementById('resident_id');
+        const residentOptions = document.getElementById('resident_options');
+
+        if (residentSearch && residentId && residentOptions) {
+            const options = Array.from(residentOptions.options);
+            const syncResidentId = () => {
+                const match = options.find((option) => option.value === residentSearch.value.trim());
+                residentId.value = match ? match.dataset.residentId : '';
+                residentSearch.setCustomValidity(
+                    residentSearch.value.trim() && !match
+                        ? 'Select a resident from the suggestions.'
+                        : ''
+                );
+            };
+
+            residentSearch.addEventListener('input', syncResidentId);
+            residentSearch.addEventListener('change', syncResidentId);
+            syncResidentId();
+        }
 
         const sidebar = document.querySelector('aside');
         const overlay = document.getElementById('sidebar-overlay');

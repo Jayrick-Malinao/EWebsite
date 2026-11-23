@@ -10,8 +10,7 @@ class EventReminderNotification extends Notification
 {
     public function __construct(
         public Event $event,
-    ) {
-    }
+    ) {}
 
     /**
      * Store notifications in the database.
@@ -81,18 +80,18 @@ class EventReminderNotification extends Notification
         } elseif ($eventDate->equalTo($today->copy()->addDay())) {
             $dateDescription = 'tomorrow';
         } else {
-            $dateDescription = 'on ' . $eventDate->format('F j, Y');
+            $dateDescription = 'on '.$eventDate->format('F j, Y');
         }
 
         $message = "{$eventTitle} is scheduled {$dateDescription}";
 
         if ($this->event->start_time) {
-            $message .= ' at ' . $this->formatTime(
+            $message .= ' at '.$this->formatTime(
                 $this->event->start_time
             );
         }
 
-        return $message . '. Please check the event details.';
+        return $message.'. Please check the event details.';
     }
 
     /**

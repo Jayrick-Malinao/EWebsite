@@ -576,11 +576,7 @@
 
                     <div class="min-w-0">
 
-                        <p class="clay-eyebrow text-xs font-semibold uppercase">
-                            Records Management
-                        </p>
-
-                        <h1 class="clay-header-title mt-1 truncate text-xl font-bold tracking-tight sm:text-2xl">
+                        <h1 class="clay-header-title truncate text-xl font-bold tracking-tight sm:text-2xl">
                             Household Details
                         </h1>
 
@@ -816,11 +812,13 @@
                             ->firstWhere('is_household_head', true);
                     @endphp
 
+                    <section class="clay-card mb-7 overflow-hidden rounded-[26px]">
+
                     @if ($householdHead)
 
-                        <section class="clay-card clay-head-card mb-7 rounded-[26px]">
+                        <details class="group">
 
-                            <div class="clay-card-header clay-head-header px-5 py-5 sm:px-6">
+                            <summary class="clay-card-header clay-head-header flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-5 sm:px-6">
 
                                 <div class="flex items-center gap-3">
 
@@ -856,7 +854,18 @@
 
                                 </div>
 
-                            </div>
+                                <svg
+                                    class="h-5 w-5 shrink-0 transition-transform group-open:rotate-180"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    viewBox="0 0 24 24"
+                                    aria-hidden="true"
+                                >
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
+                                </svg>
+
+                            </summary>
 
 
                             <div class="grid gap-6 p-5 sm:grid-cols-2 sm:p-6 lg:grid-cols-4">
@@ -884,6 +893,9 @@
 
                                     <p class="clay-field-muted mt-1 text-sm">
                                         {{ $householdHead->birth_date?->format('F d, Y') ?? 'Not provided' }}
+                                    </p>
+                                    <p class="clay-field-muted mt-1 text-sm">
+                                        Age: {{ $householdHead->birth_date ? $householdHead->birth_date->age . ' years' : 'N/A' }}
                                     </p>
 
                                 </div>
@@ -960,7 +972,7 @@
 
                             </div>
 
-                        </section>
+                        </details>
 
                     @endif
 
@@ -968,9 +980,9 @@
                     {{-- ==================================================
                          FAMILY MEMBERS
                     =================================================== --}}
-                    <section class="clay-card rounded-[26px]">
+                    <details class="group">
 
-                        <div class="clay-card-header px-5 py-5 sm:px-6">
+                        <summary class="clay-card-header flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-5 sm:px-6">
 
                             <div class="flex items-center gap-3">
 
@@ -1006,8 +1018,18 @@
 
                             </div>
 
-                        </div>
+                            <svg
+                                class="h-5 w-5 shrink-0 transition-transform group-open:rotate-180"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
+                            >
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
+                            </svg>
 
+                        </summary>
 
                         @php
                             $familyMembers = $household->residents
@@ -1102,6 +1124,9 @@
                                                     <p class="clay-field-muted mt-1 text-sm">
                                                         {{ $member->birth_date?->format('M d, Y') ?? '—' }}
                                                     </p>
+                                                    <p class="clay-field-muted mt-1 text-sm">
+                                                        Age: {{ $member->birth_date ? $member->birth_date->age . ' years' : 'N/A' }}
+                                                    </p>
 
                                                 </div>
 
@@ -1176,6 +1201,8 @@
                             </div>
 
                         @endif
+
+                    </details>
 
                     </section>
 

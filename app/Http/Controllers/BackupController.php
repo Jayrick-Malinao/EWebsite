@@ -55,7 +55,7 @@ class BackupController extends Controller
             AuditLogService::log(
                 action: 'created',
                 module: 'Backups',
-                description: 'Database backup created: ' . $backup['filename'] . '.',
+                description: 'Database backup created: '.$backup['filename'].'.',
             );
 
             return redirect()
@@ -84,7 +84,7 @@ class BackupController extends Controller
         $filename = basename($filename);
 
         $path = storage_path(
-            'app/private/backups/' . $filename
+            'app/private/backups/'.$filename
         );
 
         abort_unless(
@@ -110,7 +110,7 @@ class BackupController extends Controller
         $filename = basename($filename);
 
         $path = storage_path(
-            'app/private/backups/' . $filename
+            'app/private/backups/'.$filename
         );
 
         abort_unless(
@@ -124,7 +124,7 @@ class BackupController extends Controller
         AuditLogService::log(
             action: 'deleted',
             module: 'Backups',
-            description: 'Database backup deleted: ' . $filename . '.',
+            description: 'Database backup deleted: '.$filename.'.',
         );
 
         return redirect()
@@ -135,4 +135,3 @@ class BackupController extends Controller
             );
     }
 }
-

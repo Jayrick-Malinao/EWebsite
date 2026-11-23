@@ -26,15 +26,6 @@
 
 
     {{-- =========================================================
-         MOBILE OVERLAY
-    ========================================================== --}}
-    <div
-        id="sidebarOverlay"
-        class="fixed inset-0 z-40 hidden bg-slate-900/40 lg:hidden"
-    ></div>
-
-
-    {{-- =========================================================
          MAIN CONTENT
     ========================================================== --}}
     <main class="min-h-screen w-full lg:pl-72">
@@ -49,23 +40,7 @@
 
                 <div class="flex min-w-0 items-center gap-3">
 
-                    <button
-                        id="sidebarOpen"
-                        type="button"
-                        class="dashboard-menu-button inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#dce9e2] bg-[#f9fcfa] text-[#0f6f5a] shadow-sm transition hover:border-[#b8d8ca] hover:bg-[#eaf5ef] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#168b70] lg:hidden"
-                        aria-label="Open navigation"
-                    >
-                        <svg
-                            class="h-5 w-5"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.8"
-                            aria-hidden="true"
-                        >
-                            <path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
-                    </button>
+                    @include('dashboard.mobile-menu-button', ['sidebarId' => 'healthworkerSidebar'])
 
                     <div class="min-w-0">
                         <p class="text-xs font-medium uppercase tracking-wide text-[#168B70]">
@@ -116,234 +91,76 @@
             ================================================== --}}
             <section class="mb-6">
 
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-
-
+                <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
                     {{-- Residents --}}
-                    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-
-                        <div class="flex items-start justify-between">
-
-                            <div>
-
-                                <p class="text-sm font-medium text-slate-500">
-                                    Total Residents
-                                </p>
-
-                                <p class="mt-2 text-3xl font-bold text-[#0F4C3A]">
-                                    {{ number_format($totalResidents) }}
-                                </p>
-
-                            </div>
-
-                            <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
-
-                                <svg
-                                    class="h-6 w-6"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="1.8"
-                                >
-                                    <circle
-                                        cx="9"
-                                        cy="8"
-                                        r="3"
-                                    />
-
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"
-                                    />
-
-                                    <path
-                                        stroke-linecap="round"
-                                        d="M16 5.5a3 3 0 0 1 0 5.8"
-                                    />
-
-                                    <path
-                                        stroke-linecap="round"
-                                        d="M18 14c1.8.8 3 2.5 3 4.5"
-                                    />
+                    <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                    <circle cx="9" cy="8" r="3" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" />
+                                    <path stroke-linecap="round" d="M16 5.5a3 3 0 0 1 0 5.8M18 14c1.8.8 3 2.5 3 4.5" />
                                 </svg>
-
                             </div>
-
+                            <span class="text-[10px] font-medium uppercase tracking-wide text-[#9AA9A4]">Total</span>
                         </div>
-
-                        <a
-                            href="{{ route('residents.index') }}"
-                            class="mt-4 inline-flex text-xs font-semibold text-emerald-700 hover:text-emerald-800"
-                        >
-                            View residents
-                            <span class="ml-1">→</span>
+                        <p class="mt-3 text-2xl font-bold text-[#164238]">{{ number_format($totalResidents) }}</p>
+                        <p class="mt-0.5 text-xs font-medium text-[#6D817A]">Residents</p>
+                        <a href="{{ route('residents.index') }}" class="mt-3 inline-flex text-xs font-semibold text-emerald-700 hover:text-emerald-800">
+                            View residents <span class="ml-1">→</span>
                         </a>
-
                     </div>
-
 
                     {{-- Households --}}
-                    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-
-                        <div class="flex items-start justify-between">
-
-                            <div>
-
-                                <p class="text-sm font-medium text-slate-500">
-                                    Total Households
-                                </p>
-
-                                <p class="mt-2 text-3xl font-bold text-[#0F4C3A]">
-                                    {{ number_format($totalHouseholds) }}
-                                </p>
-
-                            </div>
-
-                            <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
-
-                                <svg
-                                    class="h-6 w-6"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="1.8"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M3 20h18"
-                                    />
-
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M5 20V9l7-5 7 5v11"
-                                    />
-
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M9 20v-6h6v6"
-                                    />
+                    <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-700">
+                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 20h18M5 20V9l7-5 7 5v11M9 20v-6h6v6" />
                                 </svg>
-
                             </div>
-
+                            <span class="text-[10px] font-medium uppercase tracking-wide text-[#9AA9A4]">Total</span>
                         </div>
-
-                        <a
-                            href="{{ route('households.index') }}"
-                            class="mt-4 inline-flex text-xs font-semibold text-emerald-700 hover:text-emerald-800"
-                        >
-                            View households
-                            <span class="ml-1">→</span>
+                        <p class="mt-3 text-2xl font-bold text-[#164238]">{{ number_format($totalHouseholds) }}</p>
+                        <p class="mt-0.5 text-xs font-medium text-[#6D817A]">Households</p>
+                        <a href="{{ route('households.index') }}" class="mt-3 inline-flex text-xs font-semibold text-emerald-700 hover:text-emerald-800">
+                            View households <span class="ml-1">→</span>
                         </a>
-
                     </div>
-
 
                     {{-- Senior Citizens --}}
-                    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-
-                        <div class="flex items-start justify-between">
-
-                            <div>
-
-                                <p class="text-sm font-medium text-slate-500">
-                                    Senior Citizens
-                                </p>
-
-                                <p class="mt-2 text-3xl font-bold text-[#0F4C3A]">
-                                    {{ number_format($totalSeniorCitizens) }}
-                                </p>
-
-                            </div>
-
-                            <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-50 text-orange-600">
-
-                                <svg
-                                    class="h-6 w-6"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="1.8"
-                                >
-                                    <circle
-                                        cx="12"
-                                        cy="9"
-                                        r="4"
-                                    />
-
-                                    <path
-                                        stroke-linecap="round"
-                                        d="M5 21c1-4 3.3-6 7-6s6 2 7 6"
-                                    />
+                    <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-orange-600">
+                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                    <circle cx="12" cy="9" r="4" />
+                                    <path stroke-linecap="round" d="M5 21c1-4 3.3-6 7-6s6 2 7 6" />
                                 </svg>
-
                             </div>
-
+                            <span class="text-[10px] font-medium uppercase tracking-wide text-[#9AA9A4]">Registered</span>
                         </div>
-
-                        <a
-                            href="{{ route('senior-citizens.index') }}"
-                            class="mt-4 inline-flex text-xs font-semibold text-emerald-700 hover:text-emerald-800"
-                        >
-                            View senior citizens
-                            <span class="ml-1">→</span>
+                        <p class="mt-3 text-2xl font-bold text-[#164238]">{{ number_format($totalSeniorCitizens) }}</p>
+                        <p class="mt-0.5 text-xs font-medium text-[#6D817A]">Senior Citizens</p>
+                        <a href="{{ route('senior-citizens.index') }}" class="mt-3 inline-flex text-xs font-semibold text-emerald-700 hover:text-emerald-800">
+                            View senior citizens <span class="ml-1">→</span>
                         </a>
-
                     </div>
-
 
                     {{-- Health Services --}}
-                    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-
-                        <div class="flex items-start justify-between">
-
-                            <div>
-
-                                <p class="text-sm font-medium text-slate-500">
-                                    Health Services
-                                </p>
-
-                                <p class="mt-2 text-3xl font-bold text-[#0F4C3A]">
-                                    4
-                                </p>
-
-                            </div>
-
-                            <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-purple-50 text-purple-700">
-
-                                <svg
-                                    class="h-6 w-6"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="1.8"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M12 21s-7-4.35-9.5-9.1C.7 8.3 3.1 4.5 7 4.5c2.1 0 4 1.15 5 2.9 1-1.75 2.9-2.9 5-2.9 3.9 0 6.3 3.8 4.5 7.4C19 16.65 12 21 12 21Z"
-                                    />
-
-                                    <path
-                                        stroke-linecap="round"
-                                        d="M12 8v7M8.5 11.5h7"
-                                    />
+                    <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-purple-50 text-purple-700">
+                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-7-4.35-9.5-9.1C.7 8.3 3.1 4.5 7 4.5c2.1 0 4 1.15 5 2.9 1-1.75 2.9-2.9 5-2.9 3.9 0 6.3 3.8 4.5 7.4C19 16.65 12 21 12 21Z" />
+                                    <path stroke-linecap="round" d="M12 8v7M8.5 11.5h7" />
                                 </svg>
-
                             </div>
-
+                            <span class="text-[10px] font-medium uppercase tracking-wide text-[#9AA9A4]">Total</span>
                         </div>
-
-                        <p class="mt-4 text-xs text-slate-500">
-                            Immunization, maternal, child, and senior care
-                        </p>
-
+                        <p class="mt-3 text-2xl font-bold text-[#164238]">4</p>
+                        <p class="mt-0.5 text-xs font-medium text-[#6D817A]">Health Services</p>
+                        <p class="mt-3 text-xs text-slate-500">Immunization, maternal, child, and senior care</p>
                     </div>
-
                 </div>
 
             </section>
@@ -932,45 +749,6 @@
 
     </main>
 
-
-    {{-- =========================================================
-         MOBILE SIDEBAR SCRIPT
-    ========================================================== --}}
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-
-            const sidebar = document.getElementById('healthworkerSidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            const openButton = document.getElementById('sidebarOpen');
-
-            if (!sidebar || !overlay || !openButton) {
-                return;
-            }
-
-            function openSidebar() {
-                sidebar.classList.remove('-translate-x-full');
-                overlay.classList.remove('hidden');
-                document.body.classList.add('overflow-hidden');
-            }
-
-            function closeSidebar() {
-                sidebar.classList.add('-translate-x-full');
-                overlay.classList.add('hidden');
-                document.body.classList.remove('overflow-hidden');
-            }
-
-            openButton.addEventListener('click', openSidebar);
-
-            overlay.addEventListener('click', closeSidebar);
-
-            window.addEventListener('resize', function () {
-                if (window.innerWidth >= 1024) {
-                    closeSidebar();
-                }
-            });
-
-        });
-    </script>
 
 </body>
 

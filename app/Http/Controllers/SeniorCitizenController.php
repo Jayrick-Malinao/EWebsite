@@ -7,6 +7,7 @@ use App\Models\SeniorCitizen;
 use App\Rules\PhilippineMobileNumber;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class SeniorCitizenController extends Controller
@@ -23,7 +24,9 @@ class SeniorCitizenController extends Controller
         $search = trim((string) $request->input('search'));
 
         $seniorCitizens = SeniorCitizen::query()
-            ->with('resident')
+            ->with(['resident' => function ($query) {
+                $query->with('household');
+            }])
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('osca_id_number', 'like', "%{$search}%")
@@ -59,6 +62,7 @@ class SeniorCitizenController extends Controller
          */
         $residents = Resident::query()
             ->whereDoesntHave('seniorCitizen')
+            ->whereDate('birth_date', '<=', today()->subYears(60)->toDateString())
             ->orderBy('last_name')
             ->orderBy('first_name')
             ->get();
@@ -71,11 +75,22 @@ class SeniorCitizenController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $request->merge([
+            'osca_registration_date' => today()->toDateString(),
+        ]);
+
         $validated = $request->validate([
             'resident_id' => [
                 'required',
                 'integer',
-                'exists:residents,id',
+                Rule::exists('residents', 'id')
+                    ->where(function ($query) {
+                        $query->whereDate(
+                            'birth_date',
+                            '<=',
+                            today()->subYears(60)->toDateString()
+                        );
+                    }),
                 'unique:senior_citizens,resident_id',
             ],
 

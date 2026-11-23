@@ -67,11 +67,6 @@ class HealthVisitController extends Controller
                 'integer',
                 'exists:residents,id',
             ],
-            'visit_date' => [
-                'required',
-                'date',
-                'before_or_equal:now',
-            ],
             'visit_type' => [
                 'nullable',
                 'in:General Consultation,Follow-up,Prenatal,Postnatal,Child Health,Senior Citizen,Immunization,Other',
@@ -103,6 +98,8 @@ class HealthVisitController extends Controller
                 new PersonName,
             ],
         ]);
+
+        $validated['visit_date'] = now();
 
         HealthVisit::create($validated);
 

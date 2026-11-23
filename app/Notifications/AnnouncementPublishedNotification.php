@@ -9,8 +9,7 @@ class AnnouncementPublishedNotification extends Notification
 {
     public function __construct(
         public Announcement $announcement
-    ) {
-    }
+    ) {}
 
     public function via(object $notifiable): array
     {

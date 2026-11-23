@@ -6,6 +6,7 @@ use App\Models\Immunization;
 use App\Models\Resident;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ImmunizationController extends Controller
@@ -65,6 +66,10 @@ class ImmunizationController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $request->merge([
+            'date_administered' => today()->toDateString(),
+        ]);
+
         $validated = $this->validateImmunization($request);
 
         Immunization::create($validated);
@@ -93,14 +98,8 @@ class ImmunizationController extends Controller
     {
         $immunization->load('resident');
 
-        $residents = Resident::query()
-            ->orderBy('last_name')
-            ->orderBy('first_name')
-            ->get();
-
         return view('immunizations.edit', [
             'immunization' => $immunization,
-            'residents' => $residents,
         ]);
     }
 
@@ -111,7 +110,7 @@ class ImmunizationController extends Controller
         Request $request,
         Immunization $immunization
     ): RedirectResponse {
-        $validated = $this->validateImmunization($request);
+        $validated = $this->validateImmunization($request, $immunization);
 
         $immunization->update($validated);
 
@@ -135,13 +134,17 @@ class ImmunizationController extends Controller
     /**
      * Validate immunization data.
      */
-    private function validateImmunization(Request $request): array
-    {
+    private function validateImmunization(
+        Request $request,
+        ?Immunization $immunization = null
+    ): array {
         return $request->validate([
             'resident_id' => [
                 'required',
                 'integer',
-                'exists:residents,id',
+                $immunization
+                    ? Rule::in([(string) $immunization->resident_id])
+                    : 'exists:residents,id',
             ],
 
             'vaccine_name' => [

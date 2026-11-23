@@ -297,13 +297,13 @@
 
                 <div class="flex flex-wrap items-center gap-2">
                     <a
-                        href="{{ route('child-health.show', $childHealth) }}"
+                        href="{{ route('child-health.index') }}"
                         class="clay-secondary inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold"
                     >
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
                         </svg>
-                        Back to View Record
+                        Back to Child Health
                     </a>
                 </div>
             </div>
@@ -350,18 +350,13 @@
                     </div>
 
                     <div>
-                        <label for="resident_id" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">
-                            Child / Resident <span class="text-[#DC2626]">*</span>
+                        <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">
+                            Child / Resident
                         </label>
-
-                        <select id="resident_id" name="resident_id" required class="clay-input cursor-pointer">
-                            <option value="">Select Child</option>
-                            @foreach ($residents as $resident)
-                                <option value="{{ $resident->id }}" @selected(old('resident_id', $childHealth->resident_id) == $resident->id)>
-                                    {{ $resident->full_name }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <div class="clay-input">
+                            {{ $childHealth->resident?->full_name }} — Resident #{{ $childHealth->resident_id }}
+                        </div>
+                        <input type="hidden" name="resident_id" value="{{ $childHealth->resident_id }}">
                     </div>
                 </section>
 
@@ -615,7 +610,7 @@
 
                     <div class="flex flex-col-reverse gap-2 sm:flex-row sm:items-center">
                         <a
-                            href="{{ route('child-health.show', $childHealth) }}"
+                            href="{{ route('child-health.index') }}"
                             class="clay-secondary inline-flex min-h-[44px] items-center justify-center rounded-xl px-5 py-2.5 text-sm font-bold"
                         >
                             Cancel

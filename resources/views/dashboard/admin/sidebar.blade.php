@@ -77,7 +77,7 @@
     }
 
     .claymorphism-sidebar > div:first-child,
-    .claymorphism-sidebar > div:last-child {
+    .claymorphism-sidebar > [data-assistant-slot] {
         position: relative;
         z-index: 1;
 
@@ -303,7 +303,7 @@
     }
 
     .claymorphism-sidebar nav a svg,
-    .claymorphism-sidebar > div:last-child button svg {
+    .claymorphism-sidebar > [data-assistant-slot] form button svg {
         color: #4C665F !important;
 
         stroke: currentColor !important;
@@ -362,7 +362,7 @@
        SIGN OUT
     ========================================================== */
 
-    .claymorphism-sidebar > div:last-child button {
+    .claymorphism-sidebar > [data-assistant-slot] form button {
         color: #536A63 !important;
 
         background: transparent !important;
@@ -380,7 +380,7 @@
             background-color 0.16s ease;
     }
 
-    .claymorphism-sidebar > div:last-child button:hover {
+    .claymorphism-sidebar > [data-assistant-slot] form button:hover {
         color: var(--gov-danger) !important;
 
         background: #F9F1EF !important;
@@ -392,10 +392,6 @@
         box-shadow:
             5px 5px 9px rgba(107, 134, 124, 0.16),
             -5px -5px 9px rgba(255, 255, 255, 0.92);
-    }
-
-    .claymorphism-sidebar > div:last-child button:hover svg {
-        color: var(--gov-danger) !important;
     }
 
     /* =========================================================
@@ -422,7 +418,7 @@
         .claymorphism-sidebar nav a,
         .claymorphism-sidebar nav a svg,
         .claymorphism-sidebar > div:first-child a > div:first-child,
-        .claymorphism-sidebar > div:last-child button {
+        .claymorphism-sidebar > [data-assistant-slot] form button {
             transition: none !important;
         }
     }
@@ -431,7 +427,7 @@
 <aside
     id="adminSidebar"
     data-sidebar
-    class="claymorphism-sidebar fixed inset-y-0 left-0 z-50 flex w-72 -translate-x-full flex-col border-r border-slate-200 bg-white transition-transform duration-300 ease-in-out lg:translate-x-0"
+    class="claymorphism-sidebar fixed inset-y-0 left-0 z-50 flex w-72 max-w-[calc(100vw-3rem)] -translate-x-full flex-col border-r border-slate-200 bg-white transition-transform duration-300 ease-in-out lg:translate-x-0"
 >
     <!-- BRAND -->
     <div class="flex-shrink-0 border-b border-slate-100 px-5 py-5">
@@ -687,17 +683,6 @@
             </a>
 
             <a
-                href="{{ route('certificates.index') }}"
-                class="{{ request()->routeIs('certificates.*') ? 'bg-emerald-50' : '' }} mt-1 flex items-center gap-3 px-3 py-2.5 text-sm font-medium"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.8">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 3h9l3 3v15H6V3z" />
-                    <path stroke-linecap="round" d="M9 10h6M9 14h6M9 18h3" />
-                </svg>
-                <span>Certificates</span>
-            </a>
-
-            <a
                 href="{{ route('announcements.index') }}"
                 class="{{ request()->routeIs('announcements.*') ? 'bg-emerald-50' : '' }} mt-1 flex items-center gap-3 px-3 py-2.5 text-sm font-medium"
             >
@@ -781,8 +766,8 @@
     </nav>
 
     <!-- SIGN OUT -->
-    <div class="flex-shrink-0 border-t border-slate-100 px-4 py-4">
-        <form method="POST" action="{{ route('logout') }}">
+    <div class="flex shrink-0 items-center gap-2 border-t border-slate-100 px-4 py-4" data-assistant-slot>
+        <form method="POST" action="{{ route('logout') }}" class="min-w-0 flex-1">
             @csrf
 
             <button

@@ -310,15 +310,6 @@
                         Back to List
                     </a>
 
-                    <a
-                        href="{{ route('senior-citizens.edit', $seniorCitizen) }}"
-                        class="clay-primary inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold"
-                    >
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.65-1.65a1.875 1.875 0 1 1 2.652 2.652l-8.78 8.78a4.5 4.5 0 0 1-1.897 1.13l-3.258.93.93-3.258a4.5 4.5 0 0 1 1.13-1.897l7.523-7.523Z" />
-                        </svg>
-                        Edit Record
-                    </a>
                 </div>
             </div>
 
@@ -569,91 +560,17 @@
             </section>
 
             {{-- RECORD METADATA & ACTIONS --}}
-            <div class="clay-card flex flex-col items-stretch justify-between gap-4 p-5 sm:flex-row sm:items-center">
+            <div class="clay-card p-5">
                 <div class="flex items-center gap-4 text-xs font-semibold text-[#6D817A]">
                     <p>Created: <span class="font-bold text-[#164238]">{{ $seniorCitizen->created_at?->format('M d, Y h:i A') ?? '—' }}</span></p>
                     <span class="h-4 w-px bg-[#D2E1DA]"></span>
                     <p>Updated: <span class="font-bold text-[#164238]">{{ $seniorCitizen->updated_at?->format('M d, Y h:i A') ?? '—' }}</span></p>
                 </div>
 
-                <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <button
-                        type="button"
-                        id="triggerDeleteModal"
-                        data-confirm-title="Delete this senior citizen record?"
-                        data-confirm-item="{{ $seniorCitizen->resident?->full_name ?? 'Senior citizen record' }}"
-                        class="clay-danger inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold"
-                    >
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.34 6m-4.78 0-.34-6m9.26 2.370a1.5 1.5 0 0 0-1.5-1.5h-13a1.5 1.5 0 0 0-1.5 1.5M10 5.5h4a1 1 0 0 1 1 1V7H9V6.5a1 1 0 0 1 1-1Z" />
-                        </svg>
-                        Delete Record
-                    </button>
-
-                    <a
-                        href="{{ route('senior-citizens.edit', $seniorCitizen) }}"
-                        class="clay-primary inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold"
-                    >
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.65-1.65a1.875 1.875 0 1 1 2.652 2.652l-8.78 8.78a4.5 4.5 0 0 1-1.897 1.13l-3.258.93.93-3.258a4.5 4.5 0 0 1 1.13-1.897l7.523-7.523Z" />
-                        </svg>
-                        Edit Record
-                    </a>
-                </div>
             </div>
 
         </div>
     </main>
-
-    {{-- DELETE CONFIRMATION MODAL --}}
-    <div
-        id="deleteSeniorModal"
-        class="clay-confirm-overlay"
-        aria-hidden="true"
-        role="dialog"
-        aria-modal="true"
-    >
-        <div class="clay-confirm-box" role="document">
-            <div class="clay-icon h-12 w-12 rounded-2xl bg-[#FCEFED] text-[#B42323]">
-                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86l-8.18 14a2 2 0 0 0 1.73 3h16.32a2 2 0 0 0 1.73-3l-8.18-14a2 2 0 0 0-3.42 0Z" />
-                </svg>
-            </div>
-
-            <div class="mt-4">
-                <h2 class="text-lg font-bold text-[#164238]">Delete Senior Citizen Record?</h2>
-                <p class="mt-2 text-sm leading-6 text-[#6D817A]">
-                    This action will permanently delete this senior citizen record. The linked resident profile will not be removed.
-                </p>
-            </div>
-
-            <div class="clay-inset mt-4 rounded-xl p-4">
-                <p class="text-[11px] font-bold uppercase tracking-wider text-[#6D817A]">Senior Citizen Name</p>
-                <p class="mt-1 break-words text-sm font-bold text-[#164238]">{{ $seniorCitizen->resident->full_name }}</p>
-            </div>
-
-            <div class="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                <button
-                    type="button"
-                    id="deleteSeniorCancel"
-                    class="clay-secondary inline-flex min-h-[42px] items-center justify-center rounded-xl px-4 py-2.5 text-sm font-bold"
-                >
-                    Cancel
-                </button>
-
-                <form method="POST" action="{{ route('senior-citizens.destroy', $seniorCitizen) }}">
-                    @csrf
-                    @method('DELETE')
-                    <button
-                        type="submit"
-                        class="clay-primary inline-flex min-h-[42px] w-full sm:w-auto items-center justify-center gap-2 rounded-xl !bg-gradient-to-r !from-[#DC2626] !to-[#B42323] px-4 py-2.5 text-sm font-bold"
-                    >
-                        Delete Record
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
 
     {{-- SCRIPTS --}}
     <script>
@@ -690,20 +607,6 @@
                 });
             }
 
-            /* Modal Delete Trigger */
-            const deleteModal = document.getElementById('deleteSeniorModal');
-            const triggerBtn = document.getElementById('triggerDeleteModal');
-            const cancelBtn = document.getElementById('deleteSeniorCancel');
-
-            if (deleteModal && triggerBtn && cancelBtn) {
-                triggerBtn.addEventListener('click', () => {
-                    deleteModal.classList.add('is-open');
-                });
-
-                cancelBtn.addEventListener('click', () => {
-                    deleteModal.classList.remove('is-open');
-                });
-            }
         });
     </script>
 </body>

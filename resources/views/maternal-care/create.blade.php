@@ -350,20 +350,37 @@
                     </div>
 
                     <div>
-                        <label for="resident_id" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">
-                            Resident <span class="text-[#DC2626]">*</span>
+                        @php
+                            $selectedResident = $residents->firstWhere('id', old('resident_id'));
+                            $residentSearchValue = old(
+                                'resident_search',
+                                $selectedResident
+                                    ? "{$selectedResident->full_name} — Resident #{$selectedResident->id}"
+                                    : ''
+                            );
+                        @endphp
+
+                        <label for="resident_search" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">
+                            Search or select resident <span class="text-[#DC2626]">*</span>
                         </label>
 
-                        <select id="resident_id" name="resident_id" required class="clay-input cursor-pointer">
-                            <option value="">Select a female resident</option>
-                            @forelse ($residents as $resident)
-                                <option value="{{ $resident->id }}" @selected(old('resident_id') == $resident->id)>
-                                    {{ $resident->full_name }}
-                                </option>
-                            @empty
-                                <option value="" disabled>No eligible female residents found</option>
-                            @endforelse
-                        </select>
+                        <input
+                            id="resident_search"
+                            type="text"
+                            list="resident_options"
+                            value="{{ $residentSearchValue }}"
+                            required
+                            autocomplete="off"
+                            placeholder="Type a resident name"
+                            class="clay-input"
+                            data-resident-search
+                        >
+                        <input type="hidden" id="resident_id" name="resident_id" value="{{ old('resident_id') }}">
+                        <datalist id="resident_options">
+                            @foreach ($residents as $resident)
+                                <option value="{{ $resident->full_name }} — Resident #{{ $resident->id }}" data-resident-id="{{ $resident->id }}"></option>
+                            @endforeach
+                        </datalist>
 
                         <p class="mt-2 text-xs text-[#6D817A]">
                             Maternal care records are intended for female residents. Verify the selected resident before saving.
@@ -677,6 +694,27 @@
     {{-- MOBILE SIDEBAR SCRIPT --}}
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const residentSearch = document.querySelector('[data-resident-search]');
+            const residentId = document.getElementById('resident_id');
+            const residentOptions = document.getElementById('resident_options');
+
+            if (residentSearch && residentId && residentOptions) {
+                const options = Array.from(residentOptions.options);
+                const syncResidentId = () => {
+                    const match = options.find((option) => option.value === residentSearch.value.trim());
+                    residentId.value = match ? match.dataset.residentId : '';
+                    residentSearch.setCustomValidity(
+                        residentSearch.value.trim() && !match
+                            ? 'Select a resident from the suggestions.'
+                            : ''
+                    );
+                };
+
+                residentSearch.addEventListener('input', syncResidentId);
+                residentSearch.addEventListener('change', syncResidentId);
+                syncResidentId();
+            }
+
             const menuButton = document.getElementById('mobileMenuButton');
             const overlay = document.getElementById('sidebar-overlay');
             const sidebar = document.querySelector('[data-sidebar]');

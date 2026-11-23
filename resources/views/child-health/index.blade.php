@@ -434,7 +434,7 @@
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6D817A]">Growth</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6D817A]">Nutrition</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6D817A]">Preventive Care</th>
-                                <th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-[#6D817A]">Actions</th>
+                                <th scope="col" class="px-6 py-4"><span class="sr-only">Actions</span></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -479,18 +479,28 @@
                                         <p><span class="font-bold">Deworming:</span> {{ $childHealth->deworming_status ?: '—' }}</p>
                                     </td>
                                     <td class="px-6 py-4 text-right">
-                                        <div class="flex items-center justify-end gap-2">
-                                            <a href="{{ route('child-health.show', $childHealth) }}" class="clay-action clay-view">View</a>
-                                            <a href="{{ route('child-health.edit', $childHealth) }}" class="clay-action clay-edit">Edit</a>
-                                            <button 
-                                                type="button" 
-                                                class="clay-action clay-delete trigger-delete-modal"
-                                                data-action="{{ route('child-health.destroy', $childHealth) }}"
-                                                data-name="{{ $childHealth->resident?->full_name ?? 'Unknown Resident' }}"
-                                                data-confirm-title="Delete this child health record?"
-                                            >
-                                                Delete
+                                        <div class="relative flex items-center justify-end">
+                                            <button type="button" class="clay-action-menu-trigger flex h-10 w-10 items-center justify-center rounded-full text-[#6D817A] transition hover:text-[#164238]" aria-label="More actions for {{ $childHealth->resident?->full_name ?? 'child health record' }}" aria-expanded="false" data-menu-trigger>
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                                                    <circle cx="10" cy="5" r="1.5"/>
+                                                    <circle cx="10" cy="10" r="1.5"/>
+                                                    <circle cx="10" cy="15" r="1.5"/>
+                                                </svg>
                                             </button>
+                                            <div class="clay-action-menu absolute right-0 top-full z-20 mt-2 hidden min-w-[180px] rounded-2xl border border-white/80 bg-[#F5FAF7] p-2 shadow-[0_12px_35px_rgba(107,134,124,0.18)]" data-menu-panel>
+                                                <a href="{{ route('child-health.show', $childHealth) }}" class="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-[#164238] transition hover:bg-[#EDF5F0]" title="View child health record">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12s3.75-6.75 9.75-6.75S21.75 12 21.75 12 18 18.75 12 18.75 2.25 12 2.25 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                                                    View
+                                                </a>
+                                                <a href="{{ route('child-health.edit', $childHealth) }}" class="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-[#164238] transition hover:bg-[#EDF5F0]" title="Edit child health record">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.5-7.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 7.5-7.5z"/></svg>
+                                                    Edit
+                                                </a>
+                                                <button type="button" class="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-semibold text-[#B42323] transition hover:bg-[#FDF1F1] trigger-delete-modal" data-action="{{ route('child-health.destroy', $childHealth) }}" data-name="{{ $childHealth->resident?->full_name ?? 'Unknown Resident' }}" data-confirm-title="Delete this child health record?" title="Delete child health record">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-8 0h10"/></svg>
+                                                    Delete
+                                                </button>
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>
@@ -542,18 +552,21 @@
                             </div>
                         </div>
 
-                        <div class="mt-4 flex gap-2">
-                            <a href="{{ route('child-health.show', $childHealth) }}" class="clay-action clay-view flex-1 text-center">View</a>
-                            <a href="{{ route('child-health.edit', $childHealth) }}" class="clay-action clay-edit flex-1 text-center">Edit</a>
+                        <div class="mt-4">
+                            @component('partials.record-actions', ['label' => 'More actions for '.($childHealth->resident?->full_name ?? 'child health record')])
+                            <a href="{{ route('child-health.show', $childHealth) }}">@include('partials.record-action-icon', ['icon' => 'view']) View</a>
+                            <a href="{{ route('child-health.edit', $childHealth) }}">@include('partials.record-action-icon', ['icon' => 'edit']) Edit</a>
                             <button 
                                 type="button" 
-                                class="clay-action clay-delete flex-1 text-center trigger-delete-modal"
+                                class="record-action-danger trigger-delete-modal"
                                 data-action="{{ route('child-health.destroy', $childHealth) }}"
                                 data-name="{{ $childHealth->resident?->full_name ?? 'Unknown Resident' }}"
                                 data-confirm-title="Delete this child health record?"
                             >
+                                @include('partials.record-action-icon', ['icon' => 'delete'])
                                 Delete
                             </button>
+                            @endcomponent
                         </div>
                     </article>
                 @empty

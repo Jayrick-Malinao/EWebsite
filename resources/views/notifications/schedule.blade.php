@@ -525,28 +525,81 @@
                                                 {{ $notification->created_at?->format('F j, Y • g:i A') }}
                                             </p>
 
-                                            @if ($isUnread)
-                                                <form method="POST" action="{{ route('notifications.read', $notification->id) }}">
-                                                    @csrf
-                                                    <button
-                                                        type="submit"
-                                                        class="clay-action clay-view"
-                                                    >
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <button
+                                                    type="button"
+                                                    class="clay-action clay-view"
+                                                    data-notification-view
+                                                    aria-expanded="false"
+                                                    aria-controls="notification-details-{{ $notification->id }}"
+                                                >
+                                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12s3.5-6 9.75-6 9.75 6 9.75 6-3.5 6-9.75 6-9.75-6-9.75-6Z" />
+                                                        <circle cx="12" cy="12" r="2.5" />
+                                                    </svg>
+                                                    View
+                                                </button>
+
+                                                @if ($isUnread)
+                                                    <form method="POST" action="{{ route('notifications.read', $notification->id) }}">
+                                                        @csrf
+                                                        <button
+                                                            type="submit"
+                                                            class="clay-action clay-view"
+                                                        >
+                                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                                            </svg>
+                                                            Mark as read
+                                                        </button>
+                                                    </form>
+                                                @else
+                                                    <span class="inline-flex items-center gap-1.5 text-xs font-medium text-[#9AA9A4]">
                                                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                                                         </svg>
-                                                        Mark as read
-                                                    </button>
-                                                </form>
-                                            @else
-                                                <span class="inline-flex items-center gap-1.5 text-xs font-medium text-[#9AA9A4]">
-                                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                                                    </svg>
-                                                    Already read
-                                                </span>
-                                            @endif
+                                                        Already read
+                                                    </span>
+                                                @endif
+                                            </div>
 
+                                        </div>
+
+                                        <div
+                                            id="notification-details-{{ $notification->id }}"
+                                            class="clay-inset mt-4 hidden rounded-2xl p-4"
+                                            data-notification-details
+                                        >
+                                            <h5 class="text-sm font-bold text-[#164238]">
+                                                {{ $data['title'] ?? 'Notification' }}
+                                            </h5>
+                                            <p class="mt-2 whitespace-pre-line text-sm leading-6 text-[#385C52]">
+                                                {{ $data['message'] ?? 'You have a new notification.' }}
+                                            </p>
+                                            <dl class="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+                                                <div>
+                                                    <dt class="text-[11px] font-bold uppercase tracking-wide text-[#6D817A]">Type</dt>
+                                                    <dd class="mt-1 font-semibold text-[#234E43]">{{ $type }}</dd>
+                                                </div>
+                                                <div>
+                                                    <dt class="text-[11px] font-bold uppercase tracking-wide text-[#6D817A]">Read status</dt>
+                                                    <dd class="mt-1 font-semibold text-[#234E43]">{{ $isUnread ? 'Unread' : 'Read' }}</dd>
+                                                </div>
+                                                <div>
+                                                    <dt class="text-[11px] font-bold uppercase tracking-wide text-[#6D817A]">Received</dt>
+                                                    <dd class="mt-1 font-semibold text-[#234E43]">
+                                                        {{ $notification->created_at?->format('F j, Y g:i A') ?? '—' }}
+                                                    </dd>
+                                                </div>
+                                                @if (! empty($data['event_id']) || ! empty($data['record_id']))
+                                                    <div>
+                                                        <dt class="text-[11px] font-bold uppercase tracking-wide text-[#6D817A]">Related record</dt>
+                                                        <dd class="mt-1 font-semibold text-[#234E43]">
+                                                            {{ $data['event_id'] ?? $data['record_id'] }}
+                                                        </dd>
+                                                    </div>
+                                                @endif
+                                            </dl>
                                         </div>
 
                                     </div>
@@ -592,6 +645,16 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('[data-notification-view]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    const details = document.getElementById(button.getAttribute('aria-controls'));
+                    const isExpanded = button.getAttribute('aria-expanded') === 'true';
+
+                    details.classList.toggle('hidden', isExpanded);
+                    button.setAttribute('aria-expanded', String(!isExpanded));
+                });
+            });
+
             const menuButton = document.getElementById('mobileMenuButton');
             const overlay = document.getElementById('sidebar-overlay');
             const sidebar = document.querySelector('[data-sidebar]');

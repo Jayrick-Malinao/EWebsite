@@ -29,8 +29,8 @@
             --clay-primary-light: #2a9b80;
 
             --clay-ink: #164238;
-            --clay-muted: #6d817a;
-            --clay-placeholder: #9aa9a4;
+            --clay-muted: #526b61;
+            --clay-placeholder: #607a70;
 
             --clay-danger: #dc2626;
             --clay-warning: #b7791f;
@@ -294,7 +294,7 @@
 
             flex-shrink: 0;
 
-            border-radius: 18px;
+            border-radius: 50%;
 
             color: var(--clay-primary);
 
@@ -315,6 +315,7 @@
             width: 42px;
             height: 42px;
             object-fit: contain;
+            border-radius: 50%;
         }
 
         .cl-mobile-brand .cl-logo svg {
@@ -597,20 +598,6 @@
             color: var(--clay-ink);
         }
 
-        .cl-access-label {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-
-            white-space: nowrap;
-        }
-
-        .cl-access-label svg {
-            width: 13px;
-            height: 13px;
-
-            color: var(--clay-primary);
-        }
 
         /* =====================================================
            LOGIN AREA
@@ -876,7 +863,7 @@
 
             margin: 8px 0 0;
 
-            font-size: 11.5px;
+            font-size: 14px;
             line-height: 1.6;
 
             color: var(--clay-muted);
@@ -911,7 +898,7 @@
 
             margin-bottom: 5px;
 
-            font-size: 10px;
+            font-size: 13px;
             font-weight: 700;
         }
 
@@ -926,7 +913,7 @@
         }
 
         .cl-errors li {
-            font-size: 9.5px;
+            font-size: 13px;
             line-height: 1.5;
         }
 
@@ -953,7 +940,7 @@
             align-items: center;
             justify-content: space-between;
 
-            font-size: 11px;
+            font-size: 14px;
             font-weight: 700;
 
             color: var(--clay-ink);
@@ -998,7 +985,7 @@
 
             border-radius: 14px;
 
-            font-size: 11.5px;
+            font-size: 14px;
 
             color: var(--clay-ink);
 
@@ -1031,11 +1018,61 @@
                 0 0 0 3px rgba(22, 139, 112, .075);
         }
 
+        .cl-input:focus-visible,
+        .cl-check input:focus-visible,
+        .cl-button:focus-visible {
+            outline: 2px solid var(--clay-primary-dark);
+            outline-offset: 2px;
+        }
+
         .cl-input[aria-invalid="true"] {
             box-shadow:
                 inset 5px 5px 10px rgba(107, 134, 124, .13),
                 inset -5px -5px 10px rgba(255, 255, 255, .92),
                 0 0 0 2px rgba(220, 38, 38, .10);
+        }
+
+        .cl-password-input {
+            padding-right: 50px;
+        }
+
+        .cl-password-input::-ms-reveal {
+            display: none;
+        }
+
+        .cl-password-toggle {
+            position: absolute;
+            top: 1px;
+            right: 2px;
+            display: grid;
+            width: 44px;
+            height: 44px;
+            place-items: center;
+            border: 0;
+            border-radius: 12px;
+            background: transparent;
+            color: var(--clay-primary-dark);
+            cursor: pointer;
+        }
+
+        .cl-password-toggle[hidden] {
+            display: none;
+        }
+
+        .cl-password-toggle:focus-visible {
+            outline: 2px solid var(--clay-primary);
+            outline-offset: -3px;
+        }
+
+        .cl-password-toggle svg {
+            width: 19px;
+            height: 19px;
+        }
+
+        @media (max-width: 560px) {
+            .cl-input {
+                font-size: 16px;
+            }
         }
 
         /* =====================================================
@@ -1045,7 +1082,7 @@
         .cl-field-error {
             margin: 0;
 
-            font-size: 9.5px;
+            font-size: 13px;
             line-height: 1.4;
 
             color: var(--clay-danger);
@@ -1066,7 +1103,7 @@
 
             border-radius: 10px;
 
-            font-size: 9.5px;
+            font-size: 13px;
             font-weight: 600;
 
             color: #8a5a13;
@@ -1110,7 +1147,7 @@
 
             cursor: pointer;
 
-            font-size: 10px;
+            font-size: 13px;
             font-weight: 600;
 
             color: var(--clay-muted);
@@ -1190,12 +1227,12 @@
             background:
                 linear-gradient(
                     145deg,
-                    #1a9678 0%,
-                    #168b70 52%,
-                    #11765f 100%
+                    #0f6f5a 0%,
+                    #0f6f5a 52%,
+                    #0f4c3a 100%
                 );
 
-            font-size: 11.5px;
+            font-size: 14px;
             font-weight: 700;
 
             letter-spacing: .025em;
@@ -1330,7 +1367,7 @@
         .cl-security p {
             margin: 0;
 
-            font-size: 9.5px;
+            font-size: 12px;
             line-height: 1.55;
 
             color: var(--clay-muted);
@@ -1350,7 +1387,7 @@
 
             text-align: center;
 
-            font-size: 9.5px;
+            font-size: 12px;
 
             color: var(--clay-muted);
         }
@@ -1460,7 +1497,7 @@
             }
 
             .cl-desc {
-                font-size: 11px;
+                font-size: 13px;
             }
 
             .cl-system-status {
@@ -1745,34 +1782,7 @@
                             Barangay Esperanza · Pilar, Sorsogon
                         </span>
 
-                        <span class="cl-access-label">
-
-                            <svg
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="1.8"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                            >
-                                <rect
-                                    x="5"
-                                    y="10"
-                                    width="14"
-                                    height="10"
-                                    rx="2"
-                                ></rect>
-
-                                <path
-                                    d="M8 10V7a4 4 0 0 1 8 0v3"
-                                ></path>
-                            </svg>
-
-                            <strong>
-                                Authorized Access
-                            </strong>
-
-                        </span>
+                        
 
                     </div>
 
@@ -2077,10 +2087,28 @@
                                         autocomplete="current-password"
                                         required
                                         placeholder="Enter your password"
-                                        class="cl-input"
+                                        class="cl-input cl-password-input"
                                         aria-invalid="{{ $errors->has('password') ? 'true' : 'false' }}"
                                         aria-describedby="{{ $errors->has('password') ? 'password-error' : '' }}"
                                     >
+
+                                    <button
+                                        id="passwordToggle"
+                                        class="cl-password-toggle"
+                                        type="button"
+                                        aria-label="Show password"
+                                        aria-controls="password"
+                                        hidden
+                                    >
+                                        <svg id="passwordShowIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path>
+                                            <circle cx="12" cy="12" r="3"></circle>
+                                        </svg>
+                                        <svg id="passwordHideIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden>
+                                            <path d="M3 3l18 18M10.6 6.1A11.5 11.5 0 0 1 12 6c6.5 0 10 6 10 6a13.6 13.6 0 0 1-3.1 3.6M6.3 6.3A13.9 13.9 0 0 0 2 12s3.5 6 10 6a10.7 10.7 0 0 0 4-.8"></path>
+                                            <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"></path>
+                                        </svg>
+                                    </button>
 
                                 </div>
 
@@ -2256,6 +2284,21 @@
 
             const passwordInput =
                 document.getElementById('password');
+
+            const passwordToggle = document.getElementById('passwordToggle');
+            const passwordShowIcon = document.getElementById('passwordShowIcon');
+            const passwordHideIcon = document.getElementById('passwordHideIcon');
+
+            if (passwordInput && passwordToggle && passwordShowIcon && passwordHideIcon) {
+                passwordToggle.hidden = false;
+                passwordToggle.addEventListener('click', function () {
+                    const showing = passwordInput.type === 'password';
+                    passwordInput.type = showing ? 'text' : 'password';
+                    passwordToggle.setAttribute('aria-label', showing ? 'Hide password' : 'Show password');
+                    passwordShowIcon.hidden = showing;
+                    passwordHideIcon.hidden = !showing;
+                });
+            }
 
             const capsLockWarning =
                 document.getElementById('capsLockWarning');

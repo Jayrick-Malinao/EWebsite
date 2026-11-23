@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\MedicalInventory;
+use App\Models\Resident;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class MedicalInventoryController extends Controller
@@ -14,12 +17,33 @@ class MedicalInventoryController extends Controller
      */
     public function index(): View
     {
+        $today = now(config('app.timezone'))->startOfDay();
         $medicalInventories = MedicalInventory::query()
             ->orderBy('expiry_date')
             ->orderBy('medicine_name')
             ->get();
+        $expiredInventories = $medicalInventories
+            ->filter(fn (MedicalInventory $inventory): bool => $inventory->expiry_date->lt($today));
+        $unexpiredInventories = $medicalInventories
+            ->reject(fn (MedicalInventory $inventory): bool => $inventory->expiry_date->lt($today));
+        $expiredQuantity = $expiredInventories->sum('quantity');
+        $unexpiredQuantity = $unexpiredInventories->sum('quantity');
+        $totalQuantity = $expiredQuantity + $unexpiredQuantity;
 
-        return view('medical-inventories.index', compact('medicalInventories'));
+        return view('medical-inventories.index', [
+            'medicalInventories' => $medicalInventories,
+            'expiredInventories' => $expiredInventories,
+            'unexpiredInventories' => $unexpiredInventories,
+            'today' => $today,
+            'expiredQuantity' => $expiredQuantity,
+            'unexpiredQuantity' => $unexpiredQuantity,
+            'expiredPercentage' => $totalQuantity > 0
+                ? (int) round($expiredQuantity / $totalQuantity * 100)
+                : 0,
+            'unexpiredPercentage' => $totalQuantity > 0
+                ? (int) round($unexpiredQuantity / $totalQuantity * 100)
+                : 0,
+        ]);
     }
 
     /**
@@ -138,5 +162,77 @@ class MedicalInventoryController extends Controller
         return redirect()
             ->route('medical-inventories.index')
             ->with('success', 'Medical inventory item deleted successfully.');
+    }
+
+    public function stockOut(): View
+    {
+        $today = now(config('app.timezone'))->toDateString();
+        $medicalInventories = MedicalInventory::query()
+            ->where('quantity', '>', 0)
+            ->whereDate('expiry_date', '>=', $today)
+            ->orderBy('medicine_name')
+            ->orderBy('expiry_date')
+            ->get();
+        $residents = Resident::query()
+            ->orderBy('first_name')
+            ->orderBy('last_name')
+            ->get(['id', 'first_name', 'middle_name', 'last_name', 'suffix']);
+
+        return view('medical-inventories.stock-out', [
+            'medicalInventories' => $medicalInventories,
+            'residents' => $residents,
+            'releasedBy' => auth()->user(),
+            'releasedAt' => now(config('app.timezone')),
+        ]);
+    }
+
+    public function storeStockOut(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'medical_inventory_id' => ['required', 'integer', 'exists:medical_inventories,id'],
+            'resident_id' => ['required', 'integer', 'exists:residents,id'],
+            'method' => ['required', 'string', 'max:100'],
+            'purpose' => ['required', 'string', 'max:1000'],
+            'quantity' => ['required', 'integer', 'min:1'],
+            'confirmation' => ['accepted'],
+        ], [
+            'medical_inventory_id.required' => 'Select a medicine from the searchable list.',
+            'resident_id.required' => 'Select a resident from the searchable list.',
+            'quantity.min' => 'Release quantity must be at least one unit.',
+            'confirmation.accepted' => 'Confirm the stock release before submitting.',
+        ]);
+
+        DB::transaction(function () use ($validated): void {
+            $inventory = MedicalInventory::query()
+                ->lockForUpdate()
+                ->findOrFail($validated['medical_inventory_id']);
+            $today = now(config('app.timezone'))->startOfDay();
+
+            if ($inventory->expiry_date->lt($today)) {
+                throw ValidationException::withMessages([
+                    'medical_inventory_id' => 'Expired medicine cannot be released.',
+                ]);
+            }
+
+            if ($validated['quantity'] > $inventory->quantity) {
+                throw ValidationException::withMessages([
+                    'quantity' => "Only {$inventory->quantity} units are currently available.",
+                ]);
+            }
+
+            $inventory->decrement('quantity', $validated['quantity']);
+            $inventory->transactions()->create([
+                'resident_id' => $validated['resident_id'],
+                'released_by_id' => auth()->id(),
+                'method' => $validated['method'],
+                'purpose' => $validated['purpose'],
+                'quantity' => $validated['quantity'],
+                'released_at' => now(config('app.timezone')),
+            ]);
+        });
+
+        return redirect()
+            ->route('medical-inventories.index')
+            ->with('success', 'Medicine stock released successfully.');
     }
 }

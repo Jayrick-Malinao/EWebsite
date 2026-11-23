@@ -252,7 +252,7 @@
                             </p>
 
                             <p class="text-xs font-medium text-[#6D817A]">
-                                System Administrator
+                                {{ auth()->user()->role ?? 'Staff' }}
                             </p>
                         </div>
 
@@ -319,6 +319,7 @@
             {{-- FORM --}}
             <form id="announcementForm" action="{{ route('announcements.store') }}" method="POST">
                 @csrf
+                <input type="hidden" name="preview_hash" id="previewHash">
 
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
 
@@ -409,10 +410,11 @@
                                     </label>
                                     <select name="target_type" id="target_type" required class="clay-input cursor-pointer">
                                         <option value="">Select target audience</option>
-                                        <option value="specific" {{ old('target_type') === 'specific' ? 'selected' : '' }}>Specific Resident</option>
+                                        <option value="specific" {{ old('target_type') === 'specific' ? 'selected' : '' }}>Specific Residents</option>
                                         <option value="senior" {{ old('target_type') === 'senior' ? 'selected' : '' }}>Senior Citizens</option>
                                         <option value="children" {{ old('target_type') === 'children' ? 'selected' : '' }}>Children</option>
                                         <option value="pregnant" {{ old('target_type') === 'pregnant' ? 'selected' : '' }}>Pregnant Residents</option>
+                                        <option value="postnatal" {{ old('target_type') === 'postnatal' ? 'selected' : '' }}>Postnatal Residents</option>
                                         <option value="general" {{ old('target_type') === 'general' ? 'selected' : '' }}>General / All Active Residents</option>
                                         <option value="age_bracket" {{ old('target_type') === 'age_bracket' ? 'selected' : '' }}>Custom Age Bracket</option>
                                     </select>
@@ -421,24 +423,36 @@
                                     @enderror
                                 </div>
 
-                                {{-- Specific Resident --}}
+                                {{-- Specific Residents --}}
                                 <div id="specificResidentSection" class="hidden">
-                                    <label for="resident_id" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">
-                                        Select Resident <span class="text-[#DC2626]">*</span>
+                                    <label for="residentSearch" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">
+                                        Select Residents <span class="text-[#DC2626]">*</span>
                                     </label>
-                                    <select name="resident_id" id="resident_id" class="clay-input cursor-pointer">
-                                        <option value="">Select a resident</option>
+                                    <input
+                                        type="search"
+                                        id="residentSearch"
+                                        autocomplete="off"
+                                        placeholder="Search by resident name or ID"
+                                        class="clay-input"
+                                    >
+                                    <datalist id="residentOptions">
                                         @foreach ($residents as $resident)
-                                            <option value="{{ $resident->id }}" {{ (string) old('resident_id') === (string) $resident->id ? 'selected' : '' }}>
-                                                {{ $resident->full_name }}
-                                                @if ($resident->household)
-                                                    — {{ $resident->household->household_code }}
-                                                @endif
-                                            </option>
+                                            <option
+                                                value="{{ $resident->full_name }}"
+                                                data-resident-id="{{ $resident->id }}"
+                                            >Resident #{{ $resident->id }}</option>
                                         @endforeach
-                                    </select>
-                                    <p class="mt-1.5 text-[11px] text-[#6D817A]">Only active residents are listed.</p>
-                                    @error('resident_id')
+                                    </datalist>
+                                    <div id="residentSearchResults" class="clay-inset mt-2 hidden max-h-48 overflow-y-auto rounded-xl"></div>
+                                    <div id="selectedResidents" class="mt-3 flex flex-wrap gap-2"></div>
+                                    <div id="residentHiddenInputs"></div>
+                                    <p id="residentSearchError" class="mt-1.5 hidden text-xs text-[#DC2626]" role="alert">
+                                        Select at least one active resident.
+                                    </p>
+                                    <p class="mt-1.5 text-[11px] text-[#6D817A]">
+                                        Search active residents by name or Resident ID. Multiple selections are allowed.
+                                    </p>
+                                    @error('resident_ids')
                                         <p class="mt-1.5 text-xs text-[#DC2626]">{{ $message }}</p>
                                     @enderror
                                 </div>
@@ -456,7 +470,7 @@
                                                 id="min_age"
                                                 value="{{ old('min_age') }}"
                                                 min="0"
-                                                max="120"
+                                                max="255"
                                                 placeholder="e.g. 18"
                                                 class="clay-input"
                                             >
@@ -475,7 +489,7 @@
                                                 id="max_age"
                                                 value="{{ old('max_age') }}"
                                                 min="0"
-                                                max="120"
+                                                max="255"
                                                 placeholder="e.g. 59"
                                                 class="clay-input"
                                             >
@@ -487,7 +501,7 @@
                                 </div>
 
                                 {{-- Children Age Range --}}
-                                <div id="childrenAgeSection" class="hidden space-y-4">
+                                <div id="childrenAgeSection" class="hidden">
                                     <div class="clay-inset rounded-2xl p-4">
                                         <div class="flex items-start gap-3">
                                             <div class="clay-icon h-8 w-8 rounded-lg bg-[#E8F6EF] text-[#168B70]">
@@ -496,21 +510,28 @@
                                                 </svg>
                                             </div>
                                             <div>
-                                                <p class="text-xs font-bold text-[#164238]">Children Target Range</p>
-                                                <p class="mt-0.5 text-[11px] text-[#6D817A]">Default target is 0 to 5 years old. Adjust bounds if required.</p>
+                                                <p class="text-xs font-bold text-[#164238]">Children Target Range: 0–5 years</p>
+                                                <p class="mt-0.5 text-[11px] text-[#6D817A]">Residents are selected using their recorded date of birth.</p>
                                             </div>
                                         </div>
                                     </div>
+                                </div>
 
-                                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                        <div>
-                                            <label for="children_min_age" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">Minimum Age</label>
-                                            <input type="number" id="children_min_age" min="0" max="120" value="{{ old('min_age', 0) }}" class="clay-input">
+                                {{-- Recipient Preview --}}
+                                <div class="clay-inset rounded-2xl p-4" aria-live="polite">
+                                    <div class="flex items-start gap-3">
+                                        <div class="clay-icon h-8 w-8 rounded-lg bg-[#E8F6EF] text-[#168B70]">
+                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
                                         </div>
-
                                         <div>
-                                            <label for="children_max_age" class="mb-2 block text-xs font-bold uppercase tracking-wider text-[#385C52]">Maximum Age</label>
-                                            <input type="number" id="children_max_age" min="0" max="120" value="{{ old('max_age', 5) }}" class="clay-input">
+                                            <p class="text-xs font-bold uppercase tracking-wider text-[#385C52]">Recipient Preview</p>
+                                            <p id="recipientPreview" class="mt-1 text-sm text-[#6D817A]">Select a target audience to preview recipients.</p>
+                                            <p class="mt-3 text-xs font-bold text-[#385C52]">Eligible residents</p>
+                                            <ul id="qualifyingResidentList" class="mt-1 max-h-40 space-y-1 overflow-y-auto text-sm text-[#385C52]"></ul>
+                                            <p class="mt-3 text-xs font-bold text-[#385C52]">SMS recipients</p>
+                                            <ul id="recipientPreviewList" class="mt-3 space-y-1 text-sm text-[#385C52]"></ul>
                                         </div>
                                     </div>
                                 </div>
@@ -588,7 +609,7 @@
                                     </div>
                                     <div>
                                         <p class="text-xs font-bold text-[#164238]">SMS Delivery</p>
-                                        <p class="mt-0.5 text-[11px] text-[#6D817A]">Dispatched to registered household heads.</p>
+                                        <p class="mt-0.5 text-[11px] text-[#6D817A]">SMS notifications are automatically routed to the appropriate recipients based on the selected audience. Messages can be delivered directly to residents or through respective Household Heads, with duplicate recipients removed.</p>
                                     </div>
                                 </div>
                             </div>
@@ -598,7 +619,7 @@
                         <section class="clay-card p-5 sm:p-6">
                             <div class="mb-4">
                                 <h3 class="text-base font-bold text-[#164238]">Publish Announcement</h3>
-                                <p class="mt-1 text-xs text-[#6D817A]">Selected recipients will be notified immediately upon publishing.</p>
+                                <p class="mt-1 text-xs text-[#6D817A]">The announcement will be saved for the selected residents. Publishing will not send SMS messages.</p>
                             </div>
 
                             <div class="space-y-3">
@@ -631,6 +652,15 @@
     </main>
 
     <script>
+        @php
+            $residentSearchOptions = $residents->map(function ($resident) {
+                return [
+                    'id' => $resident->id,
+                    'name' => $resident->full_name,
+                    'household_code' => $resident->household?->household_code,
+                ];
+            })->values();
+        @endphp
         document.addEventListener('DOMContentLoaded', function () {
             const menuButton = document.getElementById('mobileMenuButton');
             const overlay = document.getElementById('sidebar-overlay');
@@ -651,10 +681,23 @@
             const specificSection = document.getElementById('specificResidentSection');
             const ageBracketSection = document.getElementById('ageBracketSection');
             const childrenAgeSection = document.getElementById('childrenAgeSection');
-            const minAge = document.getElementById('min_age');
-            const maxAge = document.getElementById('max_age');
-            const childrenMinAge = document.getElementById('children_min_age');
-            const childrenMaxAge = document.getElementById('children_max_age');
+            const residentSearch = document.getElementById('residentSearch');
+            const residentSearchError = document.getElementById('residentSearchError');
+            const residentSearchResults = document.getElementById('residentSearchResults');
+            const selectedResidentsContainer = document.getElementById('selectedResidents');
+            const residentHiddenInputs = document.getElementById('residentHiddenInputs');
+            const recipientPreview = document.getElementById('recipientPreview');
+            const recipientPreviewList = document.getElementById('recipientPreviewList');
+            const qualifyingResidentList = document.getElementById('qualifyingResidentList');
+            const previewHash = document.getElementById('previewHash');
+            const residents = @json($residentSearchOptions);
+            const selectedResidents = new Map();
+            @php
+                $oldResidentIds = old('resident_ids', old('resident_id') ? [old('resident_id')] : []);
+            @endphp
+            const oldResidentIds = @json($oldResidentIds);
+            let previewTimer;
+            let previewRevision = 0;
 
             const message = document.getElementById('message');
             const messageCounter = document.getElementById('messageCounter');
@@ -681,17 +724,189 @@
                 if (value === 'specific') specificSection?.classList.remove('hidden');
                 if (value === 'age_bracket') ageBracketSection?.classList.remove('hidden');
                 if (value === 'children') childrenAgeSection?.classList.remove('hidden');
+                document.getElementById('min_age').required = value === 'age_bracket';
+                document.getElementById('max_age').required = value === 'age_bracket';
+
+                updateRecipientPreview();
             }
 
             targetType?.addEventListener('change', updateTargetFields);
 
+            function renderSelectedResidents() {
+                if (!selectedResidentsContainer || !residentHiddenInputs) {
+                    return;
+                }
+
+                selectedResidentsContainer.replaceChildren();
+                residentHiddenInputs.replaceChildren();
+
+                selectedResidents.forEach((resident) => {
+                    const chip = document.createElement('span');
+                    chip.className = 'inline-flex items-center gap-2 rounded-full bg-[#E8F6EF] px-3 py-1.5 text-xs font-bold text-[#164238]';
+                    chip.textContent = `${resident.name} · Resident #${resident.id}`;
+
+                    const removeButton = document.createElement('button');
+                    removeButton.type = 'button';
+                    removeButton.className = 'inline-flex h-5 w-5 items-center justify-center rounded-full text-[#557067] hover:bg-white/80';
+                    removeButton.setAttribute('aria-label', `Remove ${resident.name}`);
+                    removeButton.innerHTML = '<svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
+                    removeButton.addEventListener('click', () => {
+                        selectedResidents.delete(resident.id);
+                        renderSelectedResidents();
+                        updateRecipientPreview();
+                    });
+
+                    chip.appendChild(removeButton);
+                    selectedResidentsContainer.appendChild(chip);
+
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'resident_ids[]';
+                    hiddenInput.value = resident.id;
+                    residentHiddenInputs.appendChild(hiddenInput);
+                });
+            }
+
+            function searchResidents() {
+                if (!residentSearch || !residentSearchResults) {
+                    return;
+                }
+
+                const term = residentSearch.value.trim().toLowerCase();
+                if (term === '') {
+                    residentSearchResults.classList.add('hidden');
+                    residentSearchResults.replaceChildren();
+                    return;
+                }
+
+                const matches = residents
+                    .filter((resident) => !selectedResidents.has(resident.id))
+                    .filter((resident) =>
+                        resident.name.toLowerCase().includes(term)
+                        || String(resident.id).includes(term)
+                    )
+                    .slice(0, 10);
+
+                residentSearchResults.replaceChildren();
+                if (matches.length === 0) {
+                    const empty = document.createElement('p');
+                    empty.className = 'px-3 py-3 text-xs text-[#6D817A]';
+                    empty.textContent = 'No active residents found.';
+                    residentSearchResults.appendChild(empty);
+                } else {
+                    matches.forEach((resident) => {
+                        const button = document.createElement('button');
+                        button.type = 'button';
+                        button.className = 'flex w-full items-center justify-between px-3 py-2.5 text-left text-xs hover:bg-white';
+                        button.innerHTML = `<span class="font-bold text-[#164238]">${resident.name}</span><span class="text-[#6D817A]">Resident #${resident.id}${resident.household_code ? ' · ' + resident.household_code : ''}</span>`;
+                        button.addEventListener('click', () => {
+                            selectedResidents.set(resident.id, resident);
+                            residentSearch.value = '';
+                            residentSearchResults.classList.add('hidden');
+                            renderSelectedResidents();
+                            updateRecipientPreview();
+                        });
+                        residentSearchResults.appendChild(button);
+                    });
+                }
+
+                residentSearchResults.classList.remove('hidden');
+            }
+
+            residentSearch?.addEventListener('input', searchResidents);
+
+            function updateRecipientPreview() {
+                if (!targetType || !recipientPreview) {
+                    return;
+                }
+
+                const revision = ++previewRevision;
+                previewHash.value = '';
+                recipientPreviewList.replaceChildren();
+                qualifyingResidentList.replaceChildren();
+                clearTimeout(previewTimer);
+                if (!targetType.value) {
+                    recipientPreview.textContent = 'Select a target audience to preview recipients.';
+                    return;
+                }
+
+                previewTimer = setTimeout(() => {
+                    const payload = {
+                        title: document.getElementById('title')?.value || 'Announcement preview',
+                        message: document.getElementById('message')?.value || 'Preview',
+                        target_type: targetType.value,
+                        priority: document.getElementById('priority')?.value || 'Normal',
+                        resident_ids: Array.from(selectedResidents.keys()),
+                        min_age: document.getElementById('min_age')?.value || null,
+                        max_age: document.getElementById('max_age')?.value || null,
+                    };
+
+                    recipientPreview.textContent = 'Calculating recipients...';
+
+                    fetch(@json(route('announcements.preview')), {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}',
+                        },
+                        body: JSON.stringify(payload),
+                    })
+                        .then((response) => response.json().then((data) => {
+                            if (!response.ok) {
+                                const error = data.errors ? Object.values(data.errors).flat().join(' ') : data.message;
+                                throw new Error(error || 'Recipient preview failed.');
+                            }
+                            return data;
+                        }))
+                        .then((data) => {
+                            if (revision !== previewRevision) return;
+                            recipientPreview.textContent = `${data.qualifying_residents} eligible residents; ${data.sms_recipients} valid SMS recipients. ${data.message}`;
+                            data.residents.forEach((resident) => {
+                                const item = document.createElement('li');
+                                item.textContent = `${resident.name} (Resident #${resident.id})`;
+                                qualifyingResidentList.appendChild(item);
+                            });
+                            data.recipients.forEach((recipient) => {
+                                const item = document.createElement('li');
+                                item.textContent = `${recipient.name} — ${recipient.contact_number}`;
+                                recipientPreviewList.appendChild(item);
+                            });
+                            previewHash.value = data.preview_hash;
+                        })
+                        .catch((error) => {
+                            if (revision !== previewRevision) return;
+                            recipientPreview.textContent = error.message || 'Recipient preview is temporarily unavailable.';
+                        });
+                }, 250);
+            }
+
             const form = document.getElementById('announcementForm');
-            form?.addEventListener('submit', function () {
-                if (targetType.value === 'children') {
-                    if (minAge) minAge.value = childrenMinAge.value || 0;
-                    if (maxAge) maxAge.value = childrenMaxAge.value || 5;
+            form?.addEventListener('submit', function (event) {
+                if (targetType.value === 'specific' && selectedResidents.size === 0) {
+                    event.preventDefault();
+                    if (residentSearchError) {
+                        residentSearchError.classList.remove('hidden');
+                    }
+                    residentSearch?.focus();
+                } else if (!previewHash.value) {
+                    event.preventDefault();
+                    recipientPreview.textContent = 'Please wait for a valid recipient preview before publishing.';
+                } else if (residentSearchError) {
+                    residentSearchError.classList.add('hidden');
                 }
             });
+
+            document.getElementById('min_age')?.addEventListener('input', updateRecipientPreview);
+            document.getElementById('max_age')?.addEventListener('input', updateRecipientPreview);
+
+            oldResidentIds.forEach((residentId) => {
+                const resident = residents.find((candidate) => candidate.id === Number(residentId));
+                if (resident) {
+                    selectedResidents.set(resident.id, resident);
+                }
+            });
+            renderSelectedResidents();
 
             updateTargetFields();
         });

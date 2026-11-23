@@ -1,0 +1,492 @@
+<mxfile host="65bd71144e">
+    <diagram id="system-access" name="1 - Access and Roles">
+        <mxGraphModel dx="873" dy="386" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1600" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="p1-title" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontStyle=1;fontSize=20;" value="PROPOSED SYSTEM PROCESS FLOW&amp;nbsp;" vertex="1">
+                    <mxGeometry height="55" width="700" x="350" y="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-start" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontStyle=1;" value="Start" vertex="1">
+                    <mxGeometry height="50" width="120" x="640" y="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-web" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1" value="Open Barangay Esperanza&lt;br&gt;Health Center Website" vertex="1">
+                    <mxGeometry height="60" width="200" x="600" y="185" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-landing" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1" value="Landing Page" vertex="1">
+                    <mxGeometry height="65" width="200" x="600" y="285" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-login" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1" value="Log in Form" vertex="1">
+                    <mxGeometry height="65" width="240" x="580" y="390" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-input" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1" value="&lt;span&gt;Validate required&amp;nbsp;&lt;/span&gt;&lt;div&gt;information&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="65" width="240" x="580" y="500" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-auth" parent="1" style="rhombus;whiteSpace=wrap;html=1;fontStyle=1;" value="Credentials accepted?" vertex="1">
+                    <mxGeometry height="90" width="160" x="620" y="600" as="geometry"/>
+                </mxCell>
+                <mxCell id="cVVO9EHqKUaGFV-NHPiD-1" edge="1" parent="1" source="p1-error" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fontStyle=1" target="p1-login">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-error" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1" value="Show Error&lt;br&gt;Return to login" vertex="1">
+                    <mxGeometry height="65" width="210" x="940" y="510" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-session" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1" value="Regenerate session&#xa;Write successful-login audit log" vertex="1">
+                    <mxGeometry height="65" width="240" x="580" y="735" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-role" parent="1" style="rhombus;whiteSpace=wrap;html=1;fontStyle=1;" value="Recognized role?" vertex="1">
+                    <mxGeometry height="90" width="160" x="620" y="835" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-admin" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1" value="System Administrator&#xa;Dashboard" vertex="1">
+                    <mxGeometry height="60" width="200" x="230" y="960" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-official" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1" value="Official&#xa;Dashboard" vertex="1">
+                    <mxGeometry height="60" width="190" x="605" y="1010" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-worker" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1" value="Health Worker&#xa;Dashboard" vertex="1">
+                    <mxGeometry height="60" width="200" x="940" y="960" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-modules" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1" value="&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;Role-protected routes&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="75" width="430" x="485" y="1225" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-denied" parent="1" style="rhombus;whiteSpace=wrap;html=1;fontStyle=1" value="Protected route&#xa;Role allowed?" vertex="1">
+                    <mxGeometry height="90" width="160" x="620" y="1363" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-forbidden" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1" value="403&amp;nbsp;&lt;div&gt;You not authorized&lt;/div&gt;&lt;div&gt;&amp;nbsp;to access this page&amp;nbsp;&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="60" width="170" x="960" y="1378" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-allowed" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1" value="Continue to requested module" vertex="1">
+                    <mxGeometry height="60" width="240" x="580" y="1510" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-logout" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1" value="Log Out" vertex="1">
+                    <mxGeometry height="65" width="210" x="30" y="1150" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-end" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontStyle=1;" value="End" vertex="1">
+                    <mxGeometry height="60" width="180" x="45" y="1290" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-e1" edge="1" parent="1" source="p1-start" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontStyle=1" target="p1-web">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-e2" edge="1" parent="1" source="p1-web" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontStyle=1" target="p1-landing">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-e3" edge="1" parent="1" source="p1-landing" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontStyle=1" target="p1-login">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-e4" edge="1" parent="1" source="p1-login" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontStyle=1" target="p1-input">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-e5" edge="1" parent="1" source="p1-input" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontStyle=1" target="p1-auth">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-e6" edge="1" parent="1" source="p1-auth" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontStyle=1" target="p1-error" value="No">
+                    <mxGeometry relative="1" x="-0.0328" as="geometry">
+                        <mxPoint x="1050" y="620" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="p1-e8" edge="1" parent="1" source="p1-auth" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontStyle=1" target="p1-session" value="Yes">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-e9" edge="1" parent="1" source="p1-session" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontStyle=1" target="p1-role">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-e10" edge="1" parent="1" source="p1-role" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontStyle=1" target="p1-admin" value="System Administrator">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-e11" edge="1" parent="1" source="p1-role" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontStyle=1" target="p1-official" value="Official">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-e12" edge="1" parent="1" source="p1-role" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontStyle=1" target="p1-worker" value="Health Worker">
+                    <mxGeometry relative="1" x="-0.0548" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-e14" edge="1" parent="1" source="p1-admin" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontStyle=1;exitX=0.84;exitY=1.005;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="p1-modules">
+                    <mxGeometry relative="1" x="-0.3611" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-e15" edge="1" parent="1" source="p1-official" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontStyle=1;exitX=0.53;exitY=1.039;exitDx=0;exitDy=0;exitPerimeter=0;" target="p1-modules">
+                    <mxGeometry relative="1" x="-0.0023" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="705.7" y="1180"/>
+                            <mxPoint x="705.7" y="1180"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="p1-e16" edge="1" parent="1" source="p1-worker" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;fontStyle=1" target="p1-modules">
+                    <mxGeometry relative="1" x="-0.0104" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-e17" edge="1" parent="1" source="p1-modules" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontStyle=1" target="p1-denied">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-e18" edge="1" parent="1" source="p1-denied" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontStyle=1" target="p1-forbidden" value="No">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-e19" edge="1" parent="1" source="p1-denied" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontStyle=1" target="p1-allowed" value="Yes">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-e20" edge="1" parent="1" source="p1-admin" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;dashed=1;fontStyle=1" target="p1-logout">
+                    <mxGeometry relative="1" x="0.3189" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="330" y="1040"/>
+                            <mxPoint x="100" y="1040"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="p1-e21" edge="1" parent="1" source="p1-logout" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontStyle=1" target="p1-end">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="cVVO9EHqKUaGFV-NHPiD-5" edge="1" parent="1" source="p1-official" style="rounded=0;html=1;endArrow=block;endFill=1;dashed=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.25;entryDx=0;entryDy=0;fontStyle=1;edgeStyle=orthogonalEdgeStyle;" target="p1-logout">
+                    <mxGeometry relative="1" x="0.6591" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="460" y="1020"/>
+                            <mxPoint x="460" y="1166.3"/>
+                        </Array>
+                        <mxPoint x="320" y="1070" as="sourcePoint"/>
+                        <mxPoint x="90" y="1210" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="cVVO9EHqKUaGFV-NHPiD-7" edge="1" parent="1" source="p1-worker" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;dashed=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1.011;entryY=0.698;entryDx=0;entryDy=0;entryPerimeter=0;fontStyle=1">
+                    <mxGeometry relative="1" x="0.7628" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="880" y="990"/>
+                            <mxPoint x="880" y="1195.4"/>
+                        </Array>
+                        <mxPoint x="1167.69" y="1010" as="sourcePoint"/>
+                        <mxPoint x="240.00000000000006" y="1195.3700000000001" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="records-workflows" name="2 - Records and Services">
+        <mxGraphModel dx="1500" dy="950" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="950" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="p2-title" value="STAFF RECORDS AND SERVICE WORKFLOWS" style="text;html=1;align=center;verticalAlign=middle;fontStyle=1;fontSize=20;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="430" y="20" width="640" height="45" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-start" value="Authorized staff&#xa;Admin / Official / Health Worker" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="620" y="90" width="260" height="65" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-module" value="Select an authorized module&#xa;Resident / Household / Health program / Inventory / Certificate / Schedule" style="rhombus;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="575" y="195" width="350" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-entry" value="Enter or edit form data&#xa;Common name and mobile normalization runs on requests" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="620" y="350" width="260" height="75" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-validate" value="Validate required fields, formats, ranges, relationships and business rules" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+                    <mxGeometry x="620" y="465" width="260" height="75" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-valid" value="Input valid?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="1">
+                    <mxGeometry x="665" y="580" width="170" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-errors" value="Return form errors&#xa;Keep input; correct and resubmit" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+                    <mxGeometry x="1030" y="595" width="230" height="65" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-save" value="Create / update / delete record&#xa;Household create/update uses a database transaction" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="620" y="720" width="270" height="75" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-out" value="Show updated list/detail or confirmation&#xa;Database is shared by staff dashboards" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="620" y="840" width="270" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-residents" value="RESIDENTS + HOUSEHOLDS&#xa;Resident: identity, DOB, gender, contacts, Purok, status, household relationship&#xa;Household: unique code, address, head, contact, members&#xa;Decision: head creates/links household; member must join household with head&#xa;Tables: residents ↔ households" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;spacing=10;" vertex="1" parent="1">
+                    <mxGeometry x="40" y="130" width="430" height="190" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-health" value="HEALTH PROGRAM RECORDS&#xa;Immunization: vaccine, dose and dates&#xa;Maternal care: pregnancy, prenatal and delivery details&#xa;Child health: growth, nutrition, vitamin A and deworming&#xa;Senior citizen: OSCA, health, caregiver and benefits&#xa;Each record links to a resident" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;spacing=10;" vertex="1" parent="1">
+                    <mxGeometry x="40" y="365" width="430" height="190" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-health-gap" value="SCHEMA LIMITATION&#xa;HealthRecordController/Model and HealthVisitController/Model exist, but migrations drop health_visits and do not create health_records. These two workflows cannot be confirmed on a clean migrated database." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacing=10;" vertex="1" parent="1">
+                    <mxGeometry x="40" y="590" width="430" height="135" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-inventory" value="MEDICAL INVENTORY&#xa;Medicine name, expiry date, quantity&#xa;Quantity must be a nonnegative integer; create rejects past expiry dates&#xa;Tables: medical_inventories&#xa;Role: System Administrator / Health Worker" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;spacing=10;" vertex="1" parent="1">
+                    <mxGeometry x="1030" y="130" width="430" height="155" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-cert" value="CERTIFICATES&#xa;Select resident/type, issue date, purpose, remarks&#xa;Generate number; set issuer and Issued status&#xa;Print supported; cancel changes status (not hard delete)&#xa;Tables: certificates, residents, users" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;spacing=10;" vertex="1" parent="1">
+                    <mxGeometry x="1030" y="320" width="430" height="165" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-schedule" value="SCHEDULE / EVENTS&#xa;Title/type/date; optional time, location, description&#xa;Date cannot be past; end time must follow start time&#xa;Create/update/cancel sends in-app notices to staff&#xa;Table: events" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;spacing=10;" vertex="1" parent="1">
+                    <mxGeometry x="1030" y="520" width="430" height="165" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-note" value="No approval step was found for resident, health, inventory, certificate, or event operations. Validation errors are surfaced to the form; unexpected DB errors use Laravel exception handling." style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="1010" y="735" width="460" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e1" edge="1" parent="1" source="p2-start" target="p2-module" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e2" edge="1" parent="1" source="p2-module" target="p2-entry" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e3" edge="1" parent="1" source="p2-entry" target="p2-validate" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e4" edge="1" parent="1" source="p2-validate" target="p2-valid" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e5" value="No" edge="1" parent="1" source="p2-valid" target="p2-errors" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e6" edge="1" parent="1" source="p2-errors" target="p2-entry" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e7" value="Yes" edge="1" parent="1" source="p2-valid" target="p2-save" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e8" edge="1" parent="1" source="p2-save" target="p2-out" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e9" edge="1" parent="1" source="p2-module" target="p2-residents" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;dashed=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e10" edge="1" parent="1" source="p2-module" target="p2-health" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;dashed=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e11" edge="1" parent="1" source="p2-module" target="p2-inventory" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;dashed=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e12" edge="1" parent="1" source="p2-module" target="p2-cert" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;dashed=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e13" edge="1" parent="1" source="p2-module" target="p2-schedule" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;dashed=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e14" edge="1" parent="1" source="p2-health" target="p2-health-gap" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;dashed=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="communications" name="3 - Announcements and UniSMS">
+        <mxGraphModel dx="1400" dy="1650" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1650" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="p3-title" value="ANNOUNCEMENT TARGETING, IN-APP NOTICE AND MANUAL UNISMS FLOW" style="text;html=1;align=center;verticalAlign=middle;fontStyle=1;fontSize=20;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="280" y="20" width="840" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-staff" value="Authorized staff creates&#xa;announcement" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="590" y="95" width="220" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-form" value="Enter title, message, priority, target&#xa;Optional age range / specific resident" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="560" y="190" width="280" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-validate" value="Validate target, priority, required text, age bounds" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+                    <mxGeometry x="560" y="295" width="280" height="65" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-preview" value="Preview eligible active residents&#xa;Group SMS count by household/head" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="560" y="395" width="280" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-match" value="Any residents match?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="1">
+                    <mxGeometry x="615" y="505" width="170" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-empty" value="No: return error&#xa;Choose a target and retry" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+                    <mxGeometry x="960" y="520" width="220" height="65" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-publish" value="Publish in DB transaction&#xa;Create announcement + recipient rows&#xa;Prepare one pending SMS delivery per household head" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="520" y="650" width="360" height="95" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-inapp" value="Create database in-app notification&#xa;for System Administrator, Official, Health Worker&#xa;Announcement is published immediately" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="520" y="790" width="360" height="85" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-manual" value="Staff manually requests&#xa;send pending SMS" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="560" y="925" width="280" height="65" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-enabled" value="UNISMS_SMS_ENABLED&#xa;and key + sender ID configured?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="1">
+                    <mxGeometry x="615" y="1030" width="170" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-disabled" value="No: show disabled / missing-config error&#xa;Do not call provider" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+                    <mxGeometry x="960" y="1045" width="250" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-pending" value="Load Pending deliveries&#xa;No pending: show informational message" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="560" y="1175" width="280" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-number" value="Household head&#xa;contact number present?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+                    <mxGeometry x="615" y="1285" width="170" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-failed" value="No: mark delivery Failed&#xa;Store missing-number reason" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+                    <mxGeometry x="960" y="1295" width="230" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-provider" value="UniSmsService validates Philippine number&#xa;HTTPS POST JSON to UniSMS" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="560" y="1420" width="280" height="75" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-result" value="Provider confirms acceptance?&#xa;HTTP 201 + pending status + reference ID" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+                    <mxGeometry x="615" y="1530" width="170" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-sent" value="Yes: mark Sent&#xa;Store sent_at" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="240" y="1545" width="190" height="65" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-uncertain" value="No / uncertain: mark Failed&#xa;Store sanitized reason; report result&#xa;No automatic retry" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+                    <mxGeometry x="960" y="1540" width="250" height="85" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-targets" value="Target choices: specific resident, senior (age ≥60 or active senior record), children (default ages 0–5), pregnant (Pregnant and no actual delivery date), general, or age bracket. Only active residents are selected." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;spacing=10;" vertex="1" parent="1">
+                    <mxGeometry x="60" y="240" width="390" height="155" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-notice" value="SMS is opt-in by configuration and manually triggered. In-app notifications are database notifications; neither this path nor the scheduled notifications imply SMS delivery." style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="70" y="470" width="390" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e1" edge="1" parent="1" source="p3-staff" target="p3-form" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e2" edge="1" parent="1" source="p3-form" target="p3-validate" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e3" edge="1" parent="1" source="p3-validate" target="p3-preview" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e4" edge="1" parent="1" source="p3-preview" target="p3-match" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e5" value="No" edge="1" parent="1" source="p3-match" target="p3-empty" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e6" edge="1" parent="1" source="p3-empty" target="p3-form" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e7" value="Yes" edge="1" parent="1" source="p3-match" target="p3-publish" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e8" edge="1" parent="1" source="p3-publish" target="p3-inapp" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e9" edge="1" parent="1" source="p3-inapp" target="p3-manual" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e10" edge="1" parent="1" source="p3-manual" target="p3-enabled" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e11" value="No" edge="1" parent="1" source="p3-enabled" target="p3-disabled" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e12" value="Yes" edge="1" parent="1" source="p3-enabled" target="p3-pending" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e13" edge="1" parent="1" source="p3-pending" target="p3-number" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e14" value="No" edge="1" parent="1" source="p3-number" target="p3-failed" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e15" value="Yes" edge="1" parent="1" source="p3-number" target="p3-provider" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e16" edge="1" parent="1" source="p3-provider" target="p3-result" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e17" value="Yes" edge="1" parent="1" source="p3-result" target="p3-sent" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e18" value="No" edge="1" parent="1" source="p3-result" target="p3-uncertain" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="automation-reporting" name="4 - Automation and Reporting">
+        <mxGraphModel dx="1500" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="1000" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="p4-title" value="SCHEDULED NOTIFICATIONS, REPORTS AND ADMINISTRATION" style="text;html=1;align=center;verticalAlign=middle;fontStyle=1;fontSize=20;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="400" y="20" width="700" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-scheduler" value="Laravel scheduler&#xa;Asia/Manila; withoutOverlapping" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="620" y="95" width="250" height="65" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-daily" value="Daily 08:00&#xa;Event reminder command" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="90" y="230" width="250" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-event-check" value="Event today/tomorrow?&#xa;reminder_sent=false; start time exists; event is still future" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+                    <mxGeometry x="380" y="220" width="260" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-event-no" value="No: skip event" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+                    <mxGeometry x="390" y="370" width="180" height="55" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-event-yes" value="Yes: database reminder notifications&#xa;to System Administrator, Official, Health Worker&#xa;Set reminder_sent=true" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="680" y="215" width="360" height="105" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-expiry" value="Daily 08:00&#xa;Inventory expiry command" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="90" y="500" width="250" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-expiry-check" value="Expiry window?&#xa;30 / 15 / 7 days, today, or expired" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+                    <mxGeometry x="380" y="485" width="260" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-expiry-yes" value="Check for duplicate database notice&#xa;Notify active System Administrators + Health Workers&#xa;Update alert flag" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="680" y="475" width="360" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-stock" value="Every 30 minutes&#xa;Low-stock command" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="90" y="760" width="250" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-stock-check" value="Quantity ≤ 10 and alert not sent?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+                    <mxGeometry x="380" y="745" width="260" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-stock-yes" value="Yes: lock inventory row; create database notices for active Admin/Health Worker; set flag" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="680" y="730" width="360" height="95" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-stock-reset" value="Quantity &gt; 10: reset flag&#xa;Future low-stock alert may be sent" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+                    <mxGeometry x="1100" y="745" width="300" height="75" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-inbox" value="Staff notification inbox&#xa;List / unread count / mark one or all read&#xa;Only owning user may mark individual notice read" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="1080" y="420" width="320" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-staff" value="Authenticated staff&#xa;Admin for admin-only tools" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="1120" y="90" width="250" height="65" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-report" value="Authenticated staff opens Reports / Analytics&#xa;Aggregate current database records&#xa;Show totals, demographics, program/inventory/event summaries and recent records" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="1090" y="180" width="330" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-admin" value="Admin-only operations&#xa;Manage staff; update settings; inspect audit logs; create/download/delete SQL backups&#xa;No backup restore workflow found" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;spacing=10;" vertex="1" parent="1">
+                    <mxGeometry x="1090" y="570" width="330" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-note" value="Not found: scheduled report generation, PDF/Excel export, SMS reminders for events or inventory, custom queued jobs/listeners, or user approval workflows. Reminder settings event_reminders_enabled/event_reminder_days are stored but not used by the scheduler/service." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacing=10;" vertex="1" parent="1">
+                    <mxGeometry x="350" y="880" width="820" height="95" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-e1" edge="1" parent="1" source="p4-scheduler" target="p4-daily" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-e2" edge="1" parent="1" source="p4-scheduler" target="p4-expiry" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-e3" edge="1" parent="1" source="p4-scheduler" target="p4-stock" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-e4" edge="1" parent="1" source="p4-daily" target="p4-event-check" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-e5" value="No" edge="1" parent="1" source="p4-event-check" target="p4-event-no" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-e6" value="Yes" edge="1" parent="1" source="p4-event-check" target="p4-event-yes" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-e7" edge="1" parent="1" source="p4-expiry" target="p4-expiry-check" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-e8" value="Eligible" edge="1" parent="1" source="p4-expiry-check" target="p4-expiry-yes" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-e9" edge="1" parent="1" source="p4-stock" target="p4-stock-check" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-e10" value="Yes" edge="1" parent="1" source="p4-stock-check" target="p4-stock-yes" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-e11" value="Stock recovered" edge="1" parent="1" source="p4-stock-check" target="p4-stock-reset" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-e12" edge="1" parent="1" source="p4-event-yes" target="p4-inbox" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-e13" edge="1" parent="1" source="p4-expiry-yes" target="p4-inbox" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-e14" edge="1" parent="1" source="p4-stock-yes" target="p4-inbox" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-e15" edge="1" parent="1" source="p4-staff" target="p4-report" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4-e16" edge="1" parent="1" source="p4-staff" target="p4-admin" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

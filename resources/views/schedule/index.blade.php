@@ -489,11 +489,12 @@
                                         </div>
 
                                         {{-- Actions --}}
-                                        <div class="mt-3 flex items-center gap-2">
+                                        <div class="mt-3">
+                                            @component('partials.record-actions', ['label' => 'More actions for '.$event->title])
                                             <a
                                                 href="{{ route('schedule.edit', $event) }}"
-                                                class="clay-action clay-edit"
                                             >
+                                                @include('partials.record-action-icon', ['icon' => 'edit'])
                                                 Edit
                                             </a>
 
@@ -503,10 +504,12 @@
                                                 data-delete-action="{{ route('schedule.destroy', $event) }}"
                                                 data-confirm-title="Delete this scheduled event?"
                                                 data-confirm-item="{{ $event->title }}"
-                                                class="clay-action clay-delete"
+                                                class="record-action-danger"
                                             >
+                                                @include('partials.record-action-icon', ['icon' => 'delete'])
                                                 Delete
                                             </button>
+                                            @endcomponent
                                         </div>
                                     </div>
                                 </div>

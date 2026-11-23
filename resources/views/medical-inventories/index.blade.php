@@ -275,15 +275,23 @@
                     </p>
                 </div>
 
-                <a
-                    href="{{ route('medical-inventories.create') }}"
-                    class="clay-primary inline-flex min-h-[44px] w-full shrink-0 items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold sm:w-auto"
-                >
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14" />
-                    </svg>
-                    Add Medicine
-                </a>
+                <div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+                    <a
+                        href="{{ route('medical-inventories.create') }}"
+                        class="clay-primary inline-flex min-h-[44px] shrink-0 items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold"
+                    >
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14" />
+                        </svg>
+                        Stock In
+                    </a>
+                    <a
+                        href="{{ route('medical-inventories.stock-out') }}"
+                        class="clay-secondary inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-xl px-5 py-2.5 text-sm font-bold"
+                    >
+                        Stock Out
+                    </a>
+                </div>
             </div>
 
             {{-- SUCCESS MESSAGE --}}
@@ -299,6 +307,56 @@
                     </div>
                 </div>
             @endif
+
+            <section class="clay-card mb-6 rounded-2xl p-5 sm:p-6" aria-labelledby="stock-quantity-heading">
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <h3 id="stock-quantity-heading" class="text-lg font-bold text-[#164238]">Quantity by expiry status</h3>
+                        <p class="mt-1 text-sm text-[#6D817A]">Totals are calculated from current inventory quantities.</p>
+                    </div>
+                    <p class="text-sm font-bold text-[#164238]">
+                        Total: {{ number_format($expiredQuantity + $unexpiredQuantity) }} units
+                    </p>
+                </div>
+
+                <div class="mt-5 grid gap-5 sm:grid-cols-2">
+                    <div>
+                        <div class="mb-2 flex items-center justify-between gap-3 text-sm">
+                            <span class="font-bold text-[#164238]">Unexpired stock</span>
+                            <span class="font-bold text-[#164238]">{{ number_format($unexpiredQuantity) }} units</span>
+                        </div>
+                        <div
+                            class="clay-inset h-4 overflow-hidden rounded-full"
+                            role="progressbar"
+                            aria-label="Unexpired stock as a share of total quantity"
+                            aria-valuemin="0"
+                            aria-valuemax="100"
+                            aria-valuenow="{{ $unexpiredPercentage }}"
+                        >
+                            <div class="h-full rounded-full bg-[#168B70] transition-all" style="width: {{ $unexpiredPercentage }}%"></div>
+                        </div>
+                        <p class="mt-1 text-xs text-[#6D817A]">{{ $unexpiredPercentage }}% of total quantity</p>
+                    </div>
+
+                    <div>
+                        <div class="mb-2 flex items-center justify-between gap-3 text-sm">
+                            <span class="font-bold text-[#164238]">Expired stock</span>
+                            <span class="font-bold text-[#B42323]">{{ number_format($expiredQuantity) }} units</span>
+                        </div>
+                        <div
+                            class="clay-inset h-4 overflow-hidden rounded-full"
+                            role="progressbar"
+                            aria-label="Expired stock as a share of total quantity"
+                            aria-valuemin="0"
+                            aria-valuemax="100"
+                            aria-valuenow="{{ $expiredPercentage }}"
+                        >
+                            <div class="h-full rounded-full bg-[#B42323] transition-all" style="width: {{ $expiredPercentage }}%"></div>
+                        </div>
+                        <p class="mt-1 text-xs text-[#6D817A]">{{ $expiredPercentage }}% of total quantity</p>
+                    </div>
+                </div>
+            </section>
 
             {{-- DESKTOP TABLE --}}
             <section class="clay-table hidden lg:block">
@@ -328,15 +386,28 @@
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6D817A]">Expiry Date</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6D817A]">Quantity</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6D817A]">Expiry Status</th>
-<th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6D817A]">Actions</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6D817A]"><span class="sr-only">Actions</span></th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($medicalInventories as $inventory)
+                                @if ($loop->first)
+                                    <tr>
+                                        <th colspan="5" class="bg-[#EDF5F0] px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-[#164238]">
+                                            {{ $expiredInventories->isNotEmpty() ? 'Expired medicine' : 'Unexpired medicine' }}
+                                        </th>
+                                    </tr>
+                                @elseif ($loop->index === $expiredInventories->count())
+                                    <tr>
+                                        <th colspan="5" class="bg-[#EDF5F0] px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-[#164238]">
+                                            Unexpired medicine
+                                        </th>
+                                    </tr>
+                                @endif
                                 @php
-                                    $today = now()->startOfDay();
+                                    $today = $today->copy()->startOfDay();
                                     $expiryDate = $inventory->expiry_date->copy()->startOfDay();
-                                    $daysUntilExpiry = $today->diffInDays($expiryDate, false);
+                                    $daysUntilExpiry = (int) $today->diffInDays($expiryDate, false);
 
                                     if ($daysUntilExpiry < 0) {
                                         $statusLabel = 'Expired';
@@ -396,14 +467,20 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <div class="flex items-center gap-2">
-                                            <a href="{{ route('medical-inventories.edit', $inventory) }}" class="inline-flex items-center rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 hover:bg-emerald-100">Edit</a>
+                                        @component('partials.record-actions', ['label' => 'More actions for '.$inventory->medicine_name])
+                                            <a href="{{ route('medical-inventories.edit', $inventory) }}">
+                                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.5-7.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 7.5-7.5z" /></svg>
+                                                Edit
+                                            </a>
                                             <form action="{{ route('medical-inventories.destroy', $inventory) }}" method="POST" data-confirm-title="Delete this inventory item?" data-confirm-item="{{ $inventory->medicine_name }}">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="inline-flex items-center rounded-lg bg-red-50 px-3 py-1.5 text-xs font-bold text-red-700 hover:bg-red-100">Delete</button>
+                                                <button type="submit" class="record-action-danger">
+                                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-8 0h10" /></svg>
+                                                    Delete
+                                                </button>
                                             </form>
-                                        </div>
+                                        @endcomponent
                                     </td>
                                 </tr>
                             @empty
@@ -429,10 +506,19 @@
             {{-- MOBILE CARDS --}}
             <section class="space-y-4 lg:hidden">
                 @forelse ($medicalInventories as $inventory)
+                    @if ($loop->first)
+                        <div class="clay-count rounded-xl px-4 py-2 text-sm font-bold">
+                            {{ $expiredInventories->isNotEmpty() ? 'Expired medicine' : 'Unexpired medicine' }}
+                        </div>
+                    @elseif ($loop->index === $expiredInventories->count())
+                        <div class="clay-count rounded-xl px-4 py-2 text-sm font-bold">
+                            Unexpired medicine
+                        </div>
+                    @endif
                     @php
-                        $today = now()->startOfDay();
+                        $today = $today->copy()->startOfDay();
                         $expiryDate = $inventory->expiry_date->copy()->startOfDay();
-                        $daysUntilExpiry = $today->diffInDays($expiryDate, false);
+                        $daysUntilExpiry = (int) $today->diffInDays($expiryDate, false);
 
                         if ($daysUntilExpiry < 0) {
                             $statusLabel = 'Expired';
@@ -481,6 +567,27 @@
                                 <p class="text-[10px] font-bold uppercase tracking-wider text-[#6D817A]">Quantity</p>
                                 <p class="mt-1 text-xs font-bold text-[#234E43]">{{ number_format($inventory->quantity) }} units</p>
                             </div>
+                        </div>
+
+                        <div class="mt-5">
+                            @component('partials.record-actions', ['label' => 'More actions for '.$inventory->medicine_name])
+                            <a href="{{ route('medical-inventories.edit', $inventory) }}">
+                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.5-7.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 7.5-7.5z" />
+                                </svg>
+                                Edit
+                            </a>
+                            <form action="{{ route('medical-inventories.destroy', $inventory) }}" method="POST" data-confirm-title="Delete this inventory item?" data-confirm-item="{{ $inventory->medicine_name }}">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="record-action-danger">
+                                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-8 0h10" />
+                                    </svg>
+                                    Delete
+                                </button>
+                            </form>
+                            @endcomponent
                         </div>
                     </article>
                 @empty

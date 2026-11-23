@@ -43,7 +43,7 @@ class BackupService
 
         $filename = "ewebsite_backup_{$timestamp}.sql";
 
-        $backupPath = $backupDirectory . DIRECTORY_SEPARATOR . $filename;
+        $backupPath = $backupDirectory.DIRECTORY_SEPARATOR.$filename;
 
         $environment = [
             'MYSQL_PWD' => (string) ($password ?? ''),
@@ -51,14 +51,14 @@ class BackupService
 
         $process = new Process([
             $mysqldump,
-            '--host=' . $host,
-            '--port=' . $port,
-            '--user=' . $username,
+            '--host='.$host,
+            '--port='.$port,
+            '--user='.$username,
             '--single-transaction',
             '--routines',
             '--triggers',
             '--events',
-            '--result-file=' . $backupPath,
+            '--result-file='.$backupPath,
             $database,
         ]);
 
@@ -75,7 +75,7 @@ class BackupService
 
             throw new RuntimeException(
                 'Database backup failed.'
-                . ($error !== '' ? ' ' . $error : '')
+                .($error !== '' ? ' '.$error : '')
             );
         }
 

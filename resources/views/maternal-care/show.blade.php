@@ -334,19 +334,6 @@
                         Edit Record
                     </a>
 
-                    {{-- Delete --}}
-                    <button
-                        type="button"
-                        id="triggerDeleteModal"
-                        data-confirm-title="Delete this maternal care record?"
-                        data-confirm-item="{{ $maternalCare->resident?->full_name ?? 'Resident record' }}"
-                        class="clay-delete-btn inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold"
-                    >
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 7h12M9 7V4h6v3m-8 0 .7 13h8.6L17 7M10 11v5m4-5v5" />
-                        </svg>
-                        Delete Record
-                    </button>
                 </div>
             </div>
 
@@ -524,72 +511,8 @@
 
             </div>
 
-            {{-- Delete Form --}}
-            <form id="deleteForm" method="POST" action="{{ route('maternal-care.destroy', $maternalCare) }}" class="hidden">
-                @csrf
-                @method('DELETE')
-            </form>
-
         </div>
     </main>
-
-    {{-- DELETE CONFIRMATION MODAL --}}
-    <div
-        id="deleteMaternalModal"
-        class="clay-confirm-overlay"
-        aria-hidden="true"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="deleteMaternalModalTitle"
-    >
-        <div class="clay-confirm-box" role="document">
-            <div class="clay-icon h-12 w-12 rounded-2xl bg-[#FCEFED] text-[#B42323]">
-                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86l-8.18 14a2 2 0 0 0 1.73 3h16.32a2 2 0 0 0 1.73-3l-8.18-14a2 2 0 0 0-3.42 0Z" />
-                </svg>
-            </div>
-
-            <div class="mt-4">
-                <h2 id="deleteMaternalModalTitle" class="text-lg font-bold text-[#164238]">
-                    Delete Maternal Record?
-                </h2>
-                <p class="mt-2 text-sm leading-6 text-[#6D817A]">
-                    This action will permanently remove the selected maternal care record. Please confirm that you want to continue.
-                </p>
-            </div>
-
-            <div class="clay-inset mt-4 rounded-xl p-4">
-                <p class="text-[11px] font-bold uppercase tracking-wider text-[#6D817A]">Maternal Record</p>
-                <p class="mt-1 break-words text-sm font-bold text-[#164238]">
-                    {{ $maternalCare->resident?->full_name ?? 'Resident Record' }}
-                </p>
-                <p class="mt-1 text-xs font-medium text-[#6D817A]">
-                    Pregnancy #{{ $maternalCare->pregnancy_number }} · {{ $maternalCare->pregnancy_status }}
-                </p>
-            </div>
-
-            <div class="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                <button
-                    type="button"
-                    id="deleteMaternalCancel"
-                    class="clay-secondary inline-flex min-h-[42px] items-center justify-center rounded-xl px-4 py-2.5 text-sm font-bold"
-                >
-                    Cancel
-                </button>
-
-                <button
-                    type="button"
-                    id="deleteMaternalConfirm"
-                    class="clay-primary inline-flex min-h-[42px] items-center justify-center gap-2 rounded-xl !bg-gradient-to-r !from-[#DC2626] !to-[#B42323] px-4 py-2.5 text-sm font-bold"
-                >
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 7h12m-9 0v10m6-10v10M9 7V5.75A1.75 1.75 0 0 1 10.75 4h2.5A1.75 1.75 0 0 1 15 5.75V7m-8 0 .75 12.25A2 2 0 0 0 9.75 21h4.5a2 2 0 0 0 1.99-1.75L17 7" />
-                    </svg>
-                    Delete Record
-                </button>
-            </div>
-        </div>
-    </div>
 
     {{-- SCRIPTS --}}
     <script>
@@ -626,33 +549,6 @@
                 });
             }
 
-            /* Delete Modal */
-            const triggerBtn = document.getElementById('triggerDeleteModal');
-            const modal = document.getElementById('deleteMaternalModal');
-            const cancelBtn = document.getElementById('deleteMaternalCancel');
-            const confirmBtn = document.getElementById('deleteMaternalConfirm');
-            const deleteForm = document.getElementById('deleteForm');
-
-            if (triggerBtn && modal && cancelBtn && confirmBtn && deleteForm) {
-                triggerBtn.addEventListener('click', () => {
-                    modal.classList.add('is-open');
-                    modal.setAttribute('aria-hidden', 'false');
-                    document.body.style.overflow = 'hidden';
-                });
-
-                const closeModal = () => {
-                    modal.classList.remove('is-open');
-                    modal.setAttribute('aria-hidden', 'true');
-                    document.body.style.overflow = '';
-                };
-
-                cancelBtn.addEventListener('click', closeModal);
-                confirmBtn.addEventListener('click', () => deleteForm.submit());
-
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) closeModal();
-                });
-            }
         });
     </script>
 </body>
