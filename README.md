@@ -4,27 +4,29 @@ Barangay Esperanza Health Center Records Management System is a Laravel-based we
 
 ## Project Status
 
-- **Implemented:** role-based authentication and authorization; System Administrator, Official, and Health Worker dashboards; user management; residents and households; health records and health visits; immunization, maternal care, child health, and senior citizen modules; medical inventory with expiry and low-stock alerts; schedules and event reminders; announcements and recipient targeting; announcement SMS delivery preparation and manual sending; in-app notifications; reports; analytics; audit logs; backups; system settings; account profile and password updates; and a read-only database assistant endpoint.
+- **Implemented:** a public welcome page with database-backed aggregate charts; role-based authentication and authorization; System Administrator, Official, and Health Worker dashboards; user management; residents and households; health records and visits; health programs; medical inventory, stock releases, and alerts; schedules and event reminders; announcements and recipient targeting; SMS preparation and manual sending; in-app notifications; reports; analytics; audit logs; MySQL backups; system settings; account management; and a read-only database assistant endpoint.
 - **Partially implemented:** UniSMS delivery tracking. The provider reports sending status, but its documented API does not explicitly confirm handset delivery.
 - **Not implemented or not verified:** Barangay Map; backup restore; PDF/Excel export; automated report generation beyond the reports dashboard; and any feature not present in the inspected routes, controllers, models, migrations, views, services, or tests.
 
 ## Technology Stack
 
-- PHP 8.3
+- PHP 8.3 or later (PHP 8.x)
+- Composer and Node.js (`^20.19.0` or `>=22.12.0` for the installed Vite 8)
 - Laravel 13
 - Livewire 4
 - Blade templates
 - Tailwind CSS 4
 - Alpine.js
 - Vite for frontend assets
-- SQLite by default; MySQL, MariaDB, PostgreSQL, and SQL Server are available through `.env`
+- SQLite by default; MySQL and other Laravel database connections can be configured through `.env` (see database limitations below)
 - PHPUnit for automated tests
 
 ## System Architecture
 
 ```mermaid
 flowchart LR
-    Browser["Browser / Livewire UI"] --> Laravel["Laravel Application"]
+    Browser["Browser / Blade and Livewire UI"] --> Laravel["Laravel Application"]
+    Laravel --> Welcome["Public Welcome Page: Aggregate Charts"]
     Laravel --> Auth["Authentication and Role Middleware"]
     Auth --> Controllers["Controllers"]
     Controllers --> Models["Eloquent Models"]
@@ -64,19 +66,24 @@ Medical inventory management is restricted to System Administrator and Health Wo
 
 ## Installation
 
+Install PHP with the required Composer and database extensions, Composer, and Node.js. The following commands are for a **new local installation**. If `.env` already contains an application key, preserve it and skip `php artisan key:generate`; do not overwrite the existing `.env`.
+
 For Windows with Laragon, use PowerShell or the Laragon terminal:
 
 ```powershell
 composer install
-Copy-Item .env.example .env
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 php artisan key:generate
+# For the default SQLite connection, create the database file if it is missing:
+if (-not (Test-Path database\database.sqlite)) { New-Item -ItemType File database\database.sqlite }
+# For MySQL instead, configure DB_* in .env and create the database before migrating.
 php artisan migrate
 npm install
 npm run build
 php artisan serve
 ```
 
-Or use the Composer setup script:
+For a new installation, `composer run setup` also installs dependencies (`npm install --ignore-scripts`), creates `.env` if missing, generates a key, migrates with `--force`, and builds assets. Configure the database first and ensure its SQLite file or MySQL database exists. Use an appropriate development database and do not run this script on an existing installation without reviewing those effects:
 
 ```bash
 composer run setup
@@ -86,8 +93,11 @@ On Unix-like shells, the equivalent setup commands are:
 
 ```bash
 composer install
-cp .env.example .env
+test -f .env || cp .env.example .env
 php artisan key:generate
+# For the default SQLite connection:
+test -f database/database.sqlite || touch database/database.sqlite
+# For MySQL instead, configure DB_* in .env and create the database before migrating.
 php artisan migrate
 npm install
 npm run build
@@ -96,7 +106,7 @@ php artisan serve
 
 ## Database Setup
 
-The default database connection is SQLite. MySQL, MariaDB, PostgreSQL, and SQL Server can be configured through `.env`.
+The default connection in `.env.example` is SQLite. MySQL, MariaDB, PostgreSQL, and SQL Server connections are also defined, but that does **not** mean every feature supports every engine. The analytics dashboard uses MySQL-style `DATE_FORMAT`; the backup service reads the MySQL connection and uses `mysqldump`. Use MySQL for those features or verify compatibility before using another engine. Tests use an in-memory SQLite database.
 
 ```bash
 php artisan migrate
@@ -108,7 +118,7 @@ For testing:
 php artisan test
 ```
 
-Do not run database-changing commands against production data without a verified backup.
+The setup commands do not seed users. `DatabaseSeeder` invokes `UserSeeder`, which contains development administrator credentials and uses `updateOrCreate`, so reseeding can reset those accounts. Do not use the development seeder in production; provision administrator accounts securely. Do not run database-changing commands against production data without a verified backup.
 
 ## Main Modules
 
@@ -131,6 +141,18 @@ Do not run database-changing commands against production data without a verified
 - System Settings
 - Users
 - Database Assistant
+
+## Public Welcome Page
+
+The public `home` route renders the welcome page and a responsive carousel using current database aggregates loaded when the page is requested. It shows:
+
+- Current-year monthly health visits, including exact counts below five.
+- Resident gender and status distributions; each entire distribution is withheld when a nonzero group contains fewer than five residents.
+- Resident and household totals, event and upcoming-event totals, inventory entry counts, and a combined health/program entry count. The health/program total is withheld when it is below five; it counts entries, not unique patients.
+
+The carousel advances every two seconds, with previous/next buttons. Rotation pauses on pointer hover, touch-and-hold, keyboard focus, a hidden browser tab, or a reduced-motion preference. The charts do not automatically reload database data while the page remains open.
+
+**Privacy:** The welcome page is accessible without signing in. Monthly visit counts and the other displayed aggregates are public, including small monthly visit counts. Review the disclosure risk before publishing or deploying real health data. Individual patient names and visit details are not part of these public charts. The full analytics and reports dashboards require authentication.
 
 ## Authentication Workflow
 
@@ -213,10 +235,14 @@ flowchart TD
     Inventory --> CreateItem["Create Item"]
     Inventory --> EditItem["Edit Item"]
     Inventory --> DeleteItem["Delete Item"]
+    Inventory --> StockOut["Release Stock to Resident"]
     CreateItem --> SaveItem["Save Item"]
     EditItem --> UpdateItem["Update Item"]
     DeleteItem --> Removed["Item Removed"]
+    StockOut --> Transaction["Record Release and Reduce Quantity"]
 ```
+
+Stock releases require confirmation and cannot exceed available quantity or use expired inventory. The release records the resident, staff member, method, purpose, quantity, and time.
 
 ## Medical Inventory Notification Workflow
 
@@ -251,32 +277,42 @@ sequenceDiagram
     participant Controller as AnnouncementController
     participant DB as Database
     participant SMS as UniSmsService
+    participant Scheduler as Scheduled Status Sync
 
     User->>Controller: Publish announcement
     Controller->>DB: Create announcement
     Controller->>DB: Create recipients
     Controller->>DB: Create prepared SMS deliveries
+    Controller->>DB: Notify system users
     Controller-->>User: Announcement published
-    User->>Controller: Send prepared SMS
-    Controller->>DB: Claim prepared deliveries
-    Controller->>SMS: Send one message per delivery
-    SMS-->>Controller: Queued, rejected, or unknown
-    Controller->>DB: Save status and provider reference
-    Controller-->>User: Processing summary
-    User->>Controller: Check UniSMS status
-    Controller->>SMS: Look up message by reference
-    SMS-->>Controller: pending, retrying, sent, or failed
+    User->>Controller: Review announcement and recipients
+    alt Cancel before SMS processing
+        User->>Controller: Cancel announcement
+        Controller->>DB: Remove announcement and associated records
+    else Send prepared messages
+        User->>Controller: Confirm Send
+        Controller->>DB: Claim prepared deliveries
+        Controller->>SMS: Send one message per delivery
+        SMS-->>Controller: Queued, rejected, or unknown
+        Controller->>DB: Save status and provider reference
+        Controller-->>User: Processing summary
+        Scheduler->>SMS: Look up eligible messages by reference
+        SMS-->>Scheduler: pending, retrying, sent, or failed
+        Scheduler->>DB: Update delivery status
+    end
 ```
 
-SMS sending requires `UNISMS_SMS_ENABLED=true`, `UNISMS_SECRET_KEY`, and `UNISMS_SENDER_ID`. Publishing only prepares messages; sending is a separate action. A queued response remains Pending, and an ambiguous submission is Unknown and is not automatically resent. The UniSMS `sent` status remains Unknown in the database because the documented API does not explicitly guarantee handset delivery; the page displays it separately as Sent (unconfirmed). Older records previously marked Sent are also Unknown because their provider references were not stored in the database.
+The Published Announcements list displays three records per page. Publishing creates the announcement, recipient records, prepared SMS deliveries, and in-app notifications for system users; it does not send SMS. The details page shows the announcement, audience, recipient counts, delivery summary, and a separate send confirmation. Cancel removes the announcement, prepared deliveries, and associated in-app notifications only if SMS processing has not started; users may already have seen the notification.
 
-To receive provider updates, set `UNISMS_WEBHOOK_SECRET` to the webhook secret configured in UniSMS and configure the provider's HTTPS webhook URL to the application's `/webhooks/unisms` path. Without a webhook, use **Check UniSMS status** for records with a provider reference. A webhook that arrives before its reference is saved may need a later status check. Verify any unknown outcome with UniSMS before sending another message.
+SMS sending requires `UNISMS_SMS_ENABLED=true`, `UNISMS_SECRET_KEY`, and `UNISMS_SENDER_ID`. A queued response remains Pending; an ambiguous submission is Unknown and is not automatically resent. Provider `sent` is displayed separately and does not confirm handset delivery. The disabled **Sent** button indicates that all prepared deliveries were submitted, not that every handset received a message. The details page no longer exposes manual status-check or retry controls, although the authenticated backend routes remain.
+
+To receive provider updates, set `UNISMS_WEBHOOK_SECRET` to the webhook secret configured in UniSMS and configure the provider's HTTPS webhook URL to the application's `/webhooks/unisms` path. The scheduled status sync can also check eligible messages with provider references. A webhook that arrives before its reference is saved may need a later status check. Verify any unknown outcome with UniSMS before sending another message.
 
 Webhooks match the documented message reference, not a unique event ID. Webhook updates to the same delivery use a transaction and row lock on MySQL; repeated sent or retrying states and protected final states are acknowledged without rewriting the delivery. A failed update returns an error so it can be retried. Failed and Delivered cannot be overwritten, retrying cannot replace a provider-sent status, and a failed notification can replace sent/Unknown. UniSMS does not document webhook event ordering or retry identifier stability, so this is not event deduplication and arrival order cannot establish the latest provider event.
 
-Status checks use the provider's status API directly and work on localhost when the server can reach UniSMS; they only look up existing messages and never send SMS. A check already in progress blocks another check for the same announcement. Missing or invalid references are reported, and temporary lookup errors leave the last known status unchanged. Sanitized provider reasons and error codes are retained in status-check history when available. Manual checks bypass per-message intervals but respect the provider-error cooldown.
+Status checks use the provider's status API directly and work on localhost when the server can reach UniSMS; they only look up existing messages and never send SMS. A check already in progress blocks another check for the same announcement. Missing or invalid references are reported, and temporary lookup errors leave the last known status unchanged. Sanitized provider reasons and error codes are retained in status-check history when available. The retained manual-check endpoint bypasses per-message intervals but respects the provider-error cooldown.
 
-The Laravel scheduler checks up to 25 due Pending or Unknown messages with valid references every five minutes, including sent-but-unconfirmed messages, and checks messages older than a day at most hourly. The command reports updated, skipped, not-yet-due, unavailable, missing-reference, invalid-reference and locked counts. Eligibility counts reflect the start of the run; the next eligibility time is recalculated afterward and does not guarantee when the scheduler or provider cooldown will allow a check. Run the Laravel scheduler on the host for automatic checks; on a local development machine, `php artisan schedule:work` runs it while the command remains active. Failed lookups are recorded without changing the last valid provider status. An explicit rejection with HTTP 401 or 422 and no provider reference can be prepared for retry; its earlier attempt is retained and a separate send confirmation is required. Pending, accepted, and uncertain submissions cannot be retried through this action.
+The Laravel scheduler checks up to 25 due Pending or Unknown messages with valid references every five minutes, including sent-but-unconfirmed messages, and checks messages older than a day at most hourly. The command reports updated, skipped, not-yet-due, unavailable, missing-reference, invalid-reference and locked counts. Eligibility counts reflect the start of the run; the next eligibility time is recalculated afterward and does not guarantee when the scheduler or provider cooldown will allow a check. Run the Laravel scheduler on the host for automatic checks; on a local development machine, `php artisan schedule:work` runs it while the command remains active. Failed lookups are recorded without changing the last valid provider status. The retained retry-preparation endpoint accepts only eligible explicit rejections; it does not send SMS. Pending, accepted, and uncertain submissions cannot be retried through it.
 
 ### Enable scheduled checks
 
@@ -292,7 +328,7 @@ For automatic execution while Windows and the configured user account are availa
 
 1. Check Windows Task Scheduler for an existing task running this application's `artisan schedule:run`; do not create a duplicate.
 2. Create a task that repeats every minute indefinitely. Set its action to **Start a program**. Use the PHP executable path from `Get-Command php` as the program, `artisan schedule:run --no-interaction` as its arguments, and the application root (for this installation, `C:\laragon\www\EWebsite`) as **Start in**.
-3. Configure the task not to start another instance while one is already running. Verify its last run result and the announcement's last status-check time. The machine and database must be available; task execution also depends on the selected Windows account and login settings.
+3. Configure the task not to start another instance while one is already running. Verify its last run result and, if needed, inspect the stored delivery status-check records. The machine and database must be available; task execution also depends on the selected Windows account and login settings.
 
 For a Unix production host, configure the application directory and PHP executable for the cron user, then add one per-minute scheduler entry (replace both placeholders with absolute paths):
 
@@ -347,7 +383,7 @@ flowchart TD
     BackupService --> SqlFile["SQL Backup File"]
 ```
 
-Backup restore is not implemented in the inspected routes or controller.
+The backup service reads the MySQL connection configuration, even if another database is the default, and writes SQL files to `storage/app/private/backups`. Set `MYSQLDUMP_PATH` to an existing `mysqldump` executable; otherwise the service looks for its configured Laragon MySQL 8.4.3 executable path. It does not back up SQLite or implement restore.
 
 ## System Settings and Account Workflow
 
@@ -399,6 +435,7 @@ Additional relationships for medical inventory, events, notifications, and setti
 
 | Module | Workflow | Route/Entry Point | Main Controller/Component | Database or Service | Implementation Status |
 | --- | --- | --- | --- | --- | --- |
+| Welcome Page | Public aggregate charts and carousel | `home` | `WelcomeController` | Multiple models | Implemented |
 | Authentication | Login and logout | `login`, `login.authenticate`, `logout` | `LoginController` | User model | Implemented |
 | Authorization | Role-based route protection | `role` middleware | `RoleMiddleware` | User role | Implemented |
 | Users | Create, view, edit, update, toggle status, delete | `users.*` | `UserController` | `users` table | Implemented |
@@ -410,12 +447,12 @@ Additional relationships for medical inventory, events, notifications, and setti
 | Maternal Care | CRUD and view | `maternal-care.*` | `MaternalCareController` | `maternal_cares` table | Implemented |
 | Child Health | CRUD and view | `child-health.*` | `ChildHealthController` | `child_healths` table | Implemented |
 | Senior Citizens | CRUD and view | `senior-citizens.*` | `SeniorCitizenController` | `senior_citizens` table | Implemented |
-| Medical Inventory | CRUD | `medical-inventories.*` | `MedicalInventoryController` | `medical_inventories` table | Implemented |
+| Medical Inventory | List, create, update, delete, and release stock | `medical-inventories.*` | `MedicalInventoryController` | Inventory and stock transaction tables | Implemented |
 | Medical Inventory Alerts | Expiry and low-stock notifications | `medical-inventory:check-expiry`, `medical-inventory:check-low-stock` | Console commands and services | `MedicalInventoryExpiryService`, `MedicalInventoryLowStockService` | Implemented |
 | Schedule | CRUD | `schedule.*` | `EventController` | `events` table | Implemented |
 | Event Reminders | Scheduled event notifications | `schedule:check-reminders` | Console command and service | `EventReminderService` | Implemented |
-| Announcements | Create, preview, publish, view | `announcements.*` | `AnnouncementController` | `announcements`, `announcement_recipients` tables | Implemented |
-| Announcement SMS | Prepare, manually send, and check provider status | `announcements.sms.send`, `announcements.sms.refresh` | `AnnouncementController`, `UniSmsService` | `announcement_sms_deliveries` table | Partially Implemented |
+| Announcements | Create, preview, publish, view, cancel before SMS processing, and delete | `announcements.*` | `AnnouncementController` | `announcements`, `announcement_recipients` tables | Implemented |
+| Announcement SMS | Prepare, confirm sending, and synchronize provider status | `announcements.sms.send`, `announcements:sync-sms-status` | `AnnouncementController`, `UniSmsService` | `announcement_sms_deliveries` table | Partially Implemented |
 | Notifications | View, mark read, mark all read | `notifications.*` | `NotificationController` | `notifications` table | Implemented |
 | Reports | Reports dashboard | `reports.index` | `ReportController` | Multiple models | Implemented |
 | Analytics | Analytics dashboard | `analytics.index` | `AnalyticsController` | Multiple models | Implemented |
@@ -441,23 +478,24 @@ UNISMS_WEBHOOK_SECRET=
 UNISMS_BASE_URL=https://unismsapi.com/api
 ```
 
+For MySQL backups, set `MYSQLDUMP_PATH` to the absolute path of the executable when it is not at the service's Laragon fallback path.
+
 ## Scheduled Tasks
 
-The application schedules the following commands in Philippine time:
+| Command | Schedule |
+| --- | --- |
+| `medical-inventory:check-expiry` | Daily at 08:00 Asia/Manila |
+| `schedule:check-reminders` | Daily at 08:00 Asia/Manila |
+| `medical-inventory:check-low-stock` | Every 30 minutes; configured for Asia/Manila |
+| `announcements:sync-sms-status` | Every five minutes |
 
-```bash
-php artisan medical-inventory:check-expiry
-php artisan schedule:check-reminders
-php artisan medical-inventory:check-low-stock
-```
-
-The scheduler must be started with:
+Start the scheduler locally with:
 
 ```bash
 php artisan schedule:work
 ```
 
-or through the server's cron/task scheduler.
+Alternatively, run `schedule:run` every minute through the server's cron or task scheduler, as described above.
 
 ## Testing
 
@@ -465,16 +503,14 @@ or through the server's cron/task scheduler.
 php artisan test
 ```
 
-Focused SMS tests:
+Focused tests for the welcome analytics, announcement SMS workflow, and stock releases:
 
 ```bash
-php artisan test --filter UniSmsTest
-php artisan test --filter AnnouncementSmsSafetyTest
+php artisan test tests/Feature/WelcomeAnalyticsTest.php
+php artisan test tests/Feature/AnnouncementSmsSafetyTest.php
+php artisan test tests/Feature/AnnouncementTargetingTest.php
+php artisan test tests/Feature/MedicalInventoryStockOutTest.php
 ```
-
-## Audit Notes
-
-This README was corrected against the inspected project files. Features are documented only when supported by routes, controllers, models, migrations, services, views, commands, or tests. Browser-level verification, independent handset delivery confirmation, backup restore, export features, and any unimplemented features remain outside the current verified scope.
 
 ## About Laravel
 
@@ -500,27 +536,16 @@ You can also watch bite-sized lessons with real-world projects on [Laravel Learn
 
 ## Agentic Development
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-php artisan boost:install
-```
-
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Laravel Boost is included as a development dependency. See the [Laravel AI documentation](https://laravel.com/docs/ai) for its development tools.
 
 ## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Run the relevant application tests before submitting changes. Laravel's framework contribution guidance is available in the [Laravel documentation](https://laravel.com/docs/contributions).
 
 ## Code of Conduct
 
 In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+The Composer package metadata specifies the [MIT license](https://opensource.org/licenses/MIT).

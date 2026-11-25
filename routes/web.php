@@ -23,6 +23,7 @@ use App\Http\Controllers\ResidentController;
 use App\Http\Controllers\SeniorCitizenController;
 use App\Http\Controllers\SystemSettingController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WelcomeController;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Support\Facades\Route;
 
@@ -30,7 +31,7 @@ Route::post('/webhooks/unisms', [AnnouncementController::class, 'smsWebhook'])
     ->withoutMiddleware(PreventRequestForgery::class)
     ->name('announcements.sms.webhook');
 
-Route::view('/', 'welcome')
+Route::get('/', [WelcomeController::class, 'index'])
     ->middleware('cache.headers:private;no_store')
     ->name('home');
 
@@ -244,6 +245,11 @@ Route::middleware('auth')->group(function () {
                 AnnouncementController::class,
                 'destroy',
             ])->name('announcements.destroy');
+
+            Route::post('/announcements/{announcement}/cancel', [
+                AnnouncementController::class,
+                'cancel',
+            ])->name('announcements.cancel');
 
             /*
              * Manually send pending SMS messages for an announcement.

@@ -451,7 +451,7 @@
         .highlights-section,
         .community-section {
             background: #F8FCFA;
-            padding-top: 35px;
+            padding-top: -20px;
         }
 
         .about-grid,
@@ -1237,6 +1237,155 @@
                 transition: none !important;
             }
         }
+
+        /* Information sections below the hero */
+        .about-section, .services-section, .highlights-section,
+        .roles-section, .community-section { padding-top: 36px; }
+        .section-space { padding-bottom: 52px; }
+        .mission-section, .cta-section { padding: 36px 0 52px; }
+        .highlights-grid, .roles-grid { padding-top: 0; }
+        .services-grid { align-items: stretch; }
+        .service-card { box-shadow: 0 8px 20px rgba(15,76,58,.045), inset 0 1px 0 #fff; }
+        .service-icon svg, .role-icon svg { stroke-linecap: round; stroke-linejoin: round; }
+        .info-section { padding: 36px 0 52px; }
+        .info-section--mint { background: #e8f3ec; }
+        .info-section--light { background: #f8fcfa; }
+        .info-heading { max-width: 650px; margin-bottom: 36px; }
+        .info-heading .section-description { margin-left: 0; }
+        .workflow-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 20px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .workflow-step { position: relative; padding: 22px 18px 0 0; border-top: 2px solid #c8dfd1; }
+        .workflow-number {
+            display: grid;
+            width: 40px;
+            height: 40px;
+            margin-bottom: 18px;
+            place-items: center;
+            border-radius: 14px;
+            background: #fff;
+            color: var(--brand-dark);
+            box-shadow: 0 5px 14px rgba(15,76,58,.08);
+            font-size: 13px;
+            font-weight: 800;
+        }
+        .workflow-step h3, .sms-step h3, .benefit-item h3, .security-item h3 {
+            margin: 0;
+            color: var(--brand-deep);
+            font-size: 16px;
+            font-weight: 800;
+            line-height: 1.4;
+        }
+        .workflow-step p, .sms-step p, .benefit-item p, .security-item p {
+            margin: 8px 0 0;
+            color: #617b70;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+        .sms-panel {
+            padding: 34px;
+            border: 1px solid #d5e8dc;
+            border-radius: 26px;
+            background: #fff;
+            box-shadow: 0 12px 30px rgba(15,76,58,.06), inset 0 1px 0 #fff;
+        }
+        .sms-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .sms-step { padding: 0 20px; border-left: 1px solid #dcebe1; }
+        .sms-step:first-child { padding-left: 0; border-left: 0; }
+        .sms-step:last-child { padding-right: 0; }
+        .sms-step span { display: block; margin-bottom: 12px; color: var(--brand); font-size: 12px; font-weight: 800; }
+        .sms-note { margin: 24px 0 0; padding-top: 20px; border-top: 1px solid #e2eee7; color: #617b70; font-size: 12px; line-height: 1.7; }
+        .insights-layout, .security-layout {
+            display: grid;
+            grid-template-columns: .9fr 1.1fr;
+            align-items: center;
+            gap: 64px;
+        }
+        .insights-copy p, .security-copy p { color: #617b70; font-size: 14px; line-height: 1.8; }
+        .insights-list { display: grid; gap: 12px; margin: 22px 0 0; padding: 0; list-style: none; }
+        .insights-list li { display: flex; align-items: center; gap: 10px; color: var(--text); font-size: 13px; font-weight: 700; }
+        .insights-list li::before { content: '✓'; display: grid; width: 24px; height: 24px; flex-shrink: 0; place-items: center; border-radius: 50%; background: #dcefe4; color: var(--brand-dark); }
+        .sample-dashboard {
+            padding: 24px;
+            border: 1px solid #d9eae0;
+            border-radius: 25px;
+            background: #fff;
+            box-shadow: 0 14px 32px rgba(15,76,58,.07);
+        }
+        .sample-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 18px; border-bottom: 1px solid #e7f0ea; }
+        .sample-header strong { color: var(--brand-deep); font-size: 14px; }
+        .sample-label { padding: 5px 9px; border-radius: 999px; background: #e8f4ec; color: var(--brand-dark); font-size: 10px; font-weight: 800; white-space: nowrap; }
+        .analytics-slide { min-width: 0; min-height: 265px; padding: 22px 0 12px; }
+        .analytics-slide + .analytics-slide { border-top: 1px solid #e7f0ea; }
+        .analytics-slide[hidden], .analytics-controls[hidden] { display: none; }
+        .analytics-slide h3 { margin: 0; color: var(--brand-deep); font-size: 16px; font-weight: 800; }
+        .analytics-slide p { margin: 7px 0 0; color: #617b70; font-size: 12px; line-height: 1.6; }
+        .analytics-chart { display: grid; gap: 15px; margin: 22px 0 12px; }
+        .analytics-chart-label { display: flex; justify-content: space-between; gap: 12px; color: #48665a; font-size: 12px; font-weight: 700; }
+        .analytics-chart-label strong { color: var(--brand-deep); }
+        .analytics-bar { height: 10px; margin-top: 7px; overflow: hidden; border-radius: 999px; background: #edf5f0; }
+        .analytics-bar span { display: block; height: 100%; border-radius: inherit; background: #53a988; }
+        .analytics-stat { margin: 20px 0 8px; color: var(--brand-dark); font-size: clamp(30px, 4vw, 40px); font-weight: 800; line-height: 1.2; overflow-wrap: anywhere; }
+        .analytics-stat--private { font-size: 20px; }
+        .visits-chart { margin-top: 20px; }
+        .visits-plot { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px; align-items: stretch; }
+        .visits-axis { display: flex; height: 150px; flex-direction: column; justify-content: space-between; padding: 4px 0; color: #617b70; font-size: 10px; text-align: right; }
+        .visits-plot svg { display: block; width: 100%; height: 150px; overflow: visible; }
+        .visits-months { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); margin-top: 6px; color: #617b70; font-size: clamp(8px, 1vw, 10px); text-align: center; }
+        .analytics-donut-layout { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 20px; margin-top: 20px; }
+        .analytics-donut { display: grid; width: 140px; height: 140px; flex: 0 0 140px; place-items: center; border-radius: 50%; }
+        .analytics-donut-center { display: grid; width: 90px; height: 90px; align-content: center; justify-items: center; border-radius: 50%; background: #fff; color: var(--brand-deep); }
+        .analytics-donut-center strong { font-size: 21px; line-height: 1.2; }
+        .analytics-donut-center span { color: #617b70; font-size: 11px; }
+        .analytics-legend { display: grid; min-width: 150px; flex: 1; gap: 10px; margin: 0; padding: 0; list-style: none; }
+        .analytics-legend li { display: flex; align-items: center; gap: 7px; color: var(--brand-deep); font-size: 12px; font-weight: 700; }
+        .analytics-legend li::before { content: ''; width: 10px; height: 10px; flex: 0 0 10px; border-radius: 50%; background: var(--chart-color); }
+        .analytics-legend-value { margin-left: auto; color: #617b70; font-size: 11px; font-weight: 500; white-space: nowrap; }
+        .analytics-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; margin-top: 12px; padding-top: 16px; border-top: 1px solid #e7f0ea; }
+        .analytics-controls button { display: inline-flex; min-width: 40px; min-height: 40px; align-items: center; justify-content: center; border: 1px solid #d5e8dc; border-radius: 50%; background: #f2f9f4; color: var(--brand-dark); font-size: 19px; font-weight: 800; cursor: pointer; }
+        .analytics-controls button:hover { background: #dcefe4; }
+        .analytics-controls button:focus-visible { outline: 3px solid #53a988; outline-offset: 3px; }
+        .analytics-position { margin-left: auto; color: #617b70; font-size: 12px; font-weight: 700; }
+        .benefits-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 26px; }
+        .benefit-item { padding: 8px 0 8px 20px; border-left: 3px solid #9ed1b6; }
+        .security-panel { display: grid; gap: 0; padding: 8px 25px; border: 1px solid #d8e9de; border-radius: 24px; background: #fff; box-shadow: 0 10px 24px rgba(15,76,58,.05); }
+        .security-item { display: flex; align-items: flex-start; gap: 15px; padding: 20px 0; }
+        .security-item + .security-item { border-top: 1px solid #e4efe8; }
+        .security-icon { display: grid; width: 42px; height: 42px; flex-shrink: 0; place-items: center; border-radius: 13px; background: #e7f4ec; color: var(--brand-dark); }
+        .security-icon svg { width: 21px; height: 21px; }
+        @media (max-width: 1000px) {
+            .analytics-slide { min-height: 355px; }
+            .analytics-donut-layout { gap: 12px; }
+            .analytics-donut { width: 120px; height: 120px; flex-basis: 120px; }
+            .analytics-donut-center { width: 76px; height: 76px; }
+            .analytics-legend { gap: 6px; }
+        }
+        @media (max-width: 767px) {
+            .about-section, .services-section, .highlights-section,
+            .roles-section, .community-section, .info-section,
+            .mission-section, .cta-section { padding: 28px 0 40px; }
+            .workflow-grid, .sms-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 18px; }
+            .sms-panel { padding: 25px; }
+            .sms-step, .sms-step:first-child, .sms-step:last-child { padding: 0; border: 0; }
+            .insights-layout, .security-layout { grid-template-columns: 1fr; gap: 30px; }
+            .benefits-grid { grid-template-columns: 1fr; gap: 18px; }
+        }
+        @media (max-width: 420px) {
+            .workflow-grid, .sms-grid { grid-template-columns: 1fr; }
+            .sample-dashboard { padding: 18px; }
+        }
     </style>
 </head>
 
@@ -1511,8 +1660,8 @@
         <section id="services" class="services-section section-space">
             <div class="page-container">
                 <div class="section-heading" data-reveal>
-                    <span class="section-kicker">SYSTEM SERVICES</span>
-                    <h2 class="section-title">The Tools to Support Community Healthcare</h2>
+                    <span class="section-kicker">SYSTEM FEATURES</span>
+                    <h2 class="section-title">Tools for Everyday Health Center Work</h2>
                     <p class="section-description">
                         Relevant records and administrative functions are organized into dedicated modules to support the health center's workflow.
                     </p>
@@ -1527,8 +1676,8 @@
                                 <path d="M20 8v6m3-3h-6"/>
                             </svg>
                         </div>
-                        <h3>Residents &amp; Households</h3>
-                        <p>Maintain resident profiles and household information in an organized digital record system.</p>
+                        <h3>Resident Records Management</h3>
+                        <p>Maintain resident profiles and household information in one organized workspace.</p>
                     </article>
 
                     <article class="service-card" data-reveal data-delay="2">
@@ -1537,8 +1686,8 @@
                                 <path d="M8 3h8l4 4v14H4V3zM8 3v5h8V3M8 13h8M8 17h6"/>
                             </svg>
                         </div>
-                        <h3>Health Records</h3>
-                        <p>Keep relevant resident health information organized and accessible to authorized personnel.</p>
+                        <h3>Patient Records Management</h3>
+                        <p>Organize patient information for the staff responsible for their care.</p>
                     </article>
 
                     <article class="service-card" data-reveal data-delay="3">
@@ -1548,8 +1697,8 @@
                                 <path d="M12 7v10M7 12h10"/>
                             </svg>
                         </div>
-                        <h3>Child Health &amp; Immunization</h3>
-                        <p>Organize child health information and immunization records within their designated system modules.</p>
+                        <h3>Health Records Management</h3>
+                        <p>Keep health, child health, and immunization information organized.</p>
                     </article>
 
                     <article class="service-card" data-reveal data-delay="4">
@@ -1559,7 +1708,48 @@
                             </svg>
                         </div>
                         <h3>Medical Inventory</h3>
-                        <p>Organize medical supply information and monitor inventory records and relevant expiry notifications.</p>
+                        <p>Maintain medicine and supply records and track inventory activity.</p>
+                    </article>
+
+                    <article class="service-card" data-reveal>
+                        <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="9"/></svg></div>
+                        <h3>Medical Services</h3>
+                        <p>Record and review health visits and services provided to residents.</p>
+                    </article>
+                    <article class="service-card" data-reveal>
+                        <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 10h16M12 13v3l2 1"/></svg></div>
+                        <h3>Inventory Expiration Monitoring</h3>
+                        <p>Monitor expiry dates and notifications for medical supplies.</p>
+                    </article>
+                    <article class="service-card" data-reveal>
+                        <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M8 14h3M8 17h6"/></svg></div>
+                        <h3>Schedules and Events</h3>
+                        <p>Coordinate health center activities and community events.</p>
+                    </article>
+                    <article class="service-card" data-reveal>
+                        <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10v4h4l7 4V6l-7 4H3zM7 14l1 5h3l-1-4M17 9a4 4 0 0 1 0 6M19 6a8 8 0 0 1 0 12"/></svg></div>
+                        <h3>Announcements and SMS Notifications</h3>
+                        <p>Publish updates and prepare SMS messages for eligible recipients.</p>
+                    </article>
+                    <article class="service-card" data-reveal>
+                        <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V4M4 20h17M8 16v-4M12 16V8M16 16v-6M20 16V5"/></svg></div>
+                        <h3>Data Analytics</h3>
+                        <p>Review dashboard summaries to understand health center information.</p>
+                    </article>
+                    <article class="service-card" data-reveal>
+                        <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h8l4 4v14H6zM14 3v5h5M9 12h6M9 16h6"/></svg></div>
+                        <h3>Automated Reporting</h3>
+                        <p>Generate organized reports from information maintained in the system.</p>
+                    </article>
+                    <article class="service-card" data-reveal>
+                        <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1a6 6 0 0 1 12 0v1M17 8v6M14 11h6"/></svg></div>
+                        <h3>User Management</h3>
+                        <p>Manage staff accounts and their assigned access.</p>
+                    </article>
+                    <article class="service-card" data-reveal>
+                        <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 4h11v17H5V7h3zM8 3h7v4H8zM9 12h6M9 16h6"/></svg></div>
+                        <h3>Audit Logs</h3>
+                        <p>Review recorded system activity to support accountability.</p>
                     </article>
                 </div>
             </div>
@@ -1583,6 +1773,23 @@
 
                     <a href="#highlights" class="mission-button">Discover Features</a>
                 </div>
+            </div>
+        </section>
+
+        <!-- WORKFLOW -->
+        <section class="info-section info-section--mint">
+            <div class="page-container">
+                <div class="info-heading">
+                    <span class="section-kicker">HOW THE SYSTEM WORKS</span>
+                    <h2 class="section-title">From information to coordinated care</h2>
+                    <p class="section-description">A shared workflow helps authorized staff keep everyday work organized.</p>
+                </div>
+                <ol class="workflow-grid">
+                    <li class="workflow-step"><span class="workflow-number">01</span><h3>Organize records</h3><p>Maintain resident, household, and patient information.</p></li>
+                    <li class="workflow-step"><span class="workflow-number">02</span><h3>Document care</h3><p>Record health information and services as work progresses.</p></li>
+                    <li class="workflow-step"><span class="workflow-number">03</span><h3>Coordinate resources</h3><p>Manage supplies, schedules, and community updates.</p></li>
+                    <li class="workflow-step"><span class="workflow-number">04</span><h3>Review and report</h3><p>Use summaries and reports to support informed planning.</p></li>
+                </ol>
             </div>
         </section>
 
@@ -1663,6 +1870,216 @@
                         </div>
                         <h3>Health Worker</h3>
                         <p>Works with assigned resident, health record, and health center management functions.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- ANNOUNCEMENT AND SMS PROCESS -->
+        <section class="info-section info-section--mint">
+            <div class="page-container">
+                <div class="info-heading">
+                    <span class="section-kicker">ANNOUNCEMENTS &amp; SMS</span>
+                    <h2 class="section-title">A clear path from update to notification</h2>
+                    <p class="section-description">Keep the community informed while giving staff control over SMS sending.</p>
+                </div>
+                <div class="sms-panel">
+                    <ol class="sms-grid">
+                        <li class="sms-step"><span>01 / COMPOSE</span><h3>Create an update</h3><p>Staff write an announcement and select its audience.</p></li>
+                        <li class="sms-step"><span>02 / REVIEW</span><h3>Check recipients</h3><p>Review the intended audience and eligible SMS contacts.</p></li>
+                        <li class="sms-step"><span>03 / PUBLISH</span><h3>Prepare messages</h3><p>Publishing saves the announcement and prepares SMS deliveries.</p></li>
+                        <li class="sms-step"><span>04 / SEND</span><h3>Confirm and monitor</h3><p>Staff separately send prepared messages and review their status.</p></li>
+                    </ol>
+                    <p class="sms-note">Publishing does not send SMS automatically. Sending requires confirmation and an enabled, configured SMS service.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ANALYTICS AND REPORTING -->
+        <section class="info-section info-section--light">
+            <div class="page-container insights-layout">
+                <div class="insights-copy">
+                    <span class="section-kicker">DATA ANALYTICS &amp; REPORTS</span>
+                    <h2 class="section-title">Turn organized records into useful insights</h2>
+                    <p>Dashboards and reports bring relevant information together for review and planning by authorized staff.</p>
+                    <ul class="insights-list">
+                        <li>Review visual summaries of system data</li>
+                        <li>Generate reports for health center work</li>
+                        <li>Support informed community health planning</li>
+                    </ul>
+                </div>
+                <div class="sample-dashboard" data-analytics-carousel role="region" aria-roledescription="carousel" aria-label="Health center overview">
+                    <div class="sample-header"><strong>Health center overview</strong><span class="sample-label">SYSTEM TOTALS</span></div>
+                    <div data-analytics-slides>
+                        @php
+                            $visitAxisMax = max(2, (int) ceil(max(array_column($monthlyHealthVisits, 'count')) / 2) * 2);
+                            $visitCoordinates = [];
+                            foreach ($monthlyHealthVisits as $index => $point) {
+                                $visitCoordinates[] = round((0.5 + $index) * 550 / 12, 2) . ',' . round(140 - 130 * $point['count'] / $visitAxisMax, 2);
+                            }
+                            $visitLine = implode(' ', $visitCoordinates);
+                        @endphp
+                        <article class="analytics-slide" data-analytics-slide aria-label="Monthly Health Visits">
+                            <h3>Monthly Health Visits</h3>
+                            <p>Health visits recorded in {{ $healthVisitYear }}.</p>
+                            <div class="visits-chart">
+                                <div class="visits-plot">
+                                    <div class="visits-axis" aria-hidden="true"><span>{{ number_format($visitAxisMax) }}</span><span>{{ number_format($visitAxisMax / 2) }}</span><span>0</span></div>
+                                    <div>
+                                        <svg viewBox="0 0 550 150" preserveAspectRatio="none" aria-hidden="true">
+                                            <path d="M22.92 10H527.08 M22.92 75H527.08 M22.92 140H527.08" fill="none" stroke="#dcebe1" stroke-width="1" vector-effect="non-scaling-stroke"/>
+                                            <polygon points="22.92,140 {{ $visitLine }} 527.08,140" fill="#dcefe4"/>
+                                            <polyline points="{{ $visitLine }}" fill="none" stroke="#188b70" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+                                            @foreach ($monthlyHealthVisits as $index => $point)
+                                                <circle cx="{{ round((0.5 + $index) * 550 / 12, 2) }}" cy="{{ round(140 - 130 * $point['count'] / $visitAxisMax, 2) }}" r="3.5" fill="#fff" stroke="#188b70" stroke-width="2" vector-effect="non-scaling-stroke">
+                                                    <title>{{ $point['label'] }}: {{ number_format($point['count']) }} visits</title>
+                                                </circle>
+                                            @endforeach
+                                        </svg>
+                                        <div class="visits-months" aria-hidden="true">
+                                            @foreach ($monthlyHealthVisits as $point)
+                                                <span>{{ $point['label'] }}</span>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+                                <ol class="sr-only">
+                                    @foreach ($monthlyHealthVisits as $point)
+                                        <li>{{ $point['label'] }}: {{ number_format($point['count']) }} visits</li>
+                                    @endforeach
+                                </ol>
+                            </div>
+                        </article>
+                        @foreach ([
+                            ['key' => 'gender', 'title' => 'Gender distribution', 'description' => 'Resident population grouped by gender.'],
+                            ['key' => 'status', 'title' => 'Resident status', 'description' => 'Current resident registration status.'],
+                        ] as $chart)
+                            @php
+                                $counts = $demographics[$chart['key']];
+                                $colors = ['#188b70', '#e77b25', '#104e3d', '#88a99a', '#b62f2f'];
+                                $segments = [];
+                                $offset = 0;
+                                foreach ($counts ?? [] as $count) {
+                                    $end = $offset + ($overview['residents'] > 0 ? 100 * $count / $overview['residents'] : 0);
+                                    if ($count > 0) {
+                                        $segments[] = $colors[count($segments)] . ' ' . $offset . '% ' . $end . '%';
+                                    }
+                                    $offset = $end;
+                                }
+                                $background = $segments ? 'conic-gradient(' . implode(', ', $segments) . ')' : '#e6f0e9';
+                            @endphp
+                            <article class="analytics-slide" data-analytics-slide aria-label="{{ $chart['title'] }}">
+                                <h3>{{ $chart['title'] }}</h3>
+                                <p>{{ $chart['description'] }}</p>
+                                @if ($counts === null)
+                                    <div class="analytics-stat analytics-stat--private">Not displayed for privacy</div>
+                                    <p>Some groups are too small to display publicly.</p>
+                                @else
+                                    <div class="analytics-donut-layout">
+                                        <div class="analytics-donut" style="background: {{ $background }}" aria-hidden="true">
+                                            <div class="analytics-donut-center"><strong>{{ number_format($overview['residents']) }}</strong><span>residents</span></div>
+                                        </div>
+                                        <ul class="analytics-legend">
+                                            @php($colorIndex = 0)
+                                            @foreach ($counts as $label => $count)
+                                                @php($color = $count > 0 ? $colors[$colorIndex++] : '#d4e5da')
+                                                <li style="--chart-color: {{ $color }}">
+                                                    <span>{{ $label }}</span>
+                                                    <span class="analytics-legend-value">{{ number_format($count) }} ({{ number_format($overview['residents'] > 0 ? 100 * $count / $overview['residents'] : 0, 1) }}%)</span>
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @endif
+                            </article>
+                        @endforeach
+                        <article class="analytics-slide" data-analytics-slide aria-label="Community records">
+                            <h3>Community records</h3>
+                            <p>Residents and households recorded in the system.</p>
+                            <div class="analytics-chart">
+                                @foreach (['Residents' => $overview['residents'], 'Households' => $overview['households']] as $label => $count)
+                                    <div>
+                                        <div class="analytics-chart-label"><span>{{ $label }}</span><strong>{{ number_format($count) }}</strong></div>
+                                        <div class="analytics-bar" aria-hidden="true"><span style="width: {{ 100 * $count / max(1, $overview['residents'], $overview['households']) }}%"></span></div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </article>
+                        <article class="analytics-slide" data-analytics-slide aria-label="Health and program entries">
+                            <h3>Health &amp; program entries</h3>
+                            <p>Combined entries across health records and health programs.</p>
+                            @if ($overview['healthEntries'] === null)
+                                <div class="analytics-stat analytics-stat--private">Not displayed for privacy</div>
+                                <p>Small totals are withheld.</p>
+                            @else
+                                <div class="analytics-stat">{{ number_format($overview['healthEntries']) }}</div>
+                                <p>Entries, not unique patients; a person may have multiple records.</p>
+                            @endif
+                        </article>
+                        <article class="analytics-slide" data-analytics-slide aria-label="Schedules and events">
+                            <h3>Schedules &amp; events</h3>
+                            <p>Recorded events, including those scheduled from today onward.</p>
+                            <div class="analytics-chart">
+                                @foreach (['All events' => $overview['events'], 'Upcoming events' => $overview['upcomingEvents']] as $label => $count)
+                                    <div>
+                                        <div class="analytics-chart-label"><span>{{ $label }}</span><strong>{{ number_format($count) }}</strong></div>
+                                        <div class="analytics-bar" aria-hidden="true"><span style="width: {{ 100 * $count / max(1, $overview['events']) }}%"></span></div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </article>
+                        <article class="analytics-slide" data-analytics-slide aria-label="Medical inventory">
+                            <h3>Medical inventory</h3>
+                            <p>Medicine and supply entries recorded in the inventory.</p>
+                            <div class="analytics-stat">{{ number_format($overview['inventory']) }}</div>
+                            <p>Inventory entries, not the quantity of individual units.</p>
+                        </article>
+                    </div>
+                    <div class="analytics-controls" data-analytics-controls hidden>
+                        <button type="button" data-analytics-previous aria-label="Previous overview">‹</button>
+                        <button type="button" data-analytics-next aria-label="Next overview">›</button>
+                        <span class="analytics-position" data-analytics-position></span>
+                    </div>
+                    <span class="sr-only" data-analytics-announcement aria-live="polite" aria-atomic="true"></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- BENEFITS -->
+        <section class="info-section info-section--mint">
+            <div class="page-container">
+                <div class="info-heading">
+                    <span class="section-kicker">SYSTEM BENEFITS</span>
+                    <h2 class="section-title">A more connected way to work</h2>
+                </div>
+                <div class="benefits-grid">
+                    <article class="benefit-item"><h3>Organized information</h3><p>Keep important records and resources together in a structured workspace.</p></article>
+                    <article class="benefit-item"><h3>Better coordination</h3><p>Support day-to-day planning, communication, and shared responsibilities.</p></article>
+                    <article class="benefit-item"><h3>Informed decisions</h3><p>Make information easier to review through summaries and reports.</p></article>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECURITY -->
+        <section class="info-section info-section--light">
+            <div class="page-container security-layout">
+                <div class="security-copy">
+                    <span class="section-kicker">SECURITY &amp; ACCESS CONTROL</span>
+                    <h2 class="section-title">Responsible access to health information</h2>
+                    <p>Health records require care. The system supports accountable use through authenticated access, assigned roles, and activity records.</p>
+                </div>
+                <div class="security-panel">
+                    <article class="security-item">
+                        <div class="security-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg></div>
+                        <div><h3>Authenticated access</h3><p>Staff sign in with their assigned accounts.</p></div>
+                    </article>
+                    <article class="security-item">
+                        <div class="security-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11zM9 12l2 2 4-4"/></svg></div>
+                        <div><h3>Role-based permissions</h3><p>Access is aligned with each user's assigned responsibilities.</p></div>
+                    </article>
+                    <article class="security-item">
+                        <div class="security-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h11v17H5V7h3zM8 3h7v4H8zM9 12h6M9 16h6"/></svg></div>
+                        <div><h3>Accountable record management</h3><p>Audit logs help authorized personnel review system activity.</p></div>
                     </article>
                 </div>
             </div>
@@ -1796,6 +2213,86 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+
+            const analyticsCarousel = document.querySelector('[data-analytics-carousel]');
+            if (analyticsCarousel) {
+                const slides = Array.from(analyticsCarousel.querySelectorAll('[data-analytics-slide]'));
+                const controls = analyticsCarousel.querySelector('[data-analytics-controls]');
+                const previous = analyticsCarousel.querySelector('[data-analytics-previous]');
+                const next = analyticsCarousel.querySelector('[data-analytics-next]');
+                const position = analyticsCarousel.querySelector('[data-analytics-position]');
+                const announcement = analyticsCarousel.querySelector('[data-analytics-announcement]');
+                const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+                let currentSlide = 0;
+                let timer = null;
+                let hovering = false;
+                const activeTouches = new Set();
+
+                function showSlide(index, announce = false) {
+                    currentSlide = (index + slides.length) % slides.length;
+                    slides.forEach((slide, slideIndex) => {
+                        slide.hidden = slideIndex !== currentSlide;
+                    });
+                    position.textContent = `${currentSlide + 1} / ${slides.length}`;
+                    if (announce) {
+                        announcement.textContent = `${slides[currentSlide].getAttribute('aria-label')}, ${currentSlide + 1} of ${slides.length}`;
+                    }
+                }
+
+                function updateRotation() {
+                    window.clearInterval(timer);
+                    timer = null;
+                    if (!motionPreference.matches && !hovering && activeTouches.size === 0 && !analyticsCarousel.contains(document.activeElement) && !document.hidden) {
+                        timer = window.setInterval(() => showSlide(currentSlide + 1), 2000);
+                    }
+                }
+
+                previous.addEventListener('click', event => {
+                    showSlide(currentSlide - 1, true);
+                    if (event.detail > 0) event.currentTarget.blur();
+                    updateRotation();
+                });
+                next.addEventListener('click', event => {
+                    showSlide(currentSlide + 1, true);
+                    if (event.detail > 0) event.currentTarget.blur();
+                    updateRotation();
+                });
+                analyticsCarousel.addEventListener('pointerenter', event => {
+                    if (event.pointerType !== 'touch') {
+                        hovering = true;
+                        updateRotation();
+                    }
+                });
+                analyticsCarousel.addEventListener('pointerleave', event => {
+                    if (event.pointerType !== 'touch') {
+                        hovering = false;
+                        updateRotation();
+                    }
+                });
+                analyticsCarousel.addEventListener('pointerdown', event => {
+                    if (event.pointerType === 'touch') {
+                        activeTouches.add(event.pointerId);
+                        updateRotation();
+                    }
+                });
+                function releaseTouch(event) {
+                    if (activeTouches.delete(event.pointerId)) updateRotation();
+                }
+                document.addEventListener('pointerup', releaseTouch);
+                document.addEventListener('pointercancel', releaseTouch);
+                analyticsCarousel.addEventListener('focusin', updateRotation);
+                analyticsCarousel.addEventListener('focusout', event => {
+                    if (!analyticsCarousel.contains(event.relatedTarget)) {
+                        window.setTimeout(updateRotation, 0);
+                    }
+                });
+                document.addEventListener('visibilitychange', updateRotation);
+                motionPreference.addEventListener('change', updateRotation);
+
+                showSlide(0);
+                controls.hidden = false;
+                updateRotation();
+            }
 
             // Mobile navigation
             const menuButton = document.getElementById('mobileMenuButton');

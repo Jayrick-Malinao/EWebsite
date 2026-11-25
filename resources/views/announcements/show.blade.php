@@ -93,12 +93,11 @@
             $failedSmsCount = $smsDeliveries->where('status', 'Failed')->count();
             $providerSentSmsCount = $smsDeliveries->where('status', 'Unknown')->where('provider_status', 'sent')->count();
             $unknownSmsCount = $smsDeliveries->where('status', 'Unknown')->count() - $providerSentSmsCount;
-            $statusCheckCandidates = $smsDeliveries->whereIn('status', ['Pending', 'Unknown'])->filter(fn ($delivery) => $delivery->provider_status !== 'sent');
-            $checkableSmsCount = $statusCheckCandidates->filter(fn ($delivery) => $smsService->isValidReference($delivery->provider_reference))->count();
-            $missingReferenceCount = $smsSyncOverview['missing'];
-            $invalidReferenceCount = $smsSyncOverview['invalid'];
-            $lastStatusUpdate = $smsDeliveries->whereNotNull('status_checked_at')->sortByDesc('status_checked_at')->first()?->status_checked_at;
-            $lastStatusCheck = $smsDeliveries->whereNotNull('status_check_attempted_at')->sortByDesc('status_check_attempted_at')->first();
+            $canCancel = $smsDeliveries->every(fn ($delivery) => $delivery->status === 'Prepared' && $delivery->attempt_started_at === null);
+            $allSmsSubmitted = $smsDeliveries->isNotEmpty() && $smsDeliveries->every(fn ($delivery) =>
+                ($delivery->sent_at !== null && in_array($delivery->status, ['Pending', 'Delivered'], true))
+                || ($delivery->status === 'Unknown' && $delivery->provider_status === 'sent')
+            );
         @endphp
 
         <section class="overflow-hidden rounded-3xl border border-white bg-gradient-to-br from-[#F8FCFA] to-[#EAF2EE] p-6 shadow-[0_8px_24px_rgba(107,134,124,0.12)] sm:p-8">
@@ -125,13 +124,13 @@
                 <div>
                     <dt class="text-xs font-bold uppercase tracking-wide text-[#6D817A]">Audience</dt>
                     <dd class="mt-1 text-sm font-semibold">{{ $targetLabel }}</dd>
-                    @if ($announcement->target_type === 'age_bracket' && ! is_null($announcement->min_age) && ! is_null($announcement->max_age))
+                    @if (in_array($announcement->target_type, ['children', 'age_bracket'], true) && ! is_null($announcement->min_age) && ! is_null($announcement->max_age))
                         <dd class="mt-1 text-xs text-[#6D817A]">Ages {{ $announcement->min_age }}–{{ $announcement->max_age }}</dd>
                     @endif
                 </div>
                 <div>
                     <dt class="text-xs font-bold uppercase tracking-wide text-[#6D817A]">Recipients</dt>
-                    <dd class="mt-1 text-sm font-semibold">{{ $announcement->recipients->count() }} residents</dd>
+                    <dd class="mt-1 text-sm font-semibold">{{ $announcement->recipients->count() }} residents &middot; {{ $smsDeliveries->count() }} SMS recipients</dd>
                 </div>
                 <div>
                     <dt class="text-xs font-bold uppercase tracking-wide text-[#6D817A]">Published</dt>
@@ -142,6 +141,18 @@
                     <dd class="mt-1 text-sm font-semibold">{{ $announcement->creator?->name ?? 'Unknown' }}</dd>
                 </div>
             </dl>
+            @if ($announcement->target_type === 'specific')
+                <div class="mt-6 border-t border-[#D2E1DA] pt-5">
+                    <h3 class="text-xs font-bold uppercase tracking-wide text-[#6D817A]">Selected residents</h3>
+                    <ul class="mt-3 flex flex-wrap gap-2">
+                        @foreach ($announcement->recipients as $recipient)
+                            <li class="rounded-full bg-white px-3 py-1 text-sm font-semibold text-[#385C52]">
+                                {{ $recipient->resident?->full_name ?? 'Resident unavailable' }}
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
         </section>
 
         <section class="rounded-3xl border border-white bg-[#F8FCFA] p-6 shadow-[0_8px_24px_rgba(107,134,124,0.12)] sm:p-8" aria-labelledby="sms-information">
@@ -151,258 +162,67 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 17v-5m0-4h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                     </svg>
                 </span>
-                <div>
-                    <h2 id="sms-information" class="text-lg font-bold text-[#164238]">SMS delivery information</h2>
-                    @if ($smsDeliveries->isEmpty())
-                        <p class="mt-2 text-sm leading-6 text-[#385C52]">No SMS messages have been prepared for this announcement.</p>
-                    @else
-                        <p class="mt-2 text-sm leading-6 text-[#385C52]">
-                            UniSMS reports {{ $providerSentSmsCount }} message{{ $providerSentSmsCount === 1 ? '' : 's' }} sent;
-                            {{ $deliveredSmsCount }} confirmed delivered out of {{ $smsDeliveries->count() }} total.
-                            @if ($providerSentSmsCount > 0)
-                                Handset delivery is not confirmed for messages reported as sent.
-                            @endif
-                        </p>
-                        @if ($preparedSmsCount + $pendingSmsCount + $retryingSmsCount + $failedSmsCount + $unknownSmsCount > 0)
-                            <p class="mt-1 text-sm leading-6 text-[#6D817A]">Other messages may still be prepared, pending, retrying, failed, or have an unknown outcome. See SMS controls and details below.</p>
+            <div>
+                <h2 id="sms-information" class="text-lg font-bold text-[#164238]">SMS delivery information</h2>
+                @if ($smsDeliveries->isEmpty())
+                    <p class="mt-2 text-sm leading-6 text-[#385C52]">No SMS messages have been prepared for this announcement.</p>
+                @else
+                    <p class="mt-2 text-sm leading-6 text-[#385C52]">
+                        UniSMS reports {{ $providerSentSmsCount }} message{{ $providerSentSmsCount === 1 ? '' : 's' }} sent;
+                        {{ $deliveredSmsCount }} confirmed delivered out of {{ $smsDeliveries->count() }} total.
+                        @if ($providerSentSmsCount > 0)
+                            Handset delivery is not confirmed for messages reported as sent.
                         @endif
+                        @if ($pendingSmsCount > 0)
+                            Handset delivery may still be unconfirmed.
+                        @endif
+                    </p>
+                    @if ($preparedSmsCount + $pendingSmsCount + $retryingSmsCount + $failedSmsCount + $unknownSmsCount > 0)
+                        <p class="mt-1 text-sm leading-6 text-[#6D817A]">
+                            Prepared: {{ $preparedSmsCount }} &middot; Pending: {{ $pendingSmsCount }} &middot;
+                            Retrying: {{ $retryingSmsCount }} &middot; Failed: {{ $failedSmsCount }} &middot;
+                            Unknown: {{ $unknownSmsCount }}.
+                        </p>
                     @endif
-                </div>
-            </div>
-
-            <details class="mt-6 border-t border-[#D2E1DA] pt-5">
-                <summary class="cursor-pointer text-sm font-bold text-[#0F6F5A]">SMS controls and details</summary>
-                <p class="mt-4 text-sm leading-6 text-[#385C52]">
-                    Prepared: {{ $preparedSmsCount }} &middot; Pending: {{ $pendingSmsCount }} &middot;
-                    Retrying: {{ $retryingSmsCount }} &middot; Sent (unconfirmed): {{ $providerSentSmsCount }} &middot;
-                    Delivered: {{ $deliveredSmsCount }} &middot; Failed: {{ $failedSmsCount }} &middot; Unknown: {{ $unknownSmsCount }}
-                </p>
-
-            <p class="mt-5 rounded-2xl border border-[#D2E1DA] bg-[#EDF5F0] p-4 text-sm leading-6 text-[#385C52]">
-                Prepared: not submitted. Pending: queued at UniSMS. Retrying: UniSMS is retrying.
-                Sent (unconfirmed): UniSMS reports sent, but does not document handset delivery confirmation.
-                A recipient may receive the message even if this status remains unconfirmed.
-                Delivered: confirmed handset delivery. Failed: rejected or reported failed.
-                Unknown: the submission or delivery outcome could not be determined.
-                Checking status does not send SMS messages.
-                A manual check bypasses per-message intervals but still respects the provider-error cooldown.
-            </p>
-            @if ($lastStatusCheck)
-                <p class="mt-2 text-sm text-[#6D817A]">
-                    Last status check: {{ $lastStatusCheck->status_check_attempted_at->format('M d, Y h:i A') }}.
-                    Result: {{ match ($lastStatusCheck->status_check_result) {
-                        'success' => 'provider response received',
-                        'connection_error' => 'connection unavailable; previous status retained',
-                        'http_error' => 'provider request failed; previous status retained',
-                        'invalid_response' => 'invalid provider response; previous status retained',
-                        'skipped' => 'delivery changed; provider status not applied',
-                        default => 'check in progress',
-                    } }}.
-                    @if ($lastStatusCheck->status_lookup_http_status !== null)
-                        HTTP {{ $lastStatusCheck->status_lookup_http_status }}.
-                    @endif
-                </p>
-            @endif
-            @if ($lastStatusUpdate)
-                <p class="mt-2 text-sm text-[#6D817A]">Latest provider update: {{ $lastStatusUpdate->format('M d, Y h:i A') }}</p>
-            @endif
-            <p class="mt-2 text-sm text-[#6D817A]">
-                Automatic checks: {{ $smsSyncOverview['due'] }} due; {{ $smsSyncOverview['not_due'] }} not yet due.
-                @if ($smsSyncOverview['next_due'])
-                    Next eligibility for not-yet-due records: {{ $smsSyncOverview['next_due']->format('M d, Y h:i A T') }}. Scheduling and provider cooldowns may delay it.
                 @endif
-            </p>
-            @if ($missingReferenceCount > 0)
-                <p class="mt-2 text-sm text-amber-800">{{ $missingReferenceCount }} message{{ $missingReferenceCount === 1 ? '' : 's' }} cannot be checked because the provider reference is missing.</p>
-            @endif
-            @if ($invalidReferenceCount > 0)
-                <p class="mt-2 text-sm text-amber-800">{{ $invalidReferenceCount }} message{{ $invalidReferenceCount === 1 ? '' : 's' }} cannot be checked because the provider reference is invalid.</p>
-            @endif
-
-            @if (! $smsEnabled)
-                <p class="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900" role="status">
-                    SMS sending is disabled. Prepared SMS records are preserved. Enable
-                    <code class="rounded bg-white px-1.5 py-0.5">UNISMS_SMS_ENABLED</code>
-                    only when you are ready to send real messages.
-                </p>
-            @elseif (! $smsConfigured)
-                <p class="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900" role="status">
-                    UniSMS is enabled, but its secret key or sender ID is not configured.
-                </p>
-            @elseif ($preparedSmsCount > 0)
-                <form
-                    class="mt-5"
-                    method="POST"
-                    action="{{ route('announcements.sms.send', $announcement) }}"
-                    onsubmit="return confirm('Send the prepared SMS messages for this announcement?');"
-                >
-                    @csrf
-                    <button
-                        type="submit"
-                        class="rounded-xl bg-[#168B70] px-5 py-3 text-sm font-bold text-white shadow-sm hover:bg-[#0F6F5A] focus:outline-none focus:ring-2 focus:ring-[#168B70] focus:ring-offset-2"
-                    >
-                        Send {{ $preparedSmsCount }} prepared SMS message{{ $preparedSmsCount === 1 ? '' : 's' }}
-                    </button>
-                </form>
-            @else
-                <p class="mt-5 text-sm text-[#6D817A]">There are no prepared SMS messages to send.</p>
-            @endif
-
-            @if ($smsStatusConfigured && $checkableSmsCount > 0)
-                <form class="mt-4" method="POST" action="{{ route('announcements.sms.refresh', $announcement) }}"
-                    x-data="{ checking: false }"
-                    x-on:submit="if (checking) { $event.preventDefault() } else { checking = true }">
-                    @csrf
-                    <button type="submit" class="rounded-xl border border-[#168B70] px-5 py-3 text-sm font-bold text-[#0F6F5A] disabled:cursor-wait disabled:opacity-60"
-                        x-bind:disabled="checking" x-bind:aria-busy="checking">
-                        <span x-text="checking ? 'Checking UniSMS status...' : 'Check UniSMS status'">Check UniSMS status</span>
-                    </button>
-                </form>
-            @endif
-
-            @if ($failedSmsCount > 0)
-                <div class="mt-6 border-t border-[#D2E1DA] pt-5">
-                    <h3 class="text-sm font-bold text-[#164238]">Failed delivery details</h3>
-                    <ul class="mt-3 space-y-3">
-                        @foreach ($smsDeliveries->where('status', 'Failed') as $delivery)
-                            <li class="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">
-                                <p class="font-bold">Delivery #{{ $delivery->id }}</p>
-                                <p class="mt-1 whitespace-pre-line break-words">{{ $delivery->failure_reason ?? 'No failure details were recorded.' }}</p>
-                                @if ($delivery->canPrepareRetry())
-                                    <form method="POST" action="{{ route('announcements.sms.prepare-retry', [$announcement, $delivery->id]) }}" class="mt-3"
-                                        onsubmit="return confirm('Prepare this rejected SMS for retry? No message will be sent until you confirm sending prepared messages.');">
-                                        @csrf
-                                        <button type="submit" class="rounded-lg border border-red-700 px-3 py-2 font-bold hover:bg-red-100">
-                                            Prepare rejected SMS for retry
-                                        </button>
-                                    </form>
-                                @endif
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            @if ($unknownSmsCount + $providerSentSmsCount > 0)
-                <div class="mt-6 border-t border-[#D2E1DA] pt-5">
-                    <h3 class="text-sm font-bold text-[#164238]">Unconfirmed delivery outcomes</h3>
-                    <ul class="mt-3 space-y-3">
-                        @foreach ($smsDeliveries->where('status', 'Unknown') as $delivery)
-                            <li class="rounded-2xl border p-4 text-sm {{ $delivery->provider_status === 'sent' ? 'border-blue-200 bg-blue-50 text-blue-900' : 'border-amber-200 bg-amber-50 text-amber-900' }}">
-                                <div class="flex flex-wrap items-center justify-between gap-2">
-                                    <p class="font-bold">Delivery #{{ $delivery->id }}</p>
-                                    <span class="rounded-full bg-white/80 px-3 py-1 text-xs font-bold">
-                                        {{ $delivery->provider_status === 'sent' ? 'Sent by provider' : 'Outcome unknown' }}
-                                    </span>
-                                </div>
-                                @if ($delivery->provider_reference)
-                                    <p class="mt-3 break-all">Provider reference: {{ $delivery->provider_reference }}</p>
-                                @endif
-
-                                <p class="mt-1">{{ $delivery->failure_reason ?? ($delivery->provider_status === 'sent' ? 'UniSMS reports sent; handset delivery is not confirmed.' : 'The final delivery outcome is not confirmed.') }}</p>
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            @if ($smsDeliveries->isNotEmpty())
-                <div class="mt-6 border-t border-[#D2E1DA] pt-5">
-                    <h3 class="text-sm font-bold text-[#164238]">Latest provider responses</h3>
-                    <ul class="mt-3 space-y-3 text-sm text-[#6D817A]">
-                        @foreach ($smsDeliveries as $delivery)
-                            <li class="rounded-xl border border-[#D2E1DA] bg-white p-4">
-                                <p class="font-bold text-[#164238]">Delivery #{{ $delivery->id }}</p>
-                                <p class="mt-1">Provider status: {{ in_array($delivery->provider_status, ['pending', 'retrying', 'sent', 'failed'], true) ? $delivery->provider_status : 'unavailable' }}</p>
-                                <p class="mt-1 break-all">Provider reference: {{ $delivery->provider_reference ?? 'Not available' }}</p>
-                                <p class="mt-1">Provider acceptance recorded: {{ $delivery->provider_http_status === 201 && $delivery->sent_at ? $delivery->sent_at->format('M d, Y h:i A') : 'Not confirmed' }}</p>
-                                <p class="mt-1">Last successful status check: {{ $lastSuccessfulSmsChecks->get($delivery->id)?->format('M d, Y h:i A') ?? 'Not recorded' }}</p>
-                                @if ($latestSmsReasons->get($delivery->id)?->provider_reason)
-                                    <p class="mt-1 whitespace-pre-line break-words">Last reported provider detail ({{ \Carbon\Carbon::parse($latestSmsReasons->get($delivery->id)->checked_at)->format('M d, Y h:i A') }}): {{ $latestSmsReasons->get($delivery->id)->provider_reason }}</p>
-                                @endif
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-            </details>
-        </section>
-
-        <section class="rounded-2xl border border-white bg-[#F8FCFA] p-6 shadow-[0_8px_24px_rgba(107,134,124,0.12)]">
-            <div class="mb-5">
-                <h2 class="text-lg font-bold text-[#164238]">Announcement directory</h2>
-                <p class="mt-1 text-sm text-[#6D817A]">Open another announcement or remove one from the directory.</p>
             </div>
 
-            <div class="overflow-x-auto">
-                <table class="w-full min-w-[640px]">
-                    <thead class="bg-[#EDF5F0]">
-                        <tr>
-                            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-[#6D817A]">Announcement</th>
-                            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-[#6D817A]">Target</th>
-                            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-[#6D817A]">Recipient</th>
-                            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-[#6D817A]">Publish</th>
-                            <th class="px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-[#6D817A]"><span class="sr-only">Actions</span></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($directoryAnnouncements as $directoryAnnouncement)
-                            @php
-                                $directoryTargetLabels = [
-                                    'specific' => 'Specific resident',
-                                    'senior' => 'Senior citizens',
-                                    'children' => 'Children (0–5)',
-                                    'pregnant' => 'Pregnant residents',
-                                    'postnatal' => 'Postnatal residents',
-                                    'general' => 'All active residents',
-                                    'age_bracket' => 'Age bracket',
-                                ];
-                            @endphp
-                            <tr class="border-b border-[#D2E1DA]/70 last:border-0">
-                                <td class="px-4 py-3">
-                                    <a href="{{ route('announcements.show', $directoryAnnouncement) }}" class="font-semibold text-[#164238] hover:text-[#168B70]">
-                                        {{ $directoryAnnouncement->title }}
-                                    </a>
-                                </td>
-                                <td class="px-4 py-3 text-sm text-[#385C52]">
-                                    {{ $directoryTargetLabels[$directoryAnnouncement->target_type] ?? ucwords(str_replace('_', ' ', $directoryAnnouncement->target_type)) }}
-                                </td>
-                                <td class="px-4 py-3 text-sm text-[#385C52]">{{ $directoryAnnouncement->recipients_count }} residents</td>
-                                <td class="px-4 py-3 text-sm text-[#385C52]">{{ $directoryAnnouncement->published_at?->format('M d, Y') ?? '—' }}</td>
-                                <td class="px-4 py-3">
-                                    <div class="flex justify-end gap-2">
-                                        <a
-                                            href="{{ route('announcements.show', $directoryAnnouncement) }}"
-                                            class="rounded-lg border border-[#D2E1DA] bg-white px-3 py-2 text-xs font-bold text-[#0F6F5A] hover:bg-[#EDF5F0]"
-                                        >
-                                            View
-                                        </a>
-                                        <form
-                                            method="POST"
-                                            action="{{ route('announcements.destroy', $directoryAnnouncement) }}"
-                                            onsubmit="return confirm('Delete this announcement and its delivery records?');"
-                                        >
-                                            @csrf
-                                            @method('DELETE')
-                                            <button
-                                                type="submit"
-                                                class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-100"
-                                            >
-                                                Delete
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
             </div>
 
-            @if ($directoryAnnouncements->hasPages())
-                <div class="mt-4">{{ $directoryAnnouncements->links() }}</div>
-            @endif
+            <div class="mt-6 rounded-2xl border border-[#D2E1DA] bg-[#EDF5F0] p-5">
+                <h3 class="text-base font-bold text-[#164238]">Confirm SMS sending</h3>
+                <p class="mt-2 text-sm leading-6 text-[#385C52]">Double-check the announcement, audience, and recipient count above before clicking Send. Publishing has already notified system users; SMS messages are sent separately.</p>
+                @if ($allSmsSubmitted)
+                    <p class="mt-3 text-sm text-[#6D817A]"> Announcement(s) are  submitted to successfully!  </p>
+                @elseif (! $smsEnabled)
+                    <p class="mt-3 text-sm text-amber-800" role="status">SMS sending is disabled. Enable and configure the SMS service before sending.</p>
+                @elseif (! $smsConfigured)
+                    <p class="mt-3 text-sm text-amber-800" role="status">The SMS service is missing its secret key or sender ID.</p>
+                @elseif ($smsDeliveries->isEmpty())
+                    <p class="mt-3 text-sm text-[#6D817A]">There are no eligible SMS recipients for this announcement.</p>
+                @elseif ($preparedSmsCount === 0)
+                    <p class="mt-3 text-sm text-amber-800">No messages are ready to send. Check the SMS status above before taking further action.</p>
+                @endif
+                <div class="mt-5 flex flex-wrap gap-3">
+                    @if ($canCancel)
+                        <form method="POST" action="{{ route('announcements.cancel', $announcement) }}" onsubmit="return confirm('Cancel and remove this announcement and its prepared SMS messages? System users may already have seen its notification.');">
+                            @csrf
+                            <button type="submit" class="rounded-xl border border-[#C7DCD1] bg-white px-5 py-3 text-sm font-bold text-[#385C52] hover:bg-[#F8FCFA] focus:outline-none focus:ring-2 focus:ring-[#168B70] focus:ring-offset-2">Cancel</button>
+                        </form>
+                    @endif
+                    @if ($smsEnabled && $smsConfigured && $preparedSmsCount > 0)
+                        <form method="POST" action="{{ route('announcements.sms.send', $announcement) }}" onsubmit="return confirm('Send the prepared SMS messages for this announcement?');">
+                            @csrf
+                            <button type="submit" class="rounded-xl bg-[#168B70] px-5 py-3 text-sm font-bold text-white shadow-sm hover:bg-[#0F6F5A] focus:outline-none focus:ring-2 focus:ring-[#168B70] focus:ring-offset-2">Send {{ $preparedSmsCount }} SMS</button>
+                        </form>
+                    @else
+                        <button type="button" disabled class="cursor-not-allowed rounded-xl bg-[#D2E1DA] px-5 py-3 text-sm font-bold text-[#6D817A]">{{ $allSmsSubmitted ? 'Sent' : 'Send' }}</button>
+                    @endif
+                </div>
+            </div>
+
         </section>
+
     </div>
         </div>
     </main>

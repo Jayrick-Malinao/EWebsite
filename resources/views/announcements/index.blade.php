@@ -152,6 +152,10 @@
         .clay-table-head { background: linear-gradient(180deg, rgba(235, 244, 239, 0.98), rgba(226, 238, 232, 0.96)); }
         .clay-table-row { background: rgba(255, 255, 255, 0.48); transition: background 0.18s ease; }
         .clay-table-row:hover { background: rgba(255, 255, 255, 0.78); }
+        table.announcement-table:has([data-action-menu-trigger]) { min-width: 640px; table-layout: fixed; }
+        table.announcement-table:has([data-action-menu-trigger]) thead th:last-child,
+        table.announcement-table td:has([data-action-menu-trigger]) { min-width: 0; }
+        table.announcement-table th, table.announcement-table td { padding-inline: 1rem; }
 
         .clay-action {
             display: inline-flex;
@@ -370,7 +374,7 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-xs font-bold uppercase tracking-wider text-[#6D817A]">Published</p>
-                            <p class="mt-2 text-3xl font-bold text-[#126647]">{{ $announcements->where('status', 'Published')->count() }}</p>
+                            <p class="mt-2 text-3xl font-bold text-[#126647]">{{ $publishedCount }}</p>
                         </div>
                         <div class="clay-icon h-12 w-12 rounded-2xl bg-[#E7F7EF] text-[#126647]">
                             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -384,7 +388,7 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-xs font-bold uppercase tracking-wider text-[#6D817A]">Urgent</p>
-                            <p class="mt-2 text-3xl font-bold text-[#B42323]">{{ $announcements->where('priority', 'Urgent')->count() }}</p>
+                            <p class="mt-2 text-3xl font-bold text-[#B42323]">{{ $urgentCount }}</p>
                         </div>
                         <div class="clay-icon h-12 w-12 rounded-2xl bg-[#FCEFED] text-[#B42323]">
                             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
@@ -439,7 +443,14 @@
 
                 @if ($announcements->count() > 0)
                     <div class="overflow-x-auto">
-                        <table class="w-full min-w-[950px]">
+                        <table class="announcement-table w-full">
+                            <colgroup>
+                                <col style="width: 34%">
+                                <col style="width: 19%">
+                                <col style="width: 14%">
+                                <col style="width: 19%">
+                                <col style="width: 14%">
+                            </colgroup>
                             <thead class="clay-table-head">
                                 <tr>
                                     <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6D817A]">Announcement</th>
@@ -466,11 +477,11 @@
                                     @endphp
 
                                     <tr class="clay-table-row border-b border-[#D2E1DA]/60 last:border-b-0">
-                                        <td class="px-6 py-4">
+                                        <td class="break-words px-6 py-4">
                                             <a href="{{ route('announcements.show', $announcement) }}" class="font-bold text-[#164238] hover:text-[#168B70]">
                                                 {{ $announcement->title }}
                                             </a>
-                                            <p class="mt-1 line-clamp-2 max-w-xl text-xs leading-5 text-[#6D817A]">
+                                            <p class="mt-1 line-clamp-2 text-xs leading-5 text-[#6D817A]">
                                                 {{ $announcement->message }}
                                             </p>
                                             @if ($announcement->creator)

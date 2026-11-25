@@ -7,6 +7,7 @@ use App\Models\AnnouncementSmsDelivery;
 use App\Models\Household;
 use App\Models\Resident;
 use App\Models\User;
+use App\Notifications\AnnouncementPublishedNotification;
 use App\Services\UniSmsService;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -30,7 +31,71 @@ class AnnouncementSmsSafetyTest extends TestCase
         Http::preventStrayRequests();
     }
 
-    public function test_delivery_details_show_acceptance_reference_and_last_successful_lookup(): void
+    public function test_cancel_removes_unsubmitted_announcement_and_its_notifications(): void
+    {
+        [$admin, $announcement, $delivery] = $this->createSmsDelivery();
+        $admin->notify(new AnnouncementPublishedNotification($announcement));
+        $notificationId = $admin->notifications()->firstOrFail()->id;
+
+        $response = $this->actingAs($admin)->post(route('announcements.cancel', $announcement));
+
+        $response->assertRedirect(route('announcements.index'))
+            ->assertSessionHas('success', 'Announcement canceled. No SMS messages were sent.');
+        $this->assertModelMissing($announcement);
+        $this->assertModelMissing($delivery);
+        $this->assertDatabaseMissing('notifications', ['id' => $notificationId]);
+        Http::assertNothingSent();
+    }
+
+    public function test_cancel_refuses_to_delete_an_attempted_sms(): void
+    {
+        [$admin, $announcement, $delivery] = $this->createSmsDelivery([
+            'status' => 'Unknown',
+            'attempt_started_at' => now(),
+        ]);
+
+        $response = $this->actingAs($admin)->post(route('announcements.cancel', $announcement));
+
+        $response->assertRedirect(route('announcements.show', $announcement))
+            ->assertSessionHas('error', 'This announcement cannot be canceled because SMS processing has already started.');
+        $this->assertModelExists($announcement);
+        $this->assertModelExists($delivery);
+        Http::assertNothingSent();
+    }
+
+    public function test_cancel_requires_an_authorized_staff_role(): void
+    {
+        [, $announcement, $delivery] = $this->createSmsDelivery();
+        $resident = User::factory()->create(['role' => 'Resident', 'status' => 'active']);
+
+        $this->actingAs($resident)->post(route('announcements.cancel', $announcement))->assertForbidden();
+
+        $this->assertModelExists($announcement);
+        $this->assertModelExists($delivery);
+    }
+
+    public function test_confirmation_shows_prepared_and_uncertain_sms_without_claiming_success(): void
+    {
+        config(['services.unisms.enabled' => true, 'services.unisms.secret_key' => 'test-secret', 'services.unisms.sender_id' => 'TEST']);
+        [$admin, $announcement, $delivery] = $this->createSmsDelivery();
+
+        $this->actingAs($admin)->get(route('announcements.show', $announcement))
+            ->assertOk()
+            ->assertSee('Double-check the announcement')
+            ->assertSee('Send 1 SMS')
+            ->assertSee(route('announcements.cancel', $announcement))
+            ->assertDontSee('Announcement directory')
+            ->assertDontSee('SMS controls and details');
+
+        $delivery->update(['status' => 'Unknown', 'attempt_started_at' => now()]);
+        $this->actingAs($admin)->get(route('announcements.show', $announcement))
+            ->assertOk()
+            ->assertSee('No messages are ready to send')
+            ->assertDontSee(route('announcements.cancel', $announcement))
+            ->assertDontSee('>Sent</button>', false);
+    }
+
+    public function test_sms_summary_does_not_expose_provider_details_or_manual_controls(): void
     {
         [$admin, $announcement, $delivery] = $this->createSmsDelivery([
             'status' => 'Pending',
@@ -49,21 +114,21 @@ class AnnouncementSmsSafetyTest extends TestCase
         $response = $this->actingAs($admin)->get(route('announcements.show', $announcement));
 
         $response->assertOk()
-            ->assertSee('Provider reference: msg_details_123')
-            ->assertSee('Provider acceptance recorded: Jan 15, 2026 09:00 AM')
-            ->assertSee('Last successful status check: Jan 15, 2026 09:02 AM')
-            ->assertSee('connection unavailable; previous status retained');
+            ->assertSee('Pending: 1')
+            ->assertDontSee('msg_details_123')
+            ->assertDontSee('Last successful status check')
+            ->assertDontSee('Check UniSMS status')
+            ->assertDontSee('SMS controls and details');
     }
 
-    public function test_delivery_details_do_not_claim_acceptance_or_check_without_evidence(): void
+    public function test_sms_summary_does_not_claim_acceptance_without_evidence(): void
     {
         [$admin, $announcement] = $this->createSmsDelivery(['status' => 'Unknown']);
 
         $this->actingAs($admin)->get(route('announcements.show', $announcement))
             ->assertOk()
-            ->assertSee('Provider reference: Not available')
-            ->assertSee('Provider acceptance recorded: Not confirmed')
-            ->assertSee('Last successful status check: Not recorded');
+            ->assertSee('Unknown: 1')
+            ->assertDontSee('>Sent</button>', false);
     }
 
     public function test_sms_status_command_is_due_every_five_minutes(): void
@@ -116,7 +181,7 @@ class AnnouncementSmsSafetyTest extends TestCase
             ->assertSee('No SMS messages have been prepared for this announcement.');
     }
 
-    public function test_announcement_details_show_sanitized_sms_failure_reason(): void
+    public function test_announcement_details_show_failed_count_without_exposing_sms_details(): void
     {
         config([
             'services.unisms.enabled' => true,
@@ -175,8 +240,9 @@ class AnnouncementSmsSafetyTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee('Failed delivery details')
-            ->assertSee('UniSMS did not accept the request (HTTP 401): Unauthorized.')
+            ->assertSee('Failed: 1')
+            ->assertDontSee('Failed delivery details')
+            ->assertDontSee('UniSMS did not accept the request (HTTP 401): Unauthorized.')
             ->assertDontSee('639171234567');
     }
 
@@ -425,6 +491,8 @@ class AnnouncementSmsSafetyTest extends TestCase
             'unismsapi.com/api/sms' => function () use ($admin, $announcement) {
                 $this->actingAs($admin)->post(route('announcements.sms.send', $announcement))
                     ->assertSessionHas('info', 'There are no prepared SMS messages for this announcement.');
+                $this->actingAs($admin)->post(route('announcements.cancel', $announcement))
+                    ->assertSessionHas('error', 'This announcement cannot be canceled because SMS processing has already started.');
 
                 return Http::response(['message' => [
                     'reference_id' => 'msg_test_123',
@@ -448,7 +516,10 @@ class AnnouncementSmsSafetyTest extends TestCase
         $this->actingAs($admin)->get(route('announcements.show', $announcement))
             ->assertOk()
             ->assertSee('Pending: 1')
-            ->assertSee('Delivered: 0');
+            ->assertSee('0 confirmed delivered out of 1 total.')
+            ->assertSee('>Sent</button>', false)
+            ->assertSee('Handset delivery may still be unconfirmed.')
+            ->assertDontSee(route('announcements.cancel', $announcement));
     }
 
     public function test_timeout_is_unknown_and_is_not_resubmitted(): void
@@ -594,8 +665,9 @@ class AnnouncementSmsSafetyTest extends TestCase
         ]);
         $this->actingAs($admin)->get(route('announcements.show', $announcement))
             ->assertOk()
-            ->assertSee('Message rejected by content filter.')
-            ->assertSee('Provider reference: msg_filtered');
+            ->assertSee('Failed: 1')
+            ->assertDontSee('Message rejected by content filter.')
+            ->assertDontSee('msg_filtered');
         Http::assertSentCount(1);
         Http::assertNotSent(fn ($request) => $request->method() !== 'GET');
     }
@@ -650,8 +722,8 @@ class AnnouncementSmsSafetyTest extends TestCase
         $this->assertNull($checks[2]->provider_reason);
         $this->actingAs($admin)->get(route('announcements.show', $announcement))
             ->assertOk()
-            ->assertSee('Last reported provider detail')
-            ->assertSee('Route unavailable for [phone redacted]')
+            ->assertSee('Retrying: 1')
+            ->assertDontSee('Last reported provider detail')
             ->assertDontSee('test-secret')
             ->assertDontSee('Private announcement');
         Http::assertSentCount(3);
@@ -971,12 +1043,9 @@ class AnnouncementSmsSafetyTest extends TestCase
             ->assertSee('UniSMS reports 1 message sent;')
             ->assertSee('0 confirmed delivered out of 2 total.')
             ->assertSee('Handset delivery is not confirmed for messages reported as sent.')
-            ->assertSee('Other messages may still be prepared, pending, retrying, failed, or have an unknown outcome.')
             ->assertSee('Pending: 0')
-            ->assertSee('Delivered: 0')
             ->assertSee('Unknown: 1')
-            ->assertSee('Sent (unconfirmed): 1')
-            ->assertSee('UniSMS reports sent; handset delivery is not confirmed.');
+            ->assertDontSee('SMS controls and details');
         $this->assertDatabaseHas('announcement_sms_deliveries', [
             'id' => $delivery->id,
             'status' => 'Unknown',
@@ -1000,7 +1069,7 @@ class AnnouncementSmsSafetyTest extends TestCase
             ->assertOk()
             ->assertSee('UniSMS reports 0 messages sent;')
             ->assertSee('1 confirmed delivered out of 2 total.')
-            ->assertSee('Other messages may still be prepared, pending, retrying, failed, or have an unknown outcome.');
+            ->assertSee('Pending: 1');
     }
 
     #[TestWith([401, 'authentication failed'])]
@@ -1134,10 +1203,8 @@ class AnnouncementSmsSafetyTest extends TestCase
         $this->actingAs(User::query()->where('role', 'System Administrator')->firstOrFail())
             ->get(route('announcements.show', $announcement))
             ->assertOk()
-            ->assertSee('Last status check:')
-            ->assertSee('provider request failed; previous status retained')
-            ->assertSee('Latest provider responses')
-            ->assertSee('pending');
+            ->assertSee('Pending: 2')
+            ->assertDontSee('Latest provider responses');
         Http::assertSentCount(1);
         Http::assertNotSent(fn ($request) => $request->method() !== 'GET');
     }
@@ -1223,9 +1290,9 @@ class AnnouncementSmsSafetyTest extends TestCase
         $this->actingAs($admin)->get(route('announcements.show', $announcement))
             ->assertOk()
             ->assertSee('Retrying: 1')
-            ->assertSee('1 not yet due')
-            ->assertSee('Provider is retrying.')
-            ->assertSee('Content rejected.');
+            ->assertSee('Failed: 1')
+            ->assertDontSee('Provider is retrying.')
+            ->assertDontSee('Content rejected.');
         $this->assertDatabaseCount('announcement_sms_deliveries', 4);
         Http::assertSentCount(1);
         Http::assertNotSent(fn ($request) => $request->method() !== 'GET');
@@ -1371,7 +1438,7 @@ class AnnouncementSmsSafetyTest extends TestCase
         Http::assertNotSent(fn ($request) => $request->method() !== 'GET');
     }
 
-    public function test_provider_error_details_are_sanitized_and_shown_without_logging_secrets(): void
+    public function test_provider_error_details_are_sanitized_without_logging_or_displaying_secrets(): void
     {
         Log::spy();
         config(['services.unisms.secret_key' => 'test-secret', 'services.unisms.sender_id' => 'TEST-SENDER', 'services.unisms.webhook_secret' => 'webhook-private']);
@@ -1397,7 +1464,7 @@ class AnnouncementSmsSafetyTest extends TestCase
         }
         $this->actingAs($admin)->get(route('announcements.show', $announcement))
             ->assertOk()
-            ->assertSee('Provider code: RATE_LIMITED')
+            ->assertDontSee('Provider code: RATE_LIMITED')
             ->assertDontSee('test-secret')
             ->assertDontSee($authorization)
             ->assertDontSee('Private announcement');

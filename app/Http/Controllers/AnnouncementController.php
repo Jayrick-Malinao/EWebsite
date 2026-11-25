@@ -12,7 +12,6 @@ use App\Services\AnnouncementRecipientService;
 use App\Services\AnnouncementSmsStatusSyncService;
 use App\Services\UniSmsService;
 use App\Support\PhilippineMobileNumberFormatter;
-use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -28,13 +27,18 @@ class AnnouncementController extends Controller
             ->with('creator')
             ->withCount('recipients')
             ->latest()
-            ->paginate(10);
+            ->orderByDesc('id')
+            ->paginate(3);
 
         $smsBalance = $smsService->accountBalance();
+        $publishedCount = Announcement::where('status', 'Published')->count();
+        $urgentCount = Announcement::where('priority', 'Urgent')->count();
 
         return view('announcements.index', compact(
             'announcements',
-            'smsBalance'
+            'smsBalance',
+            'publishedCount',
+            'urgentCount'
         ));
     }
 
@@ -57,6 +61,36 @@ class AnnouncementController extends Controller
         return redirect()
             ->route('announcements.index')
             ->with('success', 'Announcement deleted successfully.');
+    }
+
+    public function cancel(Announcement $announcement)
+    {
+        $cancelled = DB::transaction(function () use ($announcement): bool {
+            $lockedAnnouncement = Announcement::query()->whereKey($announcement->id)->lockForUpdate()->firstOrFail();
+
+            if ($lockedAnnouncement->smsDeliveries()
+                ->where(fn ($query) => $query->where('status', '!=', 'Prepared')->orWhereNotNull('attempt_started_at'))
+                ->exists()) {
+                return false;
+            }
+
+            DB::table('notifications')
+                ->where('type', AnnouncementPublishedNotification::class)
+                ->where('data->announcement_id', $lockedAnnouncement->id)
+                ->delete();
+
+            $lockedAnnouncement->delete();
+
+            return true;
+        });
+
+        if (! $cancelled) {
+            return redirect()->route('announcements.show', $announcement)
+                ->with('error', 'This announcement cannot be canceled because SMS processing has already started.');
+        }
+
+        return redirect()->route('announcements.index')
+            ->with('success', 'Announcement canceled. No SMS messages were sent.');
     }
 
     public function preview(
@@ -205,7 +239,9 @@ class AnnouncementController extends Controller
                 trim((string) $delivery->contact_number)
             );
             $claimed = DB::transaction(function () use ($announcement, $delivery, $number): bool {
-                Announcement::query()->whereKey($announcement->id)->lockForUpdate()->firstOrFail();
+                if (! Announcement::query()->whereKey($announcement->id)->lockForUpdate()->first()) {
+                    return false;
+                }
 
                 $alreadyAttempted = $announcement->smsDeliveries()
                     ->where('id', '!=', $delivery->id)
@@ -240,6 +276,11 @@ class AnnouncementController extends Controller
             });
 
             if (! $claimed) {
+                if (! Announcement::query()->whereKey($announcement->id)->exists()) {
+                    return redirect()->route('announcements.index')
+                        ->with('error', 'The announcement was canceled before SMS sending could begin.');
+                }
+
                 $skippedCount++;
 
                 continue;
@@ -463,55 +504,23 @@ class AnnouncementController extends Controller
         });
     }
 
-    public function show(Announcement $announcement, AnnouncementSmsStatusSyncService $sync, UniSmsService $smsService)
+    public function show(Announcement $announcement)
     {
         $announcement->load([
             'creator',
-            'recipients.resident.household',
-            'smsDeliveries.household',
-            'smsDeliveries.householdHead',
-            'smsDeliveries.resident',
+            'recipients.resident',
+            'smsDeliveries',
         ]);
-
-        $directoryAnnouncements = Announcement::query()
-            ->withCount('recipients')
-            ->latest()
-            ->paginate(8, ['*'], 'directory_page')
-            ->withQueryString();
-
-        $lastSuccessfulSmsChecks = DB::table('announcement_sms_status_checks')
-            ->whereIn('announcement_sms_delivery_id', $announcement->smsDeliveries->modelKeys())
-            ->where('result', 'success')
-            ->selectRaw('announcement_sms_delivery_id, MAX(checked_at) as checked_at')
-            ->groupBy('announcement_sms_delivery_id')
-            ->pluck('checked_at', 'announcement_sms_delivery_id')
-            ->map(fn (string $checkedAt): Carbon => Carbon::parse($checkedAt));
-        $latestSmsReasons = DB::table('announcement_sms_status_checks')
-            ->whereIn('id', DB::table('announcement_sms_status_checks')
-                ->whereIn('announcement_sms_delivery_id', $announcement->smsDeliveries->modelKeys())
-                ->whereNotNull('provider_reason')
-                ->selectRaw('MAX(id)')
-                ->groupBy('announcement_sms_delivery_id'))
-            ->get()
-            ->keyBy('announcement_sms_delivery_id');
-        $smsSyncOverview = $sync->overview($announcement);
 
         // Read the existing UniSMS configuration without enabling SMS.
         $smsEnabled = (bool) config('services.unisms.enabled', false);
         $smsConfigured = filled(config('services.unisms.secret_key'))
             && filled(config('services.unisms.sender_id'));
-        $smsStatusConfigured = filled(config('services.unisms.secret_key'));
 
         return view('announcements.show', compact(
             'announcement',
             'smsEnabled',
-            'smsConfigured',
-            'smsStatusConfigured',
-            'directoryAnnouncements',
-            'lastSuccessfulSmsChecks',
-            'latestSmsReasons',
-            'smsSyncOverview',
-            'smsService'
+            'smsConfigured'
         ));
     }
 

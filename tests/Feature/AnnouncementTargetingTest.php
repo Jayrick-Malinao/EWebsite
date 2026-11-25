@@ -167,6 +167,13 @@ class AnnouncementTargetingTest extends TestCase
         $delivery = AnnouncementSmsDelivery::query()->sole();
         $this->assertSame('resident', $delivery->recipient_type);
         $this->assertSame($selectedResident->id, $delivery->resident_id);
+        $this->actingAs($admin)->get(route('announcements.show', $announcement))
+            ->assertOk()
+            ->assertSee('Resident-specific notice')
+            ->assertSee('This is for one resident.')
+            ->assertSee($selectedResident->full_name)
+            ->assertSee('Specific resident')
+            ->assertSee('Normal priority');
         Http::assertNothingSent();
     }
 
@@ -471,6 +478,50 @@ class AnnouncementTargetingTest extends TestCase
                 'Authorization',
                 'Basic '.base64_encode('test-unisms-secret:')
             ));
+    }
+
+    public function test_index_paginates_three_announcements_and_keeps_summary_counts_across_pages(): void
+    {
+        Http::preventStrayRequests();
+        config(['services.unisms.secret_key' => null]);
+        $admin = $this->createAdmin();
+
+        foreach (range(1, 7) as $number) {
+            Announcement::create([
+                'title' => 'Notice '.$number,
+                'message' => 'Community update.',
+                'target_type' => 'general',
+                'priority' => $number === 1 ? 'Urgent' : 'Normal',
+                'status' => 'Published',
+                'published_at' => now(),
+                'created_by' => $admin->id,
+            ]);
+        }
+
+        $this->actingAs($admin)->get(route('announcements.index'))
+            ->assertOk()
+            ->assertSee('Notice 7')
+            ->assertSee('Notice 5')
+            ->assertDontSee('Notice 4')
+            ->assertViewHas('publishedCount', 7)
+            ->assertViewHas('urgentCount', 1);
+
+        $this->actingAs($admin)->get(route('announcements.index', ['page' => 2]))
+            ->assertOk()
+            ->assertSee('Notice 4')
+            ->assertSee('Notice 2')
+            ->assertDontSee('Notice 1')
+            ->assertDontSee('Notice 5')
+            ->assertViewHas('publishedCount', 7)
+            ->assertViewHas('urgentCount', 1);
+
+        $this->actingAs($admin)->get(route('announcements.index', ['page' => 3]))
+            ->assertOk()
+            ->assertSee('Notice 1')
+            ->assertDontSee('Notice 2')
+            ->assertViewHas('publishedCount', 7)
+            ->assertViewHas('urgentCount', 1);
+        Http::assertNothingSent();
     }
 
     public function test_index_shows_sms_credits_unavailable_when_provider_balance_is_invalid(): void

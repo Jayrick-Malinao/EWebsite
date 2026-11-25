@@ -561,25 +561,113 @@ aside.claymorphism-sidebar nav::-webkit-scrollbar-thumb {
     .notification-bell-panel {
         width: min(92vw, 25rem) !important;
         max-height: min(70vh, 32rem) !important;
-        border: 1px solid #dce9e2 !important;
-        border-radius: 1rem !important;
-        background: #fff !important;
-        box-shadow: 0 20px 45px rgb(22 66 56 / 18%), 0 4px 12px rgb(22 66 56 / 8%) !important;
+        border: 1px solid rgb(255 255 255 / 88%) !important;
+        border-radius: 1.5rem !important;
+        background: linear-gradient(145deg, #f8fcfa, #eaf2ee) !important;
+        box-shadow:
+            14px 14px 32px rgb(107 134 124 / 24%),
+            -10px -10px 24px rgb(255 255 255 / 94%),
+            inset 1px 1px 0 rgb(255 255 255 / 82%) !important;
     }
 
     .notification-bell-panel > div:first-child {
         border-color: #0f6f5a !important;
-        background: #0f6f5a !important;
+        background: linear-gradient(135deg, #0f6f5a, #0b594a) !important;
+    }
+
+    .notification-bell-panel > div:first-child h3 {
+        color: #fff !important;
+        text-shadow: none !important;
+    }
+
+    .notification-bell-mark-all {
+        border: 1px solid rgb(255 255 255 / 42%) !important;
+        border-radius: 0.75rem !important;
+        color: #fff !important;
+        background: rgb(255 255 255 / 12%) !important;
+        box-shadow: inset 0 1px 0 rgb(255 255 255 / 16%) !important;
+    }
+
+    .notification-bell-mark-all:hover {
+        background: rgb(255 255 255 / 22%) !important;
+    }
+
+    .notification-bell-mark-all:focus-visible {
+        outline: 2px solid #fff !important;
+        outline-offset: 2px !important;
+    }
+
+    .notification-bell-list {
+        scrollbar-width: thin;
+        scrollbar-color: #8aa99c transparent;
+        padding: 0.25rem 0 0.625rem;
+    }
+
+    .notification-bell-list::-webkit-scrollbar {
+        width: 7px;
+    }
+
+    .notification-bell-list::-webkit-scrollbar-thumb {
+        border-radius: 999px;
+        background: #8aa99c;
+    }
+
+    .notification-bell-item {
+        margin: 0.625rem 0.75rem 0;
+        border: 1px solid rgb(255 255 255 / 88%) !important;
+        border-radius: 1rem !important;
+        background: linear-gradient(145deg, #f9fcfa, #edf4f0) !important;
+        box-shadow:
+            5px 5px 12px rgb(107 134 124 / 12%),
+            -4px -4px 10px rgb(255 255 255 / 90%),
+            inset 1px 1px 0 rgb(255 255 255 / 72%) !important;
+        transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+    }
+
+    .notification-bell-item-unread {
+        border-color: #cfe5d8 !important;
+        background: linear-gradient(145deg, #f7fcf9, #e8f4ee) !important;
+    }
+
+    .notification-bell-item:hover {
+        transform: translateY(-1px);
+        border-color: #c4ddcf !important;
+        box-shadow:
+            7px 7px 15px rgb(107 134 124 / 16%),
+            -4px -4px 10px rgb(255 255 255 / 92%),
+            inset 1px 1px 0 rgb(255 255 255 / 76%) !important;
+    }
+
+    .notification-bell-read-action {
+        border-color: #cfe5d8 !important;
+        box-shadow:
+            3px 3px 7px rgb(107 134 124 / 14%),
+            -3px -3px 7px rgb(255 255 255 / 92%) !important;
+    }
+
+    .notification-bell-footer {
+        border-color: #dce9e2 !important;
+        background: #f2f8f4 !important;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .notification-bell-item {
+            transition: none;
+        }
+
+        .notification-bell-item:hover {
+            transform: none;
+        }
     }
 
     @media (max-width: 639px) {
         .notification-bell-panel {
             position: fixed !important;
-            top: 4.5rem !important;
+            top: 5.25rem !important;
             right: 0.75rem !important;
             left: 0.75rem !important;
             width: auto !important;
-            max-height: min(32rem, calc(100dvh - 5.25rem)) !important;
+            max-height: min(32rem, calc(100dvh - 5.75rem)) !important;
         }
     }
 
